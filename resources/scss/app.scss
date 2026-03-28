@@ -1,5 +1,12 @@
-@use 'variables' as *;
 @use '../js/components/shared/navbar/navbar' as *;
+
+$font-sans: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+$color-bg: #fdfdfc;
+$color-text: #1b1b18;
+$color-muted: #706f6c;
+$color-accent: #f53003;
+$color-border: #e3e3e0;
+$nav-height: 3.5rem;
 
 *,
 *::before,

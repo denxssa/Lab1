@@ -1,14 +1,12 @@
-import '../../bootstrap';
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import App from '../../components/App';
+import React from 'react'
+import Navbar from '../../components/shared/navbar/Navbar'
 
-const el = document.getElementById('app');
-
-if (el) {
-    createRoot(el).render(
-        <React.StrictMode>
-            <App />
-        </React.StrictMode>
-    );
+const Home = () => {
+    return (
+        <div className='home-page'>
+            <Navbar />
+        </div>
+    )
 }
+
+export default Home
