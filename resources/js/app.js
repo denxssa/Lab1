@@ -1,14 +1,19 @@
-import './bootstrap';
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './components/App';
+import Navbar from './components/shared/navbar/Navbar';
 
-const el = document.getElementById('app');
+const appRoot = document.getElementById('app');
+const appName = appRoot?.dataset?.appName ?? 'Laravel';
 
-if (el) {
-    createRoot(el).render(
-        <React.StrictMode>
-            <App />
-        </React.StrictMode>
+export default function App() {
+    return (
+        <>
+            <Navbar brand={appName} />
+            <main className="app-main">
+                <h1 className="app-main__title">Laravel + React (Laravel Mix)</h1>
+                <p className="app-main__lead">
+                    Simple navbar styles live in SCSS and compile through Webpack.
+                </p>
+            </main>
+        </>
     );
 }

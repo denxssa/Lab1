@@ -1,5 +1,5 @@
 @use 'variables' as *;
-@use 'navbar';
+@use '../js/components/shared/navbar/navbar' as *;
 
 *,
 *::before,
