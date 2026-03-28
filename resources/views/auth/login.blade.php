@@ -42,10 +42,61 @@
         </div>
 
         <button type="submit" class="submit-button">Login</button>
+
+        <div class="auth-feedback" id="loginFeedback" role="status" aria-live="polite">
+            Login details look good.
+        </div>
     </form>
 
     <p class="auth-switch">
         Don't have an account?
         <a href="{{ route('signup') }}" class="form-link">Create one</a>
     </p>
+@endsection
+
+@section('scripts')
+    <script>
+        (() => {
+            const form = document.getElementById('loginForm');
+            const feedback = document.getElementById('loginFeedback');
+            const validators = {
+                email: (value) => {
+                    if (!value.trim()) return 'Email is required.';
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Enter a valid email address.';
+                    return '';
+                },
+                password: (value) => {
+                    if (!value.trim()) return 'Password is required.';
+                    if (value.length < 6) return 'Password must be at least 6 characters.';
+                    return '';
+                }
+            };
+
+            const setError = (field, message) => {
+                const group = form.querySelector(`[data-field="${field}"]`);
+                group.classList.toggle('has-error', Boolean(message));
+                group.querySelector('.field-error').textContent = message;
+            };
+
+            Object.keys(validators).forEach((field) => {
+                form.elements[field].addEventListener('input', () => {
+                    setError(field, validators[field](form.elements[field].value));
+                });
+            });
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                let hasError = false;
+
+                Object.keys(validators).forEach((field) => {
+                    const message = validators[field](form.elements[field].value);
+                    setError(field, message);
+                    if (message) hasError = true;
+                });
+
+                feedback.classList.toggle('is-visible', !hasError);
+                if (!hasError) form.reset();
+            });
+        })();
+    </script>
 @endsection
