@@ -132,8 +132,8 @@
   color: #07271c;
 }
 .nav__sticky .nav-auth .contact-us {
-  border: 1px solid var(--main-color);
-  color: var(--main-color);
+  border: 1.2px solid #fdd535;
+  color: #fdd535;
 }
 
 *,
@@ -144,16 +144,18 @@
 
 body {
   margin: 0;
+  overflow-x: hidden;
   font-family: "Instrument Sans", system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   color: #1b1b18;
-  background: #fdfdfc;
+  background: #ffffff;
 }
 
 #app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 .app-main {
