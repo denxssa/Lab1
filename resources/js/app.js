@@ -1,11 +1,18 @@
 import React from 'react';
-import { IntlProvider } from 'react-intl';
 import Home from './pages/Home/Home';
+import Jobs from './pages/Jobs/Jobs';
+import About from './pages/About/About';
 
 export default function App() {
-    return (
-        <IntlProvider locale="en" messages={{}}>
-            <Home/>
-        </IntlProvider>
-    );
+    const pathname = window.location.pathname;
+
+    if (pathname === '/about-us') {
+        return <About />;
+    }
+
+    if (pathname === '/jobs') {
+        return <Jobs />;
+    }
+
+    return <Home />;
 }

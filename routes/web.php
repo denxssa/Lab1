@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\AboutController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/about-us', [AboutController::class, 'index']);
+Route::view('/about-us', 'welcome');
+Route::view('/jobs', 'welcome');

@@ -1,0 +1,126 @@
+.about-overview {
+    padding: 3.2rem 0 1.2rem;
+    background: #fff;
+}
+
+.about-overview__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.1rem;
+}
+
+.about-overview__panel {
+    padding: 0 0 0 1rem;
+    border-left: 3px solid #d9dde5;
+}
+
+.about-overview__panel h3 {
+    margin: .3rem 0 .65rem;
+    font-size: 1.35rem;
+    font-family: "Instrument Sans", system-ui, -apple-system, sans-serif;
+    font-weight: 700;
+}
+
+.about-overview__panel p {
+    margin: 0;
+    color: #5c6270;
+    line-height: 1.6;
+}
+
+.about-overview__stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.1rem;
+    margin-top: 2.1rem;
+}
+
+.about-overview__stat {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: 0 8px 18px rgba(17, 20, 26, .08);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.about-overview__stat:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px rgba(17, 20, 26, .13);
+}
+
+.about-overview__stat strong {
+    display: block;
+    color: #d9a90b;
+    font-size: 1.3rem;
+    margin-bottom: .18rem;
+    font-family: "Instrument Sans", system-ui, -apple-system, sans-serif;
+    font-weight: 700;
+}
+
+.about-overview__journey {
+    margin-top: 2.6rem;
+    padding: 1.6rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.about-overview__journey h3 {
+    margin: 0 0 1.1rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-family: "Instrument Sans", system-ui, -apple-system, sans-serif;
+    font-weight: 700;
+}
+
+.about-overview__journey-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+.about-overview__journey-item {
+    text-align: center;
+}
+
+.about-overview__journey-item b {
+    display: inline-block;
+    margin-bottom: .5rem;
+    color: #d9a90b;
+    letter-spacing: .08em;
+    font-size: .8rem;
+}
+
+.about-overview__journey-item h4 {
+    margin: 0 0 .35rem;
+    font-size: 1.03rem;
+    font-family: "Instrument Sans", system-ui, -apple-system, sans-serif;
+    font-weight: 700;
+}
+
+.about-overview__journey-item p {
+    margin: 0;
+    color: #5c6270;
+    line-height: 1.55;
+    font-size: .95rem;
+}
+
+@media (max-width: 1020px) {
+    .about-overview__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .about-overview__stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .about-overview__journey-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .about-overview__stats {
+        grid-template-columns: 1fr;
+    }
+}
