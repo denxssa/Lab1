@@ -39,12 +39,12 @@ const Navbar = (props) => {
         </div>
 
         <div className="nav-link about-us-link">
-          <a href="/" className="inner-nav-link">About Us</a>
+          <a href="/about-us" className="inner-nav-link">About Us</a>
           <div className="line"></div>
         </div>
 
         <div className="nav-link jobs-link">
-          <a href="/" className="inner-nav-link">Jobs</a>
+          <a href="/jobs" className="inner-nav-link">Jobs</a>
           <div className="line"></div>
         </div>
 
