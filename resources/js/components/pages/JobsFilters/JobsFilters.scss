@@ -1,0 +1,78 @@
+.jobs-filters {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 10px 32px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  .jobs-filters-top {
+    display: flex;
+    align-items: center;
+
+    .jobs-select {
+      min-width: 220px;
+      height: 52px;
+      padding: 0 60px 0 18px; 
+       border: 1px solid #ddd;
+
+  &:focus {
+    border: 2px solid #f2bc1b;
+  }
+      border-radius: 16px;
+      background: #fff;
+      font-size: 16px;
+      color: #222;
+      outline: none;
+      cursor: pointer;
+    }
+  }
+
+  .jobs-filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    .filter-btn {
+      border: none;
+      background: #f0eeeb;
+      color: #666;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background: #e7e2db;
+      }
+
+      &.active {
+        background: #f2bc1b;
+        color: #111;
+      }
+    }
+  }
+
+  .jobs-filters-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    p {
+      margin: 0;
+      font-size: 16px;
+      color: #6b6b6b;
+
+      strong {
+        color: #111;
+      }
+    }
+  }
+}
