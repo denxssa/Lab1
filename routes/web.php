@@ -8,3 +8,5 @@ Route::get('/', function () {
 
 Route::view('/about-us', 'welcome');
 Route::view('/jobs', 'welcome');
+Route::view('/login', 'welcome')->name('login');
+Route::view('/signup', 'welcome')->name('signup');
