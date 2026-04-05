@@ -54,7 +54,7 @@ const Navbar = (props) => {
         </div>
 
         <div className="nav-link pricing-link">
-          <a href="/" className="inner-nav-link">Pricing</a>
+          <a href="/pricing" className="inner-nav-link">Pricing</a>
           <div className="line"></div>
         </div>
 
