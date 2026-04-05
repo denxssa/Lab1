@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\AboutController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::view('/login', 'auth.login')->name('login');
-Route::view('/signup', 'auth.signup')->name('signup');
+Route::view('/login', 'welcome')->name('login');
+Route::view('/signup', 'welcome')->name('signup');
+
+Route::get('/about-us', [AboutController::class, 'index']);
