@@ -1,22 +1,27 @@
 
 import React, { useState } from 'react';
+
+
 import './JobsCards.scss';
+
+
+import JobDetail from '../JobDetail/JobDetail';
+
 
 const JobsCards = () => {
   const jobs = [
     {
-      id: 1,
-      initials: 'TH',
+      id: 1,              
+      initials: 'TH',      
       title: 'Senior Frontend Developer',
       company: 'TechHive',
       location: 'San Francisco, CA',
       salary: '$120k - $160k',
-      time: '2 days ago',
-      type: 'Full-time',
-      featured: true,
+      time: '2 days ago', 
+      type: 'Full-time',   
+      featured: true,    
       tags: ['React', 'TypeScript', 'Tailwind'],
     },
-
     {
       id: 2,
       initials: 'DB',
@@ -29,7 +34,6 @@ const JobsCards = () => {
       featured: true,
       tags: ['Figma', 'User Research', 'Prototyping'],
     },
-
     {
       id: 3,
       initials: 'GN',
@@ -42,7 +46,6 @@ const JobsCards = () => {
       featured: false,
       tags: ['SEO', 'Google Ads', 'Analytics'],
     },
-
     {
       id: 4,
       initials: 'CW',
@@ -55,7 +58,6 @@ const JobsCards = () => {
       featured: false,
       tags: ['Excel', 'Financial Modeling', 'SQL'],
     },
-
     {
       id: 5,
       initials: 'CP',
@@ -68,7 +70,6 @@ const JobsCards = () => {
       featured: false,
       tags: ['Patient Care', 'EMR', 'Critical Care'],
     },
-
     {
       id: 6,
       initials: 'CF',
@@ -81,7 +82,6 @@ const JobsCards = () => {
       featured: true,
       tags: ['Node.js', 'AWS', 'PostgreSQL'],
     },
-
     {
       id: 7,
       initials: 'PC',
@@ -94,7 +94,6 @@ const JobsCards = () => {
       featured: false,
       tags: ['UI Design', 'Sketch', 'Design Systems'],
     },
-
     {
       id: 8,
       initials: 'BP',
@@ -107,7 +106,6 @@ const JobsCards = () => {
       featured: false,
       tags: ['Curriculum', 'STEM', 'Mentoring'],
     },
-
     {
       id: 9,
       initials: 'IW',
@@ -120,7 +118,6 @@ const JobsCards = () => {
       featured: false,
       tags: ['CAD', 'SolidWorks', 'Manufacturing'],
     },
-
     {
       id: 10,
       initials: 'DS',
@@ -133,7 +130,6 @@ const JobsCards = () => {
       featured: false,
       tags: ['B2B', 'CRM', 'Outbound'],
     },
-
     {
       id: 11,
       initials: 'IC',
@@ -146,7 +142,6 @@ const JobsCards = () => {
       featured: false,
       tags: ['Docker', 'Kubernetes', 'CI/CD'],
     },
-
     {
       id: 12,
       initials: 'BP',
@@ -159,7 +154,6 @@ const JobsCards = () => {
       featured: false,
       tags: ['Copywriting', 'Social Media', 'Strategy'],
     },
-
     {
       id: 13,
       initials: 'DM',
@@ -172,7 +166,6 @@ const JobsCards = () => {
       featured: true,
       tags: ['Python', 'Machine Learning', 'TensorFlow'],
     },
-
     {
       id: 14,
       initials: 'VS',
@@ -185,7 +178,6 @@ const JobsCards = () => {
       featured: false,
       tags: ['Illustrator', 'Branding', 'Typography'],
     },
-
     {
       id: 15,
       initials: 'SF',
@@ -198,7 +190,6 @@ const JobsCards = () => {
       featured: false,
       tags: ['Enterprise Sales', 'Negotiation', 'Pipeline'],
     },
-
     {
       id: 16,
       initials: 'AX',
@@ -218,13 +209,35 @@ const JobsCards = () => {
 
   const [page, setPage] = useState(1);
 
-  const start = (page - 1) * jobsPerPage;
 
+  const [selectedJob, setSelectedJob] = useState(null);
+
+  
+  const start = (page - 1) * jobsPerPage;
 
   const visibleJobs = jobs.slice(start, start + jobsPerPage);
 
-  
+ 
   const totalPages = Math.ceil(jobs.length / jobsPerPage);
+
+ 
+  const relatedJobs = selectedJob
+    ? jobs.filter((j) => j.id !== selectedJob.id && j.type === selectedJob.type).slice(0, 3)
+    : [];
+
+  
+
+
+  if (selectedJob) {
+    return (
+      <JobDetail
+        job={selectedJob}
+        onBack={() => setSelectedJob(null)}
+        relatedJobs={relatedJobs}
+        onSelectJob={(job) => setSelectedJob(job)}
+      />
+    );
+  }
 
 
   return (
@@ -234,11 +247,15 @@ const JobsCards = () => {
 
         {visibleJobs.map((job) => (
           <div
-            key={job.id}
+            key={job.id} 
             className={job.featured ? 'job-card featured' : 'job-card'}
+            onClick={() => setSelectedJob(job)}
+            style={{ cursor: 'pointer' }}
           >
             {job.featured && <div className="featured-badge">Featured</div>}
+
             <div className="job-card-top">
+
               <div className="job-initials">
                 {job.initials}
               </div>
@@ -250,6 +267,7 @@ const JobsCards = () => {
                     <p>{job.company}</p>
                   </div>
 
+                
                   <div className="job-type">
                     {job.type}
                   </div>
@@ -276,6 +294,7 @@ const JobsCards = () => {
 
       {jobs.length > jobsPerPage && (
         <div className="jobs-pagination">
+
           <button
             onClick={() => setPage(page - 1)}
             disabled={page === 1}
@@ -283,6 +302,7 @@ const JobsCards = () => {
             {'<'}
           </button>
 
+      
           <button
             className={page === 1 ? 'active-page' : ''}
             onClick={() => setPage(1)}
@@ -290,6 +310,7 @@ const JobsCards = () => {
             1
           </button>
 
+        
           <button
             className={page === 2 ? 'active-page' : ''}
             onClick={() => setPage(2)}
