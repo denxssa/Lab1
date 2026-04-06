@@ -7,7 +7,7 @@ import categories from "./data";
 
 const Categories = () => {
     return (
-        <section className="category-section">
+        <section className="category-section" data-aos="slide-up">
             <header className="category-section-header">
                 <h2 id="category-section-title" className="category-section-title">
                     Popular category

@@ -6,9 +6,8 @@ import { FaArrowRight } from "react-icons/fa";
 
 const FindJob = () => {
   return (
-    <section className="jobs-hero">
+    <section className="jobs-hero" data-aos="slide-up">
 
-      {/* blur circles */}
       <div className="blur-circle left"></div>
       <div className="blur-circle right"></div>
 
@@ -22,11 +21,11 @@ const FindJob = () => {
         <p>Browse 20+ open positions across top companies. Your dream job is one search away.</p>
 
         <a href="/" className="banner-btn">
-                            <span>Explore the job market</span>
-                            <span className="btn-arrow">
-                                <FaArrowRight />
-                            </span>
-                        </a>
+          <span>Explore the job market</span>
+          <span className="btn-arrow">
+            <FaArrowRight />
+          </span>
+        </a>
       </div>
     </section>
   );

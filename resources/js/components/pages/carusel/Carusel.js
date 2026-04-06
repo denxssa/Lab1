@@ -21,8 +21,8 @@ const logos = [
   
 const Carusel = () => {
     return (
-        <div>
-            <div className="trusted-by">
+        <div data-aos="slide-up">
+            <div className="trusted-by" >
                 <h2 className="trusted-by-text">Trusted By:</h2>
                 <div className="underline"></div>
             </div>

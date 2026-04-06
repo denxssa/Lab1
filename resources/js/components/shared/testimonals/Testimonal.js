@@ -27,7 +27,7 @@ const Testimonials = () => {
         />
       </h1>
 
-      <div className="embla">
+      <div className="embla" data-aos="slide-up">
         <div className="embla__viewport" ref={emblaRef}>
           <div className="embla__container">
             {Data.map((item, index) => (
