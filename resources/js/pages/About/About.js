@@ -1,8 +1,9 @@
 import React from 'react';
 import Navbar from '../../components/shared/navbar/Navbar';
-import AboutHero from '../../components/pages/aboutbanner/AboutHero';
-import AboutOverview from '../../components/pages/Aboutoverview/AboutOverview';
+import AboutHero from '../../components/pages/aboutbanner/aboutHero';
+import AboutOverview from '../../components/pages/aboutoverview/aboutOverview';
 import AboutTeam from '../../components/shared/teams/AboutTeam';
+import Footer from '../../components/shared/footer/Footer';
 
 const About = () => {
     return (
@@ -11,6 +12,7 @@ const About = () => {
             <AboutHero />
             <AboutOverview />
             <AboutTeam />
+            <Footer />
         </div>
     );
 };
