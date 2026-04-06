@@ -42,7 +42,7 @@ const Sidebar = (props) => {
         </div>
 
         <div className="nav-sidebar-link">
-          <a href="/" className="nav-anchor">
+          <a href="/companies" className="nav-anchor">
             <FaBuilding />
             Companies
           </a>

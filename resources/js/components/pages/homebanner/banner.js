@@ -12,7 +12,7 @@ const Banner = () => {
     return (
         <section className="banner">
             <div className="banner-grid" />
-                <div className="banner-inner">
+                <div className="banner-inner" data-aos="slide-up">
                     <div className="banner-main">
                         <div className="proof">
                             <div className="proof-faces">
