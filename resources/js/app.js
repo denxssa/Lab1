@@ -7,6 +7,7 @@ import Jobs from './pages/Jobs/Jobs';
 import Pricing from './pages/Pricing/Pricing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import JobDetailPage from './pages/JobDetailPage/JobDetailPage';
 
 export default function App() {
     return (
@@ -19,6 +20,7 @@ export default function App() {
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
+                    <Route path="/jobs/:id" element={<JobDetailPage />} />
                 </Routes>
             </BrowserRouter>
         </IntlProvider>
