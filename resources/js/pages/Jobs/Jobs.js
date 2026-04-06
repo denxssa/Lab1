@@ -1,9 +1,12 @@
 
 import React from 'react';
 import Navbar from '../../components/shared/navbar/Navbar';
-import JobsHero from '../../components/pages/jobsComps/JobsHero';
-import JobsFilters from '../../components/pages/jobsComps/JobsFilters';
-import JobsCards from '../../components/pages/jobsComps/JobsCards';
+import JobsHero from '../../components/pages/JobsHero/JobsHero';
+import JobsFilters from '../../components/pages/JobsFilters/JobsFilters';
+import JobsCards from '../../components/pages/JobsCards/JobsCards';
+import Footer from '../../components/shared/footer/Footer';
+
+
 
 const Jobs = () => {
   return (
@@ -12,6 +15,7 @@ const Jobs = () => {
       <JobsHero />
       <JobsFilters />
       <JobsCards />
+      <Footer/>
     </div>
   );
 };

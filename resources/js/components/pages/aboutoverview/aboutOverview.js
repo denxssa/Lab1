@@ -1,5 +1,5 @@
 import React from 'react';
-import './AboutOverview.scss';
+import './aboutOverview.scss';
 
 const stats = [
     ['2.5K+', 'Applications Processed'],

@@ -15,7 +15,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    background: #fff url('/images/linesonlyy.png') center top / cover no-repeat;
+    background: #fff url('/images/linesonlyy.png') center -140px / cover no-repeat;
 }
 
 .about-hero__wrap::before,
@@ -51,7 +51,7 @@
     margin: 0 auto;
     padding: 0 0 clamp(.6rem, 2vw, 1.4rem);
     text-align: center;
-    transform: translateY(10rem);
+    transform: translateY(5.5rem);
 }
 
 .about-hero__copy h1 {
@@ -64,7 +64,7 @@
 }
 
 .about-hero__accent {
-    color: #d9a90b;
+    color: #fdd535;
     text-decoration: underline;
     text-underline-offset: .1em;
 }
