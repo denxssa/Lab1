@@ -7,7 +7,7 @@ const featureItems = [
     'Receive updates that match your career interests',
 ];
 
-const iconColor = '#f45a2a';
+const iconColor = '#f7c842';
 
 const WalletIcon = () => (
     <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
@@ -231,7 +231,7 @@ const styles = `
     .signup-error { display: block; min-height: 22px; margin: 8px 8px 4px 18px; color: #de5a37; font-size: 0.92rem; }
     .signup-check { display: flex; align-items: flex-start; gap: 12px; margin: 8px 4px 0; color: #26221f; font-size: 0.98rem; line-height: 1.6; }
     .signup-check input { width: 18px; height: 18px; margin-top: 3px; accent-color: ${iconColor}; }
-    .signup-submit { width: 100%; margin-top: 16px; border: 0; border-radius: 999px; min-height: 58px; background: linear-gradient(90deg, #f45a2a 0%, #ff6b2d 100%); color: #fff; font-size: 1.18rem; font-weight: 700; cursor: pointer; box-shadow: 0 18px 34px rgba(244, 90, 42, 0.22); }
+    .signup-submit { width: 100%; margin-top: 16px; border: 0; border-radius: 999px; min-height: 58px; background: linear-gradient(90deg, #f7c842 0%, #ffe06b 100%); color: #342600; font-size: 1.18rem; font-weight: 700; cursor: pointer; box-shadow: 0 18px 34px rgba(247, 200, 66, 0.24); }
     .signup-feedback { min-height: 24px; margin-top: 14px; color: #1b8a44; font-weight: 600; opacity: 0; transition: opacity 0.2s ease; }
     .signup-feedback.is-visible { opacity: 1; }
     .signup-switch { margin: 24px 0 0; text-align: center; color: #7d7770; font-size: 1rem; }

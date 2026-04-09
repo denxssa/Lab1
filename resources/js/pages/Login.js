@@ -40,7 +40,7 @@ const socialItems = [
     },
 ];
 
-const iconColor = '#f45a2a';
+const iconColor = '#f7c842';
 
 const WalletIcon = () => (
     <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
@@ -236,7 +236,7 @@ const styles = `
     .login-check { display: inline-flex; align-items: center; gap: 12px; color: #24211e; font-size: 1rem; font-weight: 600; }
     .login-check input { width: 18px; height: 18px; accent-color: ${iconColor}; }
     .login-link { color: #3a47ff; text-decoration: none; font-weight: 600; }
-    .login-submit { width: 100%; border: 0; border-radius: 999px; min-height: 58px; background: linear-gradient(90deg, #f45a2a 0%, #ff6b2d 100%); color: #fff; font-size: 1.2rem; font-weight: 700; cursor: pointer; box-shadow: 0 18px 34px rgba(244, 90, 42, 0.22); }
+    .login-submit { width: 100%; border: 0; border-radius: 999px; min-height: 58px; background: linear-gradient(90deg, #f7c842 0%, #ffe06b 100%); color: #342600; font-size: 1.2rem; font-weight: 700; cursor: pointer; box-shadow: 0 18px 34px rgba(247, 200, 66, 0.24); }
     .login-feedback { min-height: 24px; margin-top: 14px; color: #1b8a44; font-weight: 600; opacity: 0; transition: opacity 0.2s ease; }
     .login-feedback.is-visible { opacity: 1; }
     .login-error { display: block; min-height: 22px; margin: 8px 8px 4px 18px; color: #de5a37; font-size: 0.92rem; }
