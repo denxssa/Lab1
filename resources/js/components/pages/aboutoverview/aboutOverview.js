@@ -1,5 +1,5 @@
 import React from 'react';
-import './AboutOverview.scss';
+import './aboutOverview.scss';
 
 const stats = [
     ['2.5K+', 'Applications Processed'],
@@ -31,7 +31,7 @@ const AboutOverview = () => {
         <section id="about-story" className="about-overview">
             <div className="about-container">
                 <div className="about-overview__grid">
-                    <article className="about-overview__panel">
+                    <article className="about-overview__panel" data-aos="fade-up" data-aos-delay="100">
                         <h3>What BeeHired Solves</h3>
                         <p>
                             Recruitment is often fragmented across email, spreadsheets, and disconnected
@@ -39,7 +39,7 @@ const AboutOverview = () => {
                             in one secure platform.
                         </p>
                     </article>
-                    <article className="about-overview__panel">
+                    <article className="about-overview__panel" data-aos="fade-up" data-aos-delay="200">
                         <h3>Why Organizations Use It</h3>
                         <p>
                             Faster processing, better visibility, and consistent candidate handling. Teams can
@@ -50,8 +50,8 @@ const AboutOverview = () => {
                 </div>
 
                 <div className="about-overview__stats">
-                    {stats.map(([value, label]) => (
-                        <div className="about-overview__stat" key={label}>
+                    {stats.map(([value, label], index) => (
+                        <div className="about-overview__stat" key={label} data-aos="fade-up" data-aos-delay={200 + (index * 80)}>
                             <strong>{value}</strong>
                             {label}
                         </div>
@@ -59,10 +59,10 @@ const AboutOverview = () => {
                 </div>
 
                 <div className="about-overview__journey">
-                    <h3>How BeeHired Works</h3>
+                    <h3 data-aos="fade-up" data-aos-delay="180">How BeeHired Works</h3>
                     <div className="about-overview__journey-grid">
-                        {steps.map((item) => (
-                            <article className="about-overview__journey-item" key={item.step}>
+                        {steps.map((item, index) => (
+                            <article className="about-overview__journey-item" key={item.step} data-aos="fade-up" data-aos-delay={240 + (index * 100)}>
                                 <b>{item.step}</b>
                                 <h4>{item.title}</h4>
                                 <p>{item.text}</p>

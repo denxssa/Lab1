@@ -49,12 +49,12 @@ const Navbar = (props) => {
         </div>
 
         <div className="nav-link companies-link">
-          <a href="/" className="inner-nav-link">Companies</a>
+          <a href="/companies" className="inner-nav-link">Companies</a>
           <div className="line"></div>
         </div>
 
         <div className="nav-link pricing-link">
-          <a href="/" className="inner-nav-link">Pricing</a>
+          <a href="/pricing" className="inner-nav-link">Pricing</a>
           <div className="line"></div>
         </div>
 

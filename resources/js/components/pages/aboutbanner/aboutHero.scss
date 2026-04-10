@@ -15,7 +15,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    background: #fff url('/images/linesonlyy.png') center top / cover no-repeat;
+    background: #fff url('../../../assets/home/linesonlyy.png') center -140px / cover no-repeat;
 }
 
 .about-hero__wrap::before,
@@ -51,15 +51,15 @@
     margin: 0 auto;
     padding: 0 0 clamp(.6rem, 2vw, 1.4rem);
     text-align: center;
-    transform: translateY(10rem);
+    transform: translateY(5.5rem);
 }
 
 .about-hero__copy h1 {
     margin: .5rem 0 .65rem;
     font-family: "Instrument Sans", system-ui, -apple-system, sans-serif;
     font-weight: 700;
-    font-size: clamp(2.1rem, 5.1vw, 4.2rem);
-    line-height: 1.02;
+    font-size: clamp(2.05rem, 5.05vw, 4.1rem);
+    line-height: 1.03;
     letter-spacing: -.02em;
 }
 
@@ -72,13 +72,13 @@
 .about-hero__copy p {
     margin: 0 auto;
     color: #5b6170;
-    font-size: 1.08rem;
-    line-height: 1.62;
+    font-size: 1.05rem;
+    line-height: 1.6;
     max-width: 58ch;
 }
 
 .about-hero__cta {
-    margin-top: 1.4rem;
+    margin-top: 1.35rem;
     display: inline-flex;
     align-items: center;
     gap: .6rem;
@@ -89,7 +89,7 @@
     padding: .8rem 1.3rem;
     font-weight: 700;
     font-size: .8rem;
-    letter-spacing: .06em;
+    letter-spacing: .055em;
     text-transform: uppercase;
     box-shadow: 0 10px 24px rgba(17, 20, 26, .22);
     transition: transform .2s ease, box-shadow .2s ease;
@@ -115,16 +115,111 @@
 
 @media (max-width: 1020px) {
     .about-hero {
-        min-height: 68vh;
+        min-height: 70vh;
+        margin-top: 77.5px;
     }
 
     .about-hero__wrap {
-        min-height: 68vh;
+        min-height: 70vh;
+        background-position: center -70px;
     }
 
     .about-hero__wrap::before,
     .about-hero__wrap::after {
         display: none;
     }
+
+    .about-hero__copy {
+        transform: translateY(1.2rem);
+    }
 }
 
+@media (max-width: 768px) {
+    .about-hero {
+        min-height: auto;
+        padding: 1.65rem 0 1.95rem;
+    }
+
+    .about-hero__wrap {
+        min-height: auto;
+        padding: 0;
+        background-position: center -70px;
+        background-size: 125% auto;
+    }
+
+    .about-hero__copy {
+        width: min(680px, calc(100% - 1.45rem));
+        transform: none;
+        padding-bottom: 0;
+    }
+
+    .about-hero__copy h1 {
+        font-size: clamp(1.62rem, 7vw, 2.2rem);
+        line-height: 1.08;
+    }
+
+    .about-hero__copy p {
+        font-size: .95rem;
+        line-height: 1.53;
+        max-width: 44ch;
+    }
+}
+
+@media (max-width: 640px) {
+    .about-hero__wrap {
+        background-size: 138% auto;
+    }
+
+    .about-hero__copy h1 {
+        font-size: clamp(1.35rem, 7.6vw, 1.9rem);
+    }
+
+    .about-hero__copy p {
+        font-size: .88rem;
+        max-width: 39ch;
+    }
+
+    .about-hero__cta {
+        font-size: .7rem;
+        padding: .72rem 1.06rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .about-hero {
+        padding: 1.25rem 0 1.7rem;
+    }
+
+    .about-hero__wrap {
+        background-size: 150% auto;
+    }
+
+    .about-hero__copy {
+        width: calc(100% - 1.05rem);
+    }
+
+    .about-hero__copy h1 {
+        margin: .35rem 0 .55rem;
+        font-size: clamp(1.2rem, 8.2vw, 1.58rem);
+        line-height: 1.12;
+    }
+
+    .about-hero__copy p {
+        font-size: .81rem;
+        line-height: 1.48;
+    }
+
+    .about-hero__cta {
+        margin-top: .95rem;
+        padding: .67rem .92rem;
+        font-size: .66rem;
+        letter-spacing: .04em;
+        gap: .4rem;
+    }
+
+    .about-hero__cta span {
+        width: 1.15rem;
+        height: 1.15rem;
+        font-size: .9rem;
+    }
+}

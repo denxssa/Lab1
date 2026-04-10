@@ -28,28 +28,28 @@ const Sidebar = (props) => {
         </div>
 
         <div className="nav-sidebar-link">
-          <a href="/" className="nav-anchor">
+          <a href="/about-us" className="nav-anchor">
             <RiInformationFill />
             About Us
           </a>
         </div>
 
         <div className="nav-sidebar-link">
-          <a href="/" className="nav-anchor">
+          <a href="/jobs" className="nav-anchor">
             <MdWork />
             Jobs
           </a>
         </div>
 
         <div className="nav-sidebar-link">
-          <a href="/" className="nav-anchor">
+          <a href="/companies" className="nav-anchor">
             <FaBuilding />
             Companies
           </a>
         </div>
 
         <div className="nav-sidebar-link">
-          <a href="/" className="nav-anchor">
+          <a href="/pricing" className="nav-anchor">
             <FaMoneyBill />
             Pricing
           </a>
