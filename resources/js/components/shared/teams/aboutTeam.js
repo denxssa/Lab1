@@ -12,10 +12,10 @@ const AboutTeam = () => {
     return (
         <section className="about-team">
             <div className="about-container">
-                <h3 className="about-team__title">Leadership Team</h3>
+                <h3 className="about-team__title" data-aos="fade-up" data-aos-delay="100">Leadership Team</h3>
                 <div className="about-team__grid">
-                    {members.map((member) => (
-                        <article className="about-team__member" key={member.name}>
+                    {members.map((member, index) => (
+                        <article className="about-team__member" key={member.name} data-aos="fade-up" data-aos-delay={180 + (index * 90)}>
                             <div className="about-team__photo" />
                             <div className="about-team__content">
                                 <h5>{member.name}</h5>
