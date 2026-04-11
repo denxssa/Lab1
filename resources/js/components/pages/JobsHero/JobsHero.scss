@@ -95,3 +95,57 @@ position: relative;
   font-weight: 600;
   white-space: nowrap;
 }
+
+
+
+@media (max-width: 768px) {
+  .jobs-hero {
+    padding-top: 110px;
+    padding-bottom: 60px;
+  }
+
+  .jobs-hero-content h1 {
+    font-size: 36px;
+  }
+
+  .blur-circle.right {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .jobs-hero {
+    padding-top: 90px;
+    padding-bottom: 40px;
+  }
+
+  .jobs-hero-content h1 {
+    font-size: 28px;
+  }
+
+  .jobs-hero-content p {
+    font-size: 14px;
+  }
+
+  .jobs-hero-search-row {
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 16px;
+  }
+
+  .jobs-search-box {
+    width: 100%;
+    max-width: 100%;
+    padding: 14px 18px;
+  }
+
+  .jobs-search-box input {
+    font-size: 15px;
+  }
+
+  .jobs-count-box {
+    width: 100%;
+    text-align: center;
+    padding: 14px 18px;
+  }
+}

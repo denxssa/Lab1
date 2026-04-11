@@ -1,21 +1,12 @@
-
 import React, { useState } from 'react';
 import './JobsFilters.scss';
 
 const JobsFilters = () => {
-  const filterButtons = [
-    'All Types',
-    'Full-time',
-    'Part-time',
-    'Contract',
-    'Internship',
-    'Remote',
-  ];
-
+  const filterButtons = ['All Types', 'Full-time', 'Part-time', 'Contract', 'Internship', 'Remote'];
   const [activeFilter, setActiveFilter] = useState('All Types');
 
   return (
-    <section className="jobs-filters">
+    <section className="jobs-filters" data-aos="fade-up" data-aos-delay="100">
       <div className="jobs-filters-top">
         <select className="jobs-select">
           <option>All (20)</option>
@@ -35,10 +26,7 @@ const JobsFilters = () => {
       </div>
 
       <div className="jobs-filters-info">
-        <p>
-          Showing <strong>15</strong> of <strong>20</strong> jobs
-        </p>
-
+        <p>Showing <strong>15</strong> of <strong>20</strong> jobs</p>
         <p>Page 1 of 2</p>
       </div>
     </section>
