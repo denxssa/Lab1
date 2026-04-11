@@ -3,10 +3,8 @@ import './JobsCards.scss';
 import { useNavigate } from 'react-router-dom';
 import jobsData from '../../../data/jobsData';
 
-
 const JobsCards = () => {
-
-  const jobsPerPage = 15;
+  const jobsPerPage = 6;
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
 
@@ -17,13 +15,14 @@ const JobsCards = () => {
   return (
     <section className="jobs-cards-section">
       <div className="jobs-cards-wrapper">
-
-        {visibleJobs.map((job) => (
+        {visibleJobs.map((job, index) => (
           <div
             key={job.id}
             className={job.featured ? 'job-card featured' : 'job-card'}
             onClick={() => navigate(`/jobs/${job.id}`)}
             style={{ cursor: 'pointer' }}
+            data-aos="fade-up"
+            data-aos-delay={index * 80}
           >
             {job.featured && <div className="featured-badge">Featured</div>}
 
