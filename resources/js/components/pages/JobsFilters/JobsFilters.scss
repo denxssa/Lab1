@@ -76,3 +76,35 @@
     }
   }
 }
+
+
+
+@media (max-width: 768px) {
+  .jobs-filters {
+    padding: 10px 20px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .jobs-filters {
+    padding: 10px 16px 20px;
+  }
+
+  .jobs-filters .jobs-filters-top .jobs-select {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .jobs-filters .jobs-filter-buttons {
+    gap: 8px;
+
+    .filter-btn {
+      font-size: 13px;
+      padding: 8px 14px;
+    }
+  }
+
+  .jobs-filters .jobs-filters-info p {
+    font-size: 14px;
+  }
+}
