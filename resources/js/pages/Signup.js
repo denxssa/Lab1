@@ -86,18 +86,18 @@ export default function Signup() {
             <style>{styles}</style>
             <div className="signup-shell">
                 <div className="signup-layout">
-                    <section className="signup-visual" aria-hidden="true">
+                    <section className="signup-visual" aria-hidden="true" data-aos="fade-up">
                         <div className="signup-visual-overlay" />
                         <div className="signup-visual-content">
-                            <div className="signup-logo-chip">
+                            <div className="signup-logo-chip" data-aos="fade-up" data-aos-delay="80">
                                 <WalletIcon />
                             </div>
-                            <div className="signup-copy">
+                            <div className="signup-copy" data-aos="fade-up" data-aos-delay="160">
                                 <p className="signup-eyebrow">Create Your Space</p>
                                 <h1>Step into your next career move.</h1>
                                 <p>Build your account, organize your search, and keep every opportunity within reach from one polished dashboard.</p>
                             </div>
-                            <div className="signup-bullets">
+                            <div className="signup-bullets" data-aos="fade-up" data-aos-delay="240">
                                 {featureItems.map((item, index) => (
                                     <div key={item} className="signup-bullet">
                                         <BulletIcon>{index + 1}</BulletIcon>
@@ -109,13 +109,13 @@ export default function Signup() {
                     </section>
 
                     <section className="signup-form-panel">
-                        <div className="signup-form-card">
-                            <div className="signup-form-head">
+                        <div className="signup-form-card" data-aos="fade-up" data-aos-delay="140">
+                            <div className="signup-form-head" data-aos="fade-up" data-aos-delay="200">
                                 <h2>Create Account</h2>
                                 <p>Create your free account and start managing your applications</p>
                             </div>
 
-                            <form className="signup-form" onSubmit={handleSubmit} noValidate>
+                            <form className="signup-form" data-aos="fade-up" data-aos-delay="280" onSubmit={handleSubmit} noValidate>
                                 <label className={`signup-field ${errors.full_name ? 'is-error' : ''}`} htmlFor="full-name">
                                     <span className="signup-field-icon"><UserIcon /></span>
                                     <input id="full-name" name="full_name" type="text" placeholder="Full name" value={values.full_name} onChange={handleChange} />
@@ -168,7 +168,7 @@ export default function Signup() {
                                 </div>
                             </form>
 
-                            <p className="signup-switch">Already an account? <a href="/login">Log in</a></p>
+                            <p className="signup-switch" data-aos="fade-up" data-aos-delay="400">Already an account? <a href="/login">Log in</a></p>
                         </div>
                     </section>
                 </div>

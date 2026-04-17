@@ -103,18 +103,18 @@ export default function Login() {
             <style>{styles}</style>
             <div className="login-shell">
                 <div className="login-layout">
-                    <section className="login-visual" aria-hidden="true">
+                    <section className="login-visual" aria-hidden="true" data-aos="fade-up">
                         <div className="login-visual-overlay" />
                         <div className="login-visual-content">
-                            <div className="login-logo-chip">
+                            <div className="login-logo-chip" data-aos="fade-up" data-aos-delay="80">
                                 <WalletIcon />
                             </div>
-                            <div className="login-copy">
+                            <div className="login-copy" data-aos="fade-up" data-aos-delay="160">
                                 <p className="login-eyebrow">Member Access</p>
                                 <h1>Hello, welcome back.</h1>
                                 <p>Sign in to continue exploring opportunities, saved listings, and your latest account activity.</p>
                             </div>
-                            <div className="login-bullets">
+                            <div className="login-bullets" data-aos="fade-up" data-aos-delay="240">
                                 {featureItems.map((item, index) => (
                                     <div key={item} className="login-bullet">
                                         <BulletIcon>{index + 1}</BulletIcon>
@@ -122,7 +122,7 @@ export default function Login() {
                                     </div>
                                 ))}
                             </div>
-                            <div className="login-social-strip">
+                            <div className="login-social-strip" data-aos="fade-up" data-aos-delay="320">
                                 {socialItems.map((item) => (
                                     <span key={item.label} className="login-social-chip" style={{ color: item.accent }}>
                                         {item.icon}
@@ -133,13 +133,13 @@ export default function Login() {
                     </section>
 
                     <section className="login-form-panel">
-                        <div className="login-form-card">
-                            <div className="login-form-head">
+                        <div className="login-form-card" data-aos="fade-up" data-aos-delay="140">
+                            <div className="login-form-head" data-aos="fade-up" data-aos-delay="200">
                                 <h2>Log In</h2>
                                 <p>Welcome back to your account</p>
                             </div>
 
-                            <form className="login-form" onSubmit={handleSubmit} noValidate>
+                            <form className="login-form" data-aos="fade-up" data-aos-delay="280" onSubmit={handleSubmit} noValidate>
                                 <label className={`login-field ${errors.email ? 'is-error' : ''}`} htmlFor="login-email">
                                     <span className="login-field-icon"><MailIcon /></span>
                                     <input id="login-email" name="email" type="email" placeholder="Email" value={values.email} onChange={handleChange} />
@@ -172,9 +172,9 @@ export default function Login() {
                                 </div>
                             </form>
 
-                            <p className="login-switch">Don't have an account? <a href="/signup">Register</a></p>
-                            <div className="login-divider">Continue with</div>
-                            <div className="login-social-actions">
+                            <p className="login-switch" data-aos="fade-up" data-aos-delay="380">Don't have an account? <a href="/signup">Register</a></p>
+                            <div className="login-divider" data-aos="fade-up" data-aos-delay="440">Continue with</div>
+                            <div className="login-social-actions" data-aos="fade-up" data-aos-delay="500">
                                 {socialItems.map((item) => (
                                     <button key={item.label} type="button" className="login-social-action">
                                         <span className="login-social-action-icon" style={{ color: item.accent }}>{item.icon}</span>
