@@ -7,6 +7,7 @@ const initialEducation = [
         id: 1,
         school: 'University of Prishtina',
         degree: 'BSc Computer Science',
+        fieldOfStudy: 'Computer Science',
         startDate: '2018-09',
         endDate: '2022-06',
         current: false,
@@ -29,6 +30,7 @@ export default function Education({ education: controlledEducation, onEducationC
             id: Date.now(),
             school: '',
             degree: '',
+            fieldOfStudy: '',
             startDate: '',
             endDate: '',
             current: false,
@@ -45,7 +47,7 @@ export default function Education({ education: controlledEducation, onEducationC
                 <div className="education__icon"><FiBookOpen size={18} /></div>
                 <div>
                     <h3 className="education__title">Education</h3>
-                    <p className="education__subtitle">Your academic background</p>
+                    <p className="education__subtitle">Add, edit, or remove your education history</p>
                 </div>
             </div>
             <div className="education__body">
@@ -69,6 +71,15 @@ export default function Education({ education: controlledEducation, onEducationC
                                     value={edu.degree}
                                     onChange={e => handleChange(edu.id, 'degree', e.target.value)}
                                     placeholder="e.g. BSc Computer Science"
+                                />
+                            </div>
+                            <div className="education__field">
+                                <label>Field of study</label>
+                                <input
+                                    type="text"
+                                    value={edu.fieldOfStudy || ''}
+                                    onChange={e => handleChange(edu.id, 'fieldOfStudy', e.target.value)}
+                                    placeholder="e.g. Computer Science"
                                 />
                             </div>
                         </div>

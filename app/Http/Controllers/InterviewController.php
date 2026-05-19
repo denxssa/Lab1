@@ -43,15 +43,47 @@ class InterviewController extends Controller
         }
 
         $candidates = User::query()
+            ->with(['candidateInterviews' => function ($query) use ($user) {
+                $query
+                    ->select([
+                        'id',
+                        'candidate_user_id',
+                        'hr_user_id',
+                        'title',
+                        'company',
+                        'application_id',
+                        'scheduled_at',
+                        'status',
+                    ])
+                    ->when($user->role === User::ROLE_HR, fn ($q) => $q->where('hr_user_id', $user->id))
+                    ->latest('scheduled_at');
+            }])
             ->where('role', User::ROLE_CANDIDATE)
             ->orderBy('name')
             ->get(['id', 'name', 'email'])
-            ->map(fn (User $u) => [
-                'id' => $u->id,
-                'name' => $u->name,
-                'email' => $u->email,
-                'initials' => $this->initials($u->name),
-            ]);
+            ->map(function (User $u) {
+                $latestInterview = $u->candidateInterviews->first();
+
+                return [
+                    'id' => $u->id,
+                    '_id' => $u->id,
+                    'userId' => $u->id,
+                    'candidate_user_id' => $u->id,
+                    'name' => $u->name,
+                    'email' => $u->email,
+                    'initials' => $this->initials($u->name),
+                    'interviews_count' => $u->candidateInterviews->count(),
+                    'latest_interview' => $latestInterview ? [
+                        'id' => $latestInterview->id,
+                        'title' => $latestInterview->title,
+                        'company' => $latestInterview->company,
+                        'application_id' => $latestInterview->application_id,
+                        'scheduled_at' => $latestInterview->scheduled_at?->toIso8601String(),
+                        'status' => $latestInterview->status,
+                    ] : null,
+                ];
+            })
+            ->values();
 
         return response()->json(['candidates' => $candidates]);
     }

@@ -41,9 +41,6 @@ function StatCard({ icon: Icon, value, label, theme }) {
             <h3 className="panel-title">Unfinished Jobs</h3>
           </header>
           <div className="empty">
-            <div className="empty-icon" aria-hidden="true">
-              <FiBriefcase />
-            </div>
             <div className="empty-title">No jobs found.</div>
           </div>
         </div>
@@ -53,9 +50,6 @@ function StatCard({ icon: Icon, value, label, theme }) {
             <h3 className="panel-title">Pending Assessments</h3>
           </header>
           <div className="empty">
-            <div className="empty-icon is-doc" aria-hidden="true">
-              <FiFileText />
-            </div>
             <div className="empty-title">No assessments found.</div>
           </div>
         </div>

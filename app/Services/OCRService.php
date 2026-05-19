@@ -90,7 +90,9 @@ class OCRService
     private function normalizeText(string $text): string
     {
         $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $text = preg_replace("/([A-Za-z])-\n([A-Za-z])/", '$1$2', $text) ?? $text;
         $text = preg_replace("/[ \t]+/", ' ', $text) ?? $text;
+        $text = preg_replace("/[ \t]*\n[ \t]*/", "\n", $text) ?? $text;
         $text = preg_replace("/\n{3,}/", "\n\n", $text) ?? $text;
 
         return trim($text);

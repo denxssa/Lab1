@@ -1,14 +1,13 @@
 import React from 'react';
-import Navbar from "../../../components/dashboard/shared/Navbar/Navbar";
+import UserDashboardLayout from '../../../components/dashboard/shared/UserDashboardLayout/UserDashboardLayout';
 import UnfinishedJobs from '../../../components/dashboard/pages/unfinished-jobs/UnfinishedJobs';
 
 
 const UnfinishedJob = () => {
     return (
-        <div className="dashboard-page">
-            <Navbar />
+        <UserDashboardLayout>
             <UnfinishedJobs/>
-        </div>
+        </UserDashboardLayout>
     );
 };
 

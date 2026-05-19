@@ -47,7 +47,7 @@ export default function WorkExperience({ experiences: controlledExperiences, onE
                 <div className="work-experience__icon"><FiBriefcase size={18} /></div>
                 <div>
                     <h3 className="work-experience__title">Work experience</h3>
-                    <p className="work-experience__subtitle">Your professional history</p>
+                    <p className="work-experience__subtitle">Add, edit, or remove your work experience</p>
                 </div>
             </div>
             <div className="work-experience__body">

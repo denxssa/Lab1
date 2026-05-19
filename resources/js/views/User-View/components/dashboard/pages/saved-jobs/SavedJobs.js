@@ -19,29 +19,31 @@ function SavedJobs() {
       <div className="jobs-list">
         {savedJobs.map((job) => (
           <section className="job-card" key={job.id}>
-            <div className="job-top">
-              <div className="job-icon">
-                <FiBriefcase />
+            <div className="job-body">
+              <div className="job-top">
+                <div className="job-icon">
+                  <FiBriefcase />
+                </div>
+                <button type="button" className="job-status saved saved-toggle" onClick={() => handleUnsave(job.id)}>
+                  <FiBookmark />
+                  <span>Saved</span>
+                </button>
               </div>
 
-              <button type="button" className="job-status saved saved-toggle" onClick={() => handleUnsave(job.id)}>
-                <FiBookmark />
-                <span>Saved</span>
-              </button>
+              <h2 className="job-name">{job.title}</h2>
+              <div className="job-details">
+                <p className="job-text"><b>{job.company}</b></p>
+                <p className="job-text"><b>Saved Date:</b> {job.date}</p>
+                <p className="job-text"><b>No of vacancies:</b> {job.vacancies}</p>
+              </div>
+
+              <a href="/" className="banner-btn2">
+                <span>View Job Description</span>
+                <span className="btn-arrow">
+                  <FaArrowRight />
+                </span>
+              </a>
             </div>
-
-            <h2 className="job-name">{job.title}</h2>
-
-            <p className="job-text"><b>{job.company}</b></p>
-            <p className="job-text"><b>Saved Date:</b> {job.date}</p>
-            <p className="job-text"><b>No of vacancies:</b> {job.vacancies}</p>
-
-            <a href="/" className="banner-btn2">
-              <span>View Job Description</span>
-              <span className="btn-arrow">
-                <FaArrowRight />
-              </span>
-            </a>
           </section>
         ))}
       </div>

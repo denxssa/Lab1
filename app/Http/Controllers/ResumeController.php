@@ -6,6 +6,7 @@ use App\Models\Resume;
 use App\Services\AIService;
 use App\Services\CVRatingService;
 use App\Services\JobMatchingService;
+use App\Services\CvProfileService;
 use App\Services\OCRService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,7 @@ class ResumeController extends Controller
         private readonly AIService $aiService,
         private readonly CVRatingService $cvRatingService,
         private readonly JobMatchingService $jobMatchingService,
+        private readonly CvProfileService $cvProfileService,
     ) {
     }
 
@@ -53,10 +55,29 @@ class ResumeController extends Controller
             'status' => Resume::STATUS_UPLOADED,
         ]);
 
-        return response()->json([
-            'message' => 'Resume uploaded successfully.',
-            'resume' => $resume->toApiArray(),
-        ], 201);
+        try {
+            $result = $this->processResume($resume);
+
+            return response()->json([
+                'message' => 'Resume uploaded and analyzed successfully.',
+                'resume' => $result->toApiArray(),
+                'parsed' => $result->parsed_data,
+                'ats' => $result->ats_rating,
+                'job_match' => $result->job_match,
+                'profile' => $this->cvProfileService->toApiPayload($result->cvProfile),
+            ], 201);
+        } catch (\Throwable $exception) {
+            $resume->update([
+                'status' => Resume::STATUS_FAILED,
+                'error_message' => $exception->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Resume uploaded, but analysis failed.',
+                'error' => $exception->getMessage(),
+                'resume' => $resume->fresh()->toApiArray(),
+            ], 422);
+        }
     }
 
     public function analyze(Request $request, Resume $resume): JsonResponse
@@ -76,26 +97,7 @@ class ResumeController extends Controller
         ]);
 
         try {
-            $result = DB::transaction(function () use ($resume) {
-                $extractedText = $this->ocrService->extractFromPdf($resume->path, 'local');
-                $parsedData = $this->aiService->parseCvText($extractedText);
-                $atsRating = $this->cvRatingService->rate($parsedData, $extractedText);
-
-                $jobs = \App\Models\JobListing::query()->where('is_active', true)->get();
-                $this->jobMatchingService->ensureJobEmbeddings($jobs);
-                $jobMatch = $this->jobMatchingService->match($parsedData);
-
-                $resume->update([
-                    'extracted_text' => $extractedText,
-                    'parsed_data' => $parsedData,
-                    'ats_rating' => $atsRating,
-                    'job_match' => $jobMatch,
-                    'status' => Resume::STATUS_COMPLETED,
-                    'analyzed_at' => now(),
-                ]);
-
-                return $resume->fresh();
-            });
+            $result = $this->processResume($resume);
 
             return response()->json([
                 'message' => 'Resume analyzed successfully.',
@@ -103,6 +105,7 @@ class ResumeController extends Controller
                 'parsed' => $result->parsed_data,
                 'ats' => $result->ats_rating,
                 'job_match' => $result->job_match,
+                'profile' => $this->cvProfileService->toApiPayload($result->cvProfile),
             ]);
         } catch (\Throwable $exception) {
             $resume->update([
@@ -171,6 +174,38 @@ class ResumeController extends Controller
             ->where('user_id', $request->user()->id)
             ->latest()
             ->first();
+    }
+
+    private function processResume(Resume $resume): Resume
+    {
+        $resume->update([
+            'status' => Resume::STATUS_PROCESSING,
+            'error_message' => null,
+        ]);
+
+        return DB::transaction(function () use ($resume) {
+            $extractedText = $this->ocrService->extractFromPdf($resume->path, 'local');
+            $parsedData = $this->aiService->parseCvText($extractedText);
+            $atsRating = $this->cvRatingService->rate($parsedData, $extractedText);
+
+            $jobs = \App\Models\JobListing::query()->where('is_active', true)->get();
+            $this->jobMatchingService->ensureJobEmbeddings($jobs);
+            $jobMatch = $this->jobMatchingService->match($parsedData);
+
+            $profile = $this->cvProfileService->syncFromParsedData($resume->user, $parsedData);
+
+            $resume->update([
+                'cv_profile_id' => $profile->id,
+                'extracted_text' => $extractedText,
+                'parsed_data' => $parsedData,
+                'ats_rating' => $atsRating,
+                'job_match' => $jobMatch,
+                'status' => Resume::STATUS_COMPLETED,
+                'analyzed_at' => now(),
+            ]);
+
+            return $resume->fresh(['cvProfile']);
+        });
     }
 
     private function authorizeResume(Request $request, Resume $resume): void

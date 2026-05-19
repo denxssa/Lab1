@@ -26,3 +26,23 @@ export function getJobMatch(resumeId, jobListingId = null) {
 
   return axios.get(`/api/resume/${resumeId}/job-match`, { params }).then((r) => r.data);
 }
+
+export function getCvProfile() {
+  return axios.get('/api/cv/profile').then((r) => r.data);
+}
+
+export function saveCvProfile(payload) {
+  return axios.put('/api/cv/profile', payload).then((r) => r.data);
+}
+
+export function getCvTemplates() {
+  return axios.get('/api/cv/templates').then((r) => r.data);
+}
+
+export function exportCvPdf(templateSlug) {
+  return axios.post(
+    '/api/cv/export/pdf',
+    { template: templateSlug },
+    { responseType: 'blob' },
+  );
+}

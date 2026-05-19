@@ -50,6 +50,11 @@ class User extends Authenticatable
         return $this->hasMany(Resume::class);
     }
 
+    public function cvProfile(): HasOne
+    {
+        return $this->hasOne(CvProfile::class);
+    }
+
     public function isHr(): bool
     {
         return $this->role === self::ROLE_HR || $this->role === self::ROLE_ADMIN;

@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomePageContentController;
 use App\Http\Controllers\HomePageSectionItemController;
 use App\Http\Controllers\InterviewController;
+use App\Http\Controllers\CvProfileController;
 use App\Http\Controllers\ResumeController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,17 @@ Route::view('/interviews/join/{token}', 'welcome');
 Route::view('/interviews/{roomName}', 'welcome');
 Route::view('/messages', 'welcome');
 Route::view('/resume', 'welcome');
+Route::view('/user-dashboard', 'welcome');
+Route::view('/user-dashboard/dashboard', 'welcome');
+Route::view('/user-dashboard/profile', 'welcome');
+Route::view('/user-dashboard/applied-jobs', 'welcome');
+Route::view('/user-dashboard/unfinished-jobs', 'welcome');
+Route::view('/user-dashboard/saved-jobs', 'welcome');
+Route::view('/user-dashboard/interviews', 'welcome');
+Route::view('/user-dashboard/interviews/join/{token}', 'welcome');
+Route::view('/user-dashboard/interviews/{roomName}', 'welcome');
+Route::view('/user-dashboard/messages', 'welcome');
+Route::view('/user-dashboard/resume', 'welcome');
 
 Route::get('/api/home-page-content', [HomePageContentController::class, 'show']);
 Route::get('/api/home-page-sections/media/{path}', [HomePageContentController::class, 'media'])->where('path', '.*');
@@ -66,6 +78,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/resume/{resume}/analyze', [ResumeController::class, 'analyze']);
     Route::get('/api/resume/{resume}/ats', [ResumeController::class, 'atsScore']);
     Route::get('/api/resume/{resume}/job-match', [ResumeController::class, 'jobMatch']);
+
+    Route::get('/api/cv/profile', [CvProfileController::class, 'show']);
+    Route::put('/api/cv/profile', [CvProfileController::class, 'update']);
+    Route::get('/api/cv/templates', [CvProfileController::class, 'templates']);
+    Route::get('/api/cv/preview/{slug}', [CvProfileController::class, 'preview']);
+    Route::post('/api/cv/export/pdf', [CvProfileController::class, 'exportPdf']);
 
     Route::get('/api/interviews', [InterviewController::class, 'index']);
     Route::get('/api/interviews/candidates', [InterviewController::class, 'candidates']);

@@ -16,12 +16,19 @@ class AuthController extends Controller
             'full_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role' => ['nullable', 'string', 'in:candidate,hr'],
         ]);
+
+        $role = $validated['role'] ?? User::ROLE_CANDIDATE;
+        if ($role === User::ROLE_HR) {
+            $role = User::ROLE_CANDIDATE;
+        }
 
         $user = User::query()->create([
             'name' => $validated['full_name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
+            'role' => $role,
         ]);
 
         Auth::login($user);

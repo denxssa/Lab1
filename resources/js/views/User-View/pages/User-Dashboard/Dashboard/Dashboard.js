@@ -1,13 +1,12 @@
 import React from 'react';
-import Navbar from "../../../components/dashboard/shared/Navbar/Navbar";
+import UserDashboardLayout from '../../../components/dashboard/shared/UserDashboardLayout/UserDashboardLayout';
 import DashboardMain from '../../../components/dashboard/pages/dashboard/Dashboard';
 
 const DashboardPage = () => {
     return (
-        <div className="dashboard-page">
-            <Navbar />
+        <UserDashboardLayout>
             <DashboardMain />
-        </div>
+        </UserDashboardLayout>
     );
 };
 

@@ -17,6 +17,7 @@ class Resume extends Model
 
     protected $fillable = [
         'user_id',
+        'cv_profile_id',
         'original_filename',
         'path',
         'file_size',
@@ -43,6 +44,11 @@ class Resume extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function cvProfile(): BelongsTo
+    {
+        return $this->belongsTo(CvProfile::class);
     }
 
     public function toApiArray(): array
