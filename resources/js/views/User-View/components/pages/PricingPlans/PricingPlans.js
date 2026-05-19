@@ -30,10 +30,12 @@ const PricingPlans = () => {
   return (
     <section className="pricing-plans">
       <div className="pricing-container pricing-plans__grid">
-        {plans.map((plan) => (
+        {plans.map((plan, i) => (
           <article
             className={`pricing-card ${plan.featured ? 'pricing-card--featured' : ''}`.trim()}
             key={plan.name}
+            data-aos="fade-up"
+            data-aos-delay={i * 100}
           >
             {plan.featured && <span className="pricing-card__badge">Most Popular</span>}
             <h3>{plan.name}</h3>
