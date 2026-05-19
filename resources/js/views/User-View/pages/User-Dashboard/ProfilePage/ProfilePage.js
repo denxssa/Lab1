@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Navbar from "../../../components/dashboard/shared/Navbar/Navbar";
+import UserDashboardLayout from '../../../components/dashboard/shared/UserDashboardLayout/UserDashboardLayout';
 import ProfileHero from '../../../components/dashboard/pages/profile-hero/ProfileHero';
 import PersonalInfo from '../../../components/dashboard/pages/personal-info/PersonalInfo';
 import AboutMe from '../../../components/dashboard/pages/about-me/AboutMe';
@@ -31,8 +31,7 @@ const ProfilePage = () => {
     };
 
     return (
-        <div className="dashboard-page">
-            <Navbar />
+        <UserDashboardLayout>
             <div className="profile-page">
                 <ProfileHero form={form} />
                 <div className="profile-page__body">
@@ -50,7 +49,7 @@ const ProfilePage = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </UserDashboardLayout>
     );
 };
 

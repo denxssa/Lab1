@@ -1,5 +1,5 @@
 import React from 'react';
-import LoginContent from '../../components/shared/Login/Login';
+import LoginContent from '../../components/shared/Login/login';
 
 const Login = () => {
     return (

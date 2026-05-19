@@ -1,14 +1,13 @@
 import React from 'react';
-import Navbar from "../../../components/dashboard/shared/Navbar/Navbar";
+import UserDashboardLayout from '../../../components/dashboard/shared/UserDashboardLayout/UserDashboardLayout';
 import Interviews from "../../../components/dashboard/shared/Interviews/Interviews";
 
 
 const Interview = () => {
     return (
-        <div className="dashboard-page">
-            <Navbar />
+        <UserDashboardLayout>
             <Interviews />
-        </div>
+        </UserDashboardLayout>
     );
 };
 

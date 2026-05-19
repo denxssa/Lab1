@@ -35,7 +35,7 @@ export default function Skills({ skills: controlledSkills, onSkillsChange }) {
                 <div className="skills__icon"><FiCode size={18} /></div>
                 <div>
                     <h3 className="skills__title">Skills</h3>
-                    <p className="skills__subtitle">Add your technical and soft skills</p>
+                    <p className="skills__subtitle">Highlight your top skills and expertise</p>
                 </div>
             </div>
             <div className="skills__body">
@@ -43,7 +43,7 @@ export default function Skills({ skills: controlledSkills, onSkillsChange }) {
                     {skills.map(skill => (
                         <span key={skill} className="skills__tag">
                             {skill}
-                            <button onClick={() => handleRemove(skill)}>
+                            <button type="button" onClick={() => handleRemove(skill)} aria-label={`Remove ${skill}`}>
                                 <FiX size={12} />
                             </button>
                         </span>
@@ -57,7 +57,7 @@ export default function Skills({ skills: controlledSkills, onSkillsChange }) {
                         onChange={e => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
                     />
-                    <button className="skills__add-btn" onClick={handleAdd}>
+                    <button type="button" className="skills__add-btn" onClick={handleAdd} aria-label="Add skill">
                         <FiPlus size={18} />
                     </button>
                 </div>

@@ -66,14 +66,26 @@ export default function App() {
                         <Route path="/signup" element={<Signup />} />
                         <Route path="/jobs/:id" element={<JobDetailPage />} />
                         <Route path="/dashboard" element={<DashboardPage/>} />
+                        <Route path="/user-dashboard" element={<DashboardPage/>} />
+                        <Route path="/user-dashboard/dashboard" element={<DashboardPage/>} />
                         <Route path="/applied-jobs" element={<AppliedJob/>} />
+                        <Route path="/user-dashboard/applied-jobs" element={<AppliedJob/>} />
                         <Route path="/unfinished-jobs" element={<UnfinishedJob/>} />
+                        <Route path="/user-dashboard/unfinished-jobs" element={<UnfinishedJob/>} />
                         <Route path="/saved-jobs" element={<SavedJob/>} />
+                        <Route path="/user-dashboard/saved-jobs" element={<SavedJob/>} />
                         <Route path="/interviews" element={<Interview/>} />
+                        <Route path="/user-dashboard/interviews" element={<Interview/>} />
                         <Route path="/interviews/join/:token" element={<Interview/>} />
+                        <Route path="/user-dashboard/interviews/join/:token" element={<Interview/>} />
+                        <Route path="/interviews/:roomName" element={<Interview/>} />
+                        <Route path="/user-dashboard/interviews/:roomName" element={<Interview/>} />
                         <Route path="/profile" element={<ProfilePage/>} />
+                        <Route path="/user-dashboard/profile" element={<ProfilePage/>} />
                         <Route path="/messages" element={<MessagesPage/>} />
+                        <Route path="/user-dashboard/messages" element={<MessagesPage/>} />
                         <Route path="/resume" element={<ResumePage />} />
+                        <Route path="/user-dashboard/resume" element={<ResumePage />} />
                     </Route>
 
                     <Route element={<HRViewLayout />}>

@@ -3,5 +3,11 @@
 /.env
 /.env.backup
 /.phpunit.result.cache
-/resources/js/context/AuthContext.js
-/resources/js/utils/authRedirect.js
+
+# Auth UI structures
+/resources/views/auth/login.blade.php
+/resources/views/auth/signup.blade.php
+/resources/js/views/User-View/pages/Login/
+/resources/js/views/User-View/pages/Signup/
+/resources/js/views/User-View/components/shared/Login/
+/resources/js/views/User-View/components/shared/Signup/

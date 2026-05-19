@@ -15,6 +15,18 @@ const EMPTY_FORM = {
   notes: '',
 };
 
+const normalizeCandidate = (candidate) => {
+  const id = candidate?.id ?? candidate?._id ?? candidate?.userId ?? candidate?.candidate_user_id;
+
+  return {
+    ...candidate,
+    id: id ? String(id) : '',
+    userId: id ? Number(id) : null,
+    name: candidate?.name || candidate?.full_name || candidate?.email || 'Unnamed candidate',
+    email: candidate?.email || '',
+  };
+};
+
 const InterviewScheduleModal = ({ interview, onClose, onSave }) => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [candidates, setCandidates] = useState([]);
@@ -23,8 +35,13 @@ const InterviewScheduleModal = ({ interview, onClose, onSave }) => {
 
   useEffect(() => {
     listCandidates()
-      .then((data) => setCandidates(data.candidates || []))
-      .catch(() => setCandidates([]));
+      .then((data) => {
+        setCandidates((data.candidates || []).map(normalizeCandidate).filter((c) => c.id));
+      })
+      .catch((err) => {
+        setCandidates([]);
+        setError(err?.response?.data?.message || 'Unable to load candidates.');
+      });
   }, []);
 
   useEffect(() => {
@@ -86,6 +103,12 @@ const InterviewScheduleModal = ({ interview, onClose, onSave }) => {
       notes: form.notes.trim() || null,
     };
 
+    if (!payload.candidate_user_id) {
+      setError('Select a candidate before creating the interview.');
+      setLoading(false);
+      return;
+    }
+
     try {
       await onSave(payload, interview?.id);
       onClose();
@@ -122,7 +145,7 @@ const InterviewScheduleModal = ({ interview, onClose, onSave }) => {
               <option value="">Select candidate</option>
               {candidates.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name} ({c.email})
+                  {c.name}{c.email ? ` (${c.email})` : ''}
                 </option>
               ))}
             </select>

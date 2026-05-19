@@ -36,40 +36,40 @@ const Navbar = (props) => {
 
       <div className="nav-links">
         <div className="nav-link home-link">
-          <a href="/dashboard" className="inner-nav-link">Dashboard</a>
+          <a href="/user-dashboard/dashboard" className="inner-nav-link">Dashboard</a>
           <div className="line"></div>
         </div>
 
         <div className="nav-link jobs-link">
-          <a href="/resume" className="inner-nav-link">Resume</a>
+          <a href="/user-dashboard/resume" className="inner-nav-link">Resume</a>
           <div className="line"></div>
         </div>
 
         <div className="nav-link jobs-link">
-          <a href="/profile" className="inner-nav-link">Profile</a>
+          <a href="/user-dashboard/profile" className="inner-nav-link">Profile</a>
           <div className="line"></div>
         </div>
 
         <div className="nav-link jobs-dropdown">
-          <a href="/applied-jobs" className="inner-nav-link">
+          <a href="/user-dashboard/applied-jobs" className="inner-nav-link">
             Jobs
             <TbTriangleInvertedFilled className="dropdown-caret2"/>
           </a>
           <div className="line"></div>
           <div className="jobs-dropdown-menu">
-            <a href="/applied-jobs" className="dropdown-item">Applied Jobs</a>
-            <a href="/unfinished-jobs" className="dropdown-item">Unfinished Jobs</a>
-            <a href="/saved-jobs" className="dropdown-item">Saved Jobs</a>
+            <a href="/user-dashboard/applied-jobs" className="dropdown-item">Applied Jobs</a>
+            <a href="/user-dashboard/unfinished-jobs" className="dropdown-item">Unfinished Jobs</a>
+            <a href="/user-dashboard/saved-jobs" className="dropdown-item">Saved Jobs</a>
           </div>
         </div>
 
         <div className="nav-link pricing-link">
-          <a href="/interviews" className="inner-nav-link">Interviews</a>
+          <a href="/user-dashboard/interviews" className="inner-nav-link">Interviews</a>
           <div className="line"></div>
         </div>
 
         <div className="nav-link contact-us">
-          <a href="/messages" className="inner-nav-link">Messages</a>
+          <a href="/user-dashboard/messages" className="inner-nav-link">Messages</a>
           <div className="line"></div>
         </div>
       </div>

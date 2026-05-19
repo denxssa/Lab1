@@ -56,7 +56,6 @@ const Interviews = () => {
     <main className="interviews">
       <section className="interviews__header">
         <div>
-          <span className="interviews__eyebrow">Video interviews</span>
           <h1>Interviews</h1>
           <p>Your scheduled interviews with secure join links.</p>
         </div>

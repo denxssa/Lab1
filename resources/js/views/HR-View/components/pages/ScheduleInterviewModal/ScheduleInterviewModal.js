@@ -2,6 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { createInterview, listCandidates } from '../../../../../api/interviewsApi';
 import './ScheduleInterviewModal.scss';
 
+const normalizeCandidate = (candidate) => {
+  const id = candidate?.id ?? candidate?._id ?? candidate?.userId ?? candidate?.candidate_user_id;
+
+  return {
+    ...candidate,
+    id: id ? String(id) : '',
+    userId: id ? Number(id) : null,
+    email: candidate?.email || '',
+  };
+};
+
 const ScheduleInterviewModal = ({ candidate, onClose, onScheduled }) => {
   const [form, setForm] = useState({
     date: '',
@@ -17,8 +28,13 @@ const ScheduleInterviewModal = ({ candidate, onClose, onScheduled }) => {
 
   useEffect(() => {
     listCandidates()
-      .then((data) => setRegisteredCandidates(data.candidates || []))
-      .catch(() => setRegisteredCandidates([]));
+      .then((data) => {
+        setRegisteredCandidates((data.candidates || []).map(normalizeCandidate).filter((c) => c.id));
+      })
+      .catch((err) => {
+        setRegisteredCandidates([]);
+        setError(err?.response?.data?.message || 'Unable to load registered candidates.');
+      });
   }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -30,11 +46,13 @@ const ScheduleInterviewModal = ({ candidate, onClose, onScheduled }) => {
   };
 
   const resolveCandidateUserId = () => {
-    if (candidate?.userId) return candidate.userId;
+    const directId = candidate?.userId ?? candidate?.candidate_user_id ?? candidate?._id;
+    if (directId) return Number(directId);
+
     const match = registeredCandidates.find(
       (c) => c.email?.toLowerCase() === candidate?.email?.toLowerCase(),
     );
-    return match?.id || null;
+    return match?.userId || null;
   };
 
   const handleSubmit = async (e) => {

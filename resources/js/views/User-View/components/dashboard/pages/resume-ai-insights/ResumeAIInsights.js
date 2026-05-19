@@ -2,6 +2,20 @@ import React from 'react';
 import { FiAlertCircle, FiCheckCircle, FiTrendingUp, FiZap } from 'react-icons/fi';
 import './ResumeAIInsights.scss';
 
+const SCORE_TIERS = [
+  { label: 'Beginner', max: 25 },
+  { label: 'Basic', max: 50 },
+  { label: 'Good', max: 75 },
+  { label: 'Excellent', max: 100 },
+];
+
+function getScoreTier(score) {
+  if (score >= 76) return 3;
+  if (score >= 51) return 2;
+  if (score >= 26) return 1;
+  return 0;
+}
+
 export default function ResumeAIInsights({
   loading,
   loadingMessage,
@@ -33,31 +47,50 @@ export default function ResumeAIInsights({
 
   const score = ats?.score ?? 0;
   const matchPercentage = jobMatch?.match_percentage ?? 0;
+  const activeTier = getScoreTier(score);
 
   return (
     <section className="resume-ai" aria-label="AI resume insights">
-      <div className="resume-ai__score-row">
-        <div className="resume-ai__score-card">
-          <span className="resume-ai__label">ATS Score</span>
-          <div className="resume-ai__score-ring" style={{ '--score': score }}>
+      <div className="resume-ai__hero">
+        <div className="resume-ai__score-main">
+          <span className="resume-ai__label">Resume score</span>
+          <div className="resume-ai__score-value">
             <strong>{score}</strong>
-            <span>/ 100</span>
+            <span>%</span>
+          </div>
+          <div className="resume-ai__tier-bar" aria-hidden="true">
+            {SCORE_TIERS.map((tier, index) => (
+              <span
+                key={tier.label}
+                className={`resume-ai__tier-segment${index <= activeTier ? ' resume-ai__tier-segment--filled' : ''}`}
+              />
+            ))}
+          </div>
+          <div className="resume-ai__tier-labels">
+            {SCORE_TIERS.map((tier) => (
+              <span key={tier.label}>{tier.label}</span>
+            ))}
           </div>
         </div>
 
-        <div className="resume-ai__score-card">
-          <span className="resume-ai__label">Best job match</span>
-          {jobMatch?.matched_job && (
-            <p className="resume-ai__job-title">
-              {jobMatch.matched_job.title}
-              <span> · {jobMatch.matched_job.company}</span>
-            </p>
-          )}
-          <div className="resume-ai__progress">
-            <div className="resume-ai__progress-bar" style={{ width: `${matchPercentage}%` }} />
+        {jobMatch && (
+          <div className="resume-ai__match-block">
+            <span className="resume-ai__label">Best job match</span>
+            {jobMatch.matched_job && (
+              <p className="resume-ai__job-title">
+                {jobMatch.matched_job.title}
+                <span> · {jobMatch.matched_job.company}</span>
+              </p>
+            )}
+            <div className="resume-ai__progress">
+              <div
+                className="resume-ai__progress-bar"
+                style={{ width: `${matchPercentage}%` }}
+              />
+            </div>
+            <span className="resume-ai__match-value">{matchPercentage}% match</span>
           </div>
-          <span className="resume-ai__match-value">{matchPercentage}% match</span>
-        </div>
+        )}
       </div>
 
       <div className="resume-ai__grid">

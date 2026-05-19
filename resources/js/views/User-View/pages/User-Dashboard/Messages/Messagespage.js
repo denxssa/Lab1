@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Navbar from "../../../components/dashboard/shared/Navbar/Navbar";
+import UserDashboardLayout from '../../../components/dashboard/shared/UserDashboardLayout/UserDashboardLayout';
 import ConversationList from '../../../components/dashboard/pages/conversation-list/ConversationList';
 import ChatWindow from '../../../components/dashboard/pages/chat-window/ChatWindow';
 
@@ -7,8 +7,7 @@ const MessagesPage = () => {
     const [selected, setSelected] = useState(null);
 
     return (
-        <div className="dashboard-page">
-            <Navbar />
+        <UserDashboardLayout>
             <div className="messages-page">
                 <div className="messages-page__body">
                     <div className="messages-page__left">
@@ -19,7 +18,7 @@ const MessagesPage = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </UserDashboardLayout>
     );
 };
 
