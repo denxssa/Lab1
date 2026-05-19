@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class JobListing extends Model
 {
     protected $fillable = [
+        'user_id',
         'title',
         'company',
         'location',
@@ -16,6 +17,7 @@ class JobListing extends Model
         'description',
         'embedding',
         'is_active',
+        'status',
     ];
 
     protected function casts(): array

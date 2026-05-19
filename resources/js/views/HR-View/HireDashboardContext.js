@@ -5,6 +5,9 @@ export const HireDashboardContext = createContext(null);
 
 export const HireDashboardProvider = ({ children }) => {
   const [apps, setApps] = useState(applicationsData);
+  const [listingsVersion, setListingsVersion] = useState(0);
+
+  const refreshListings = () => setListingsVersion((v) => v + 1);
 
   const shortlistedCandidates = useMemo(
     () => apps.filter((a) => a.status === 'Shortlisted'),
@@ -12,7 +15,14 @@ export const HireDashboardProvider = ({ children }) => {
   );
 
   return (
-    <HireDashboardContext.Provider value={{ apps, setApps, shortlistedCandidates }}>
+    <HireDashboardContext.Provider value={{
+      apps,
+      setApps,
+      shortlistedCandidates,
+      listingsVersion,
+      refreshListings,
+    }}
+    >
       {children}
     </HireDashboardContext.Provider>
   );

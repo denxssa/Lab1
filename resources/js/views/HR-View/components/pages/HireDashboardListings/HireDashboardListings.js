@@ -1,17 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { FaMapMarkerAlt, FaBriefcase, FaClock, FaUsers, FaPause, FaPlay, FaTimes, FaEllipsisV } from 'react-icons/fa';
 import './HireDashboardListings.scss';
-import jobsData from '../../../../User-View/components/pages/JobsCards/jobsData';
-
-const seed = jobsData.slice(0, 6).map((job, i) => ({
-  ...job,
-  status:      ['active', 'active', 'active', 'paused', 'active', 'closed'][i],
-  applications: [12, 7, 24, 5, 18, 9][i],
-  reviewing:    [6, 4, 10, 3, 9, 5][i],
-  shortlisted:  [3, 2, 6, 1, 5, 2][i],
-  daysLeft:     [6, 12, 3, 20, 8, 0][i],
-  postedDays:   [2, 5, 1, 8, 3, 14][i],
-}));
+import { listJobListingsForHr, mapJobListingForHr, updateJobListingStatus } from '../../../../../api/jobsApi';
+import { useHireDashboard } from '../../../HireDashboardContext';
 
 const tabs = ['All', 'Active', 'Paused', 'Closed'];
 
@@ -23,11 +14,38 @@ const expiryClass = (days, status) => {
 };
 
 const HireDashboardListings = () => {
-  const [listings,  setListings]  = useState(seed);
+  const { listingsVersion } = useHireDashboard();
+  const [listings,  setListings]  = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('All');
   const [openMenu,  setOpenMenu]  = useState(null);
 
-  // close kebab on outside click
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await listJobListingsForHr();
+        if (!cancelled) {
+          setListings((data.jobs || []).map(mapJobListingForHr));
+        }
+      } catch {
+        if (!cancelled) setError('Could not load listings. Log in as HR to manage jobs.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [listingsVersion]);
+
   useEffect(() => {
     if (openMenu === null) return;
     const handler = (e) => {
@@ -37,8 +55,16 @@ const HireDashboardListings = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, [openMenu]);
 
-  const setStatus = (id, status) =>
-    setListings((prev) => prev.map((l) => l.id === id ? { ...l, status } : l));
+  const setStatus = async (id, status) => {
+    const previous = listings;
+    setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
+    setOpenMenu(null);
+    try {
+      await updateJobListingStatus(id, status);
+    } catch {
+      setListings(previous);
+    }
+  };
 
   const counts = tabs.reduce((acc, t) => {
     acc[t] = t === 'All' ? listings.length : listings.filter((l) => l.status === t.toLowerCase()).length;
@@ -73,12 +99,15 @@ const HireDashboardListings = () => {
           </div>
         </div>
 
+        {loading && <p className="hire-listings-empty">Loading listings…</p>}
+        {error && !loading && <p className="hire-listings-empty">{error}</p>}
+
         {/* ── Grid ── */}
-        {filtered.length === 0 ? (
+        {!loading && !error && filtered.length === 0 ? (
           <div className="hire-listings-empty">
             <p>No {activeTab.toLowerCase()} listings.</p>
           </div>
-        ) : (
+        ) : !loading && !error ? (
           <div className="hire-listings-grid">
             {filtered.map((job) => {
               const pct = job.applications > 0
@@ -196,7 +225,7 @@ const HireDashboardListings = () => {
               );
             })}
           </div>
-        )}
+        ) : null}
 
       </div>
     </section>

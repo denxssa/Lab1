@@ -1,16 +1,64 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './JobsCards.scss';
 import { useNavigate } from 'react-router-dom';
-import jobsData from './jobsData';
+import { listJobListings, mapJobListing } from '../../../../../api/jobsApi';
 
 const JobsCards = () => {
   const jobsPerPage = 6;
   const [page, setPage] = useState(1);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await listJobListings();
+        if (!cancelled) {
+          setJobs((data.jobs || []).map(mapJobListing));
+        }
+      } catch {
+        if (!cancelled) setError('Could not load jobs. Please try again later.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const start = (page - 1) * jobsPerPage;
-  const visibleJobs = jobsData.slice(start, start + jobsPerPage);
-  const totalPages = Math.ceil(jobsData.length / jobsPerPage);
+  const visibleJobs = jobs.slice(start, start + jobsPerPage);
+  const totalPages = Math.ceil(jobs.length / jobsPerPage) || 1;
+
+  if (loading) {
+    return (
+      <section className="jobs-cards-section">
+        <div className="jobs-cards-wrapper">
+          <p>Loading jobs…</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="jobs-cards-section">
+        <div className="jobs-cards-wrapper">
+          <p>{error}</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="jobs-cards-section">
@@ -55,11 +103,18 @@ const JobsCards = () => {
         ))}
       </div>
 
-      {jobsData.length > jobsPerPage && (
+      {jobs.length > jobsPerPage && (
         <div className="jobs-pagination">
           <button onClick={() => setPage(page - 1)} disabled={page === 1}>{'<'}</button>
-          <button className={page === 1 ? 'active-page' : ''} onClick={() => setPage(1)}>1</button>
-          <button className={page === 2 ? 'active-page' : ''} onClick={() => setPage(2)}>2</button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+            <button
+              key={pageNum}
+              className={page === pageNum ? 'active-page' : ''}
+              onClick={() => setPage(pageNum)}
+            >
+              {pageNum}
+            </button>
+          ))}
           <button onClick={() => setPage(page + 1)} disabled={page === totalPages}>{'>'}</button>
         </div>
       )}

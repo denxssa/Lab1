@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomePageContentController;
 use App\Http\Controllers\HomePageSectionItemController;
 use App\Http\Controllers\InterviewController;
+use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\CvProfileController;
 use App\Http\Controllers\ResumeController;
 use Illuminate\Support\Facades\Route;
@@ -67,12 +68,18 @@ Route::post('/api/admin/home-page-sections/{sectionKey}/items', [HomePageSection
 Route::put('/api/admin/home-page-section-items/{item}', [HomePageSectionItemController::class, 'update']);
 Route::delete('/api/admin/home-page-section-items/{item}', [HomePageSectionItemController::class, 'destroy']);
 
+Route::get('/api/job-listings', [JobListingController::class, 'index']);
+
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth');
 Route::get('/auth/user', [AuthController::class, 'user'])->middleware('auth');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/api/job-listings/manage', [JobListingController::class, 'manage']);
+    Route::post('/api/job-listings', [JobListingController::class, 'store']);
+    Route::put('/api/job-listings/{jobListing}', [JobListingController::class, 'update']);
+
     Route::get('/api/resume', [ResumeController::class, 'show']);
     Route::post('/api/resume/upload', [ResumeController::class, 'upload']);
     Route::post('/api/resume/{resume}/analyze', [ResumeController::class, 'analyze']);
@@ -93,3 +100,5 @@ Route::middleware('auth')->group(function () {
     Route::put('/api/interviews/{interview}', [InterviewController::class, 'update']);
     Route::delete('/api/interviews/{interview}', [InterviewController::class, 'destroy']);
 });
+
+Route::get('/api/job-listings/{jobListing}', [JobListingController::class, 'show']);

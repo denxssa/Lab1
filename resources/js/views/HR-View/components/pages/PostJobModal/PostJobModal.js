@@ -1,22 +1,45 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../../../../context/AuthContext';
+import { createJobListing } from '../../../../../api/jobsApi';
 import './PostJobModal.scss';
 
-const PostJobModal = ({ onClose }) => {
-  const company = localStorage.getItem('user_company') || 'Your Company';
+const PostJobModal = ({ onClose, onPosted }) => {
+  const { user } = useAuth();
+  const company = localStorage.getItem('user_company') || user?.name || 'Your Company';
   const initials = company.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
-  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({ title: '', location: '', type: 'Full-time', salary: '', tags: '' });
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
+    setSubmitting(true);
+    setError('');
+
+    const tags = form.tags.split(',').map((t) => t.trim()).filter(Boolean);
+
+    try {
+      await createJobListing({
+        title: form.title,
+        company,
+        location: form.location,
+        type: form.type,
+        salary: form.salary,
+        tags,
+      });
+      onPosted?.();
       onClose();
-      setSubmitted(false);
       setForm({ title: '', location: '', type: 'Full-time', salary: '', tags: '' });
-    }, 1200);
+    } catch (err) {
+      const message = err.response?.data?.message
+        || err.response?.data?.errors
+        || 'Could not post job. Make sure you are logged in as HR.';
+      setError(typeof message === 'string' ? message : 'Could not post job. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const tagList = form.tags.split(',').map((t) => t.trim()).filter(Boolean);
@@ -25,11 +48,10 @@ const PostJobModal = ({ onClose }) => {
     <div className="pjm-overlay" onClick={onClose}>
       <div className="pjm-modal" onClick={(e) => e.stopPropagation()}>
 
-        {/* ── Left: Form ── */}
         <div className="pjm-form-panel">
           <div className="pjm-header">
             <h2>Post a New Job</h2>
-            <button className="pjm-close" onClick={onClose}>✕</button>
+            <button className="pjm-close" type="button" onClick={onClose}>✕</button>
           </div>
           <form className="pjm-form" onSubmit={handleSubmit}>
             <div className="pjm-field">
@@ -58,13 +80,13 @@ const PostJobModal = ({ onClose }) => {
               <label>Skills / Tags <span className="pjm-hint">(comma separated)</span></label>
               <input name="tags" value={form.tags} onChange={handleChange} placeholder="e.g. React, TypeScript, Node.js" />
             </div>
-            <button type="submit" className="pjm-submit">
-              {submitted ? '✓ Posted!' : 'Post Job'}
+            {error && <p className="pjm-error">{error}</p>}
+            <button type="submit" className="pjm-submit" disabled={submitting}>
+              {submitting ? 'Posting…' : 'Post Job'}
             </button>
           </form>
         </div>
 
-        {/* ── Right: Live Preview ── */}
         <div className="pjm-preview-panel">
           <p className="pjm-preview-label">Live Preview</p>
           <div className="pjm-preview-card">

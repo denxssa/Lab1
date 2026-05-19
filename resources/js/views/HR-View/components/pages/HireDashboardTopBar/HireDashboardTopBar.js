@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import './HireDashboardTopBar.scss';
 import PostJobModal from '../PostJobModal/PostJobModal';
+import { useHireDashboard } from '../../../HireDashboardContext';
 
 const PAGE_NAMES = {
   '/hire-dashboard':                  'Overview',
@@ -31,6 +32,7 @@ const BellIcon = () => (
 );
 
 const HireDashboardTopBar = () => {
+  const { refreshListings } = useHireDashboard();
   const location   = useLocation();
   const [notifs,       setNotifs]       = useState(SEED_NOTIFS);
   const [bellOpen,     setBellOpen]     = useState(false);
@@ -110,7 +112,12 @@ const HireDashboardTopBar = () => {
         </div>
       </div>
 
-      {showPostJob && <PostJobModal onClose={() => setShowPostJob(false)} />}
+      {showPostJob && (
+        <PostJobModal
+          onClose={() => setShowPostJob(false)}
+          onPosted={refreshListings}
+        />
+      )}
     </>
   );
 };

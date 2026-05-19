@@ -1,25 +1,73 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import JobDetail from '../../components/pages/JobDetail/JobDetail';
 import Navbar from '../../components/shared/navbar/Navbar';
 import Footer from '../../components/shared/footer/Footer';
-import jobsData from '../../components/pages/JobsCards/jobsData';
-
+import { getJobListing, listJobListings, mapJobListing } from '../../../../api/jobsApi';
 
 const JobDetailPage = () => {
-
   const { id } = useParams();
   const navigate = useNavigate();
+  const [job, setJob] = useState(null);
+  const [relatedJobs, setRelatedJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const job = jobsData.find((j) => j.id === Number(id));
+  useEffect(() => {
+    let cancelled = false;
 
-  if (!job) {
-    return <p>Job not found.</p>;
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const [jobRes, listRes] = await Promise.all([
+          getJobListing(id),
+          listJobListings(),
+        ]);
+
+        if (cancelled) return;
+
+        const mapped = mapJobListing(jobRes.job);
+        const allJobs = (listRes.jobs || []).map(mapJobListing);
+        setJob(mapped);
+        setRelatedJobs(
+          allJobs
+            .filter((j) => j.id !== mapped.id && j.type === mapped.type)
+            .slice(0, 3),
+        );
+      } catch {
+        if (!cancelled) setError('Job not found.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div>
+        <Navbar />
+        <p style={{ padding: '2rem' }}>Loading job…</p>
+        <Footer />
+      </div>
+    );
   }
 
-  const relatedJobs = jobsData
-    .filter((j) => j.id !== job.id && j.type === job.type)
-    .slice(0, 3);
+  if (error || !job) {
+    return (
+      <div>
+        <Navbar />
+        <p style={{ padding: '2rem' }}>{error || 'Job not found.'}</p>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div>
