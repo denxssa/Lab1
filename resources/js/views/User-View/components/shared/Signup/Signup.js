@@ -1,10 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaFacebookF, FaGoogle, FaXTwitter } from 'react-icons/fa6';
-import { FiLock, FiMail, FiUser } from 'react-icons/fi';
+import { FiBriefcase, FiLock, FiMail, FiUser } from 'react-icons/fi';
 import { useAuth } from '../../../../../context/AuthContext';
 import { getHomePathForRole } from '../../../../../utils/authRedirect';
 import './Signup.scss';
+
+const ROLES = [
+    {
+        value: 'candidate',
+        label: 'Job Seeker',
+        description: 'Browse jobs, track applications, and build your CV.',
+        icon: <FiUser />,
+    },
+    {
+        value: 'hr',
+        label: 'Hire Team',
+        description: 'Post jobs, manage applicants, and schedule interviews.',
+        icon: <FiBriefcase />,
+    },
+];
 
 const socialItems = [
     { label: 'Google', icon: <FaGoogle /> },
@@ -64,6 +79,7 @@ function mapServerErrors(error) {
 export default function SignupContent() {
     const navigate = useNavigate();
     const { register, user, loading: authLoading } = useAuth();
+    const [role, setRole] = useState('candidate');
     const [values, setValues] = useState({
         full_name: '',
         email: '',
@@ -114,6 +130,7 @@ export default function SignupContent() {
                 email: values.email.trim(),
                 password: values.password,
                 password_confirmation: values.password_confirmation,
+                role,
             });
             navigate(getHomePathForRole(registeredUser?.role), { replace: true });
         } catch (error) {
@@ -130,6 +147,22 @@ export default function SignupContent() {
                     <p className="su-tag">Create Account</p>
                     <h1>Sign up</h1>
                     <p className="su-sub">Create your account and keep your applications, saved jobs, and updates in one place.</p>
+                </div>
+
+                <div className="su-roles">
+                    {ROLES.map((r) => (
+                        <button
+                            key={r.value}
+                            type="button"
+                            className={`su-role ${role === r.value ? 'active' : ''}`}
+                            onClick={() => setRole(r.value)}
+                            disabled={submitting}
+                        >
+                            <span className="su-role-icon">{r.icon}</span>
+                            <span className="su-role-label">{r.label}</span>
+                            <span className="su-role-desc">{r.description}</span>
+                        </button>
+                    ))}
                 </div>
 
                 <form className="su-form" onSubmit={onSubmit} noValidate>
