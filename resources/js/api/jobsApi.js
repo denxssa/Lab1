@@ -1,5 +1,20 @@
 import axios from 'axios';
 
+function normalizeTags(tags) {
+    if (Array.isArray(tags)) {
+        return tags;
+    }
+    if (typeof tags === 'string' && tags.trim()) {
+        try {
+            const parsed = JSON.parse(tags);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
+    }
+    return [];
+}
+
 export function listJobListings() {
     return axios.get('/api/job-listings').then((response) => response.data);
 }
@@ -49,7 +64,7 @@ export function mapJobListing(job, index = 0) {
         time,
         type: job.type || 'Full-time',
         featured: index < 2,
-        tags: Array.isArray(job.tags) ? job.tags : [],
+        tags: normalizeTags(job.tags),
         description: job.description || '',
     };
 }

@@ -5,16 +5,25 @@ import ChatWindow from '../../../components/dashboard/pages/chat-window/ChatWind
 
 const MessagesPage = () => {
     const [selected, setSelected] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const handleMessageSent = () => {
+        setRefreshKey((k) => k + 1);
+    };
 
     return (
         <UserDashboardLayout>
             <div className="messages-page">
                 <div className="messages-page__body">
                     <div className="messages-page__left">
-                        <ConversationList selected={selected} onSelect={setSelected} />
+                        <ConversationList
+                            selected={selected}
+                            onSelect={setSelected}
+                            refreshKey={refreshKey}
+                        />
                     </div>
                     <div className="messages-page__right">
-                        <ChatWindow conversation={selected} />
+                        <ChatWindow conversation={selected} onMessageSent={handleMessageSent} />
                     </div>
                 </div>
             </div>
