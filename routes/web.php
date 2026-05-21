@@ -7,6 +7,8 @@ use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\CvProfileController;
 use App\Http\Controllers\ResumeController;
+use App\Http\Controllers\PricingPlanController;
+use App\Http\Controllers\TeamMemberController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,6 +30,8 @@ Route::view('/admin-dashboard/users', 'welcome');
 Route::view('/admin-dashboard/reports', 'welcome');
 Route::view('/admin-dashboard/logs', 'welcome');
 Route::view('/admin-dashboard/settings', 'welcome');
+Route::view('/admin-dashboard/team', 'welcome');
+Route::view('/admin-dashboard/pricing', 'welcome');
 Route::view('/about-us', 'welcome');
 Route::view('/companies', 'welcome');
 Route::view('/companies/{any}', 'welcome')->where('any', '.*');
@@ -58,6 +62,16 @@ Route::view('/user-dashboard/interviews/join/{token}', 'welcome');
 Route::view('/user-dashboard/interviews/{roomName}', 'welcome');
 Route::view('/user-dashboard/messages', 'welcome');
 Route::view('/user-dashboard/resume', 'welcome');
+
+Route::get('/api/pricing-plans', [PricingPlanController::class, 'index']);
+Route::post('/api/pricing-plans', [PricingPlanController::class, 'store']);
+Route::post('/api/pricing-plans/{id}', [PricingPlanController::class, 'update']);
+Route::delete('/api/pricing-plans/{id}', [PricingPlanController::class, 'destroy']);
+
+Route::get('/api/team-members', [TeamMemberController::class, 'index']);
+Route::post('/api/team-members', [TeamMemberController::class, 'store']);
+Route::post('/api/team-members/{id}', [TeamMemberController::class, 'update']);
+Route::delete('/api/team-members/{id}', [TeamMemberController::class, 'destroy']);
 
 Route::get('/api/home-page-content', [HomePageContentController::class, 'show']);
 Route::get('/api/home-page-sections/media/{path}', [HomePageContentController::class, 'media'])->where('path', '.*');
