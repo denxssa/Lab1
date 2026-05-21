@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomePageContentController;
 use App\Http\Controllers\HomePageSectionItemController;
 use App\Http\Controllers\InterviewController;
@@ -30,6 +31,7 @@ Route::view('/admin-dashboard/users', 'welcome');
 Route::view('/admin-dashboard/reports', 'welcome');
 Route::view('/admin-dashboard/logs', 'welcome');
 Route::view('/admin-dashboard/settings', 'welcome');
+Route::view('/admin-dashboard/messages', 'welcome');
 Route::view('/admin-dashboard/team', 'welcome');
 Route::view('/admin-dashboard/pricing', 'welcome');
 Route::view('/about-us', 'welcome');
@@ -83,13 +85,16 @@ Route::put('/api/admin/home-page-section-items/{item}', [HomePageSectionItemCont
 Route::delete('/api/admin/home-page-section-items/{item}', [HomePageSectionItemController::class, 'destroy']);
 
 Route::get('/api/job-listings', [JobListingController::class, 'index']);
+Route::post('/api/contact', [ContactController::class, 'store']);
+Route::get('/api/admin/contact-submissions', [ContactController::class, 'index'])->middleware('auth:api');
 
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
-Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth');
-Route::get('/auth/user', [AuthController::class, 'user'])->middleware('auth');
+Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:api');
+Route::post('/auth/refresh', [AuthController::class, 'refresh'])->middleware('auth:api');
+Route::get('/auth/user', [AuthController::class, 'user'])->middleware('auth:api');
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:api')->group(function () {
     Route::get('/api/job-listings/manage', [JobListingController::class, 'manage']);
     Route::post('/api/job-listings', [JobListingController::class, 'store']);
     Route::put('/api/job-listings/{jobListing}', [JobListingController::class, 'update']);

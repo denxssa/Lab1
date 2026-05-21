@@ -14,73 +14,74 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'full_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['nullable', 'string', 'in:candidate,hr'],
+            'email'     => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password'  => ['required', 'string', 'min:8', 'confirmed'],
+            'role'      => ['nullable', 'string', 'in:candidate,hr'],
         ]);
 
-        $role = $validated['role'] ?? User::ROLE_CANDIDATE;
-        if ($role === User::ROLE_HR) {
-            $role = User::ROLE_CANDIDATE;
-        }
+        $role = in_array($validated['role'] ?? '', [User::ROLE_CANDIDATE, User::ROLE_HR])
+            ? $validated['role']
+            : User::ROLE_CANDIDATE;
 
         $user = User::query()->create([
-            'name' => $validated['full_name'],
-            'email' => $validated['email'],
+            'name'     => $validated['full_name'],
+            'email'    => $validated['email'],
             'password' => $validated['password'],
-            'role' => $role,
+            'role'     => $role,
         ]);
 
-        Auth::login($user);
-        $request->session()->regenerate();
+        $token = Auth::guard('api')->login($user);
 
         return response()->json([
             'message' => 'Account created successfully.',
-            'user' => $user,
+            'token'   => $token,
+            'user'    => $user,
         ], 201);
     }
 
     public function login(Request $request): JsonResponse
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'email'    => ['required', 'email'],
             'password' => ['required', 'string'],
-            'remember' => ['nullable', 'boolean'],
         ]);
 
-        $remember = (bool) ($credentials['remember'] ?? false);
-        unset($credentials['remember']);
-
-        if (!Auth::attempt($credentials, $remember)) {
+        if (!$token = Auth::guard('api')->attempt($credentials)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials do not match our records.'],
             ]);
         }
 
-        $request->session()->regenerate();
-
         return response()->json([
             'message' => 'Logged in successfully.',
-            'user' => $request->user(),
+            'token'   => $token,
+            'user'    => Auth::guard('api')->user(),
         ]);
     }
 
-    public function logout(Request $request): JsonResponse
+    public function logout(): JsonResponse
     {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        Auth::guard('api')->logout();
 
         return response()->json([
             'message' => 'Logged out successfully.',
         ]);
     }
 
-    public function user(Request $request): JsonResponse
+    public function user(): JsonResponse
     {
         return response()->json([
-            'user' => $request->user(),
+            'user' => Auth::guard('api')->user(),
+        ]);
+    }
+
+    public function refresh(): JsonResponse
+    {
+        $token = Auth::guard('api')->refresh();
+
+        return response()->json([
+            'token' => $token,
+            'user'  => Auth::guard('api')->user(),
         ]);
     }
 }

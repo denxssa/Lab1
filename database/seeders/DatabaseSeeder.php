@@ -23,6 +23,15 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::query()->updateOrCreate(
+            ['email' => 'admin1@gmail.com'],
+            [
+                'name'     => 'Admin',
+                'role'     => User::ROLE_ADMIN,
+                'password' => Hash::make('admin123'),
+            ]
+        );
+
         $this->call(InterviewSeeder::class);
         $this->call(JobListingSeeder::class);
         $this->call(CvTemplateSeeder::class);
