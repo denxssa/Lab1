@@ -74,31 +74,30 @@ const JobsCards = () => {
           >
             {job.featured && <div className="featured-badge">Featured</div>}
 
-            <div className="job-card-top">
+            <div className="job-card-header">
               <div className="job-initials">{job.initials}</div>
-
-              <div className="job-card-content">
-                <div className="job-title-row">
-                  <div className="job-title-text">
-                    <h3>{job.title}</h3>
-                    <p>{job.company}</p>
-                  </div>
-                  <div className="job-type">{job.type}</div>
-                </div>
-
-                <div className="job-details">
-                  <span>{job.location}</span>
-                  <span>{job.salary}</span>
-                  <span>{job.time}</span>
-                </div>
-
-                <div className="job-tags">
-                  {job.tags.map((tag) => (
-                    <div key={tag} className="job-tag">{tag}</div>
-                  ))}
-                </div>
+              <div className="job-title-block">
+                <h3 className="job-title">{job.title}</h3>
+                <p className="job-company">{job.company}</p>
               </div>
+              <span className="job-type">{job.type}</span>
             </div>
+
+            <div className="job-card-meta">
+              <span className="job-meta-item">{job.location}</span>
+              <span className="job-meta-divider" aria-hidden="true" />
+              <span className="job-meta-item">{job.salary}</span>
+              <span className="job-meta-divider" aria-hidden="true" />
+              <span className="job-meta-item">{job.time}</span>
+            </div>
+
+            {job.tags.length > 0 && (
+              <div className="job-tags">
+                {job.tags.map((tag) => (
+                  <span key={tag} className="job-tag">{tag}</span>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>

@@ -5430,6 +5430,20 @@ function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 
+function normalizeTags(tags) {
+  if (Array.isArray(tags)) {
+    return tags;
+  }
+  if (typeof tags === 'string' && tags.trim()) {
+    try {
+      var parsed = JSON.parse(tags);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_unused) {
+      return [];
+    }
+  }
+  return [];
+}
 function listJobListings() {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/job-listings').then(function (response) {
     return response.data;
@@ -5479,7 +5493,7 @@ function mapJobListing(job) {
     time: time,
     type: job.type || 'Full-time',
     featured: index < 2,
-    tags: Array.isArray(job.tags) ? job.tags : [],
+    tags: normalizeTags(job.tags),
     description: job.description || ''
   };
 }
@@ -5496,6 +5510,51 @@ function mapJobListingForHr(job) {
     daysLeft: status === 'active' ? 30 : 0,
     postedDays: postedDays,
     featured: false
+  });
+}
+
+/***/ },
+
+/***/ "./resources/js/api/messagesApi.js"
+/*!*****************************************!*\
+  !*** ./resources/js/api/messagesApi.js ***!
+  \*****************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   MESSAGES_POLL_MS: () => (/* binding */ MESSAGES_POLL_MS),
+/* harmony export */   listConversations: () => (/* binding */ listConversations),
+/* harmony export */   listMessages: () => (/* binding */ listMessages),
+/* harmony export */   sendMessage: () => (/* binding */ sendMessage),
+/* harmony export */   startConversation: () => (/* binding */ startConversation)
+/* harmony export */ });
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+
+
+/** How often open message views refetch from the API (ms). */
+var MESSAGES_POLL_MS = 4000;
+function listConversations() {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/conversations').then(function (response) {
+    return response.data;
+  });
+}
+function startConversation(payload) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/api/conversations', payload).then(function (response) {
+    return response.data;
+  });
+}
+function listMessages(conversationId) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get("/api/conversations/".concat(conversationId, "/messages")).then(function (response) {
+    return response.data;
+  });
+}
+function sendMessage(conversationId, body) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post("/api/conversations/".concat(conversationId, "/messages"), {
+    body: body
+  }).then(function (response) {
+    return response.data;
   });
 }
 
@@ -6635,7 +6694,7 @@ var PlatformAdminProvider = function PlatformAdminProvider(_ref) {
               homeContent: pageKey === 'home' ? nextPageContent.home : data.homeContent
             });
             persist(optimisticState);
-            if (!(pageKey === 'about' || pageKey === 'pricing' || pageKey === 'companies' || pageKey === 'contact')) {
+            if (!(pageKey === 'about' || pageKey === 'pricing' || pageKey === 'companies')) {
               _context9.n = 7;
               break;
             }
@@ -15188,18 +15247,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _HireDashboardMessages_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HireDashboardMessages.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardMessages/HireDashboardMessages.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+/* harmony import */ var _api_messagesApi__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../api/messagesApi */ "./resources/js/api/messagesApi.js");
+/* harmony import */ var _HireDashboardMessages_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./HireDashboardMessages.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardMessages/HireDashboardMessages.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -15209,125 +15274,186 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-var conversations = [{
-  id: 1,
-  initials: 'NF',
-  name: 'Norbert Frrokaj',
-  role: 'Senior Frontend Dev',
-  time: '10:42',
-  unread: 2,
-  active: true,
-  messages: [{
-    id: 1,
-    from: 'them',
-    text: 'Hi, I wanted to follow up on my application.',
-    time: '10:30'
-  }, {
-    id: 2,
-    from: 'them',
-    text: 'Is there any update on the interview schedule?',
-    time: '10:31'
-  }, {
-    id: 3,
-    from: 'me',
-    text: 'Hi Norbert! Yes, we\'d love to move forward. Are you available this week?',
-    time: '10:40'
-  }, {
-    id: 4,
-    from: 'them',
-    text: 'Absolutely, Thursday or Friday works great for me.',
-    time: '10:42'
-  }]
-}, {
-  id: 2,
-  initials: 'EK',
-  name: 'Edmond Krasniqi',
-  role: 'Data Scientist',
-  time: '09:15',
-  unread: 0,
-  active: false,
-  messages: [{
-    id: 1,
-    from: 'me',
-    text: 'Hi Edmond, thank you for applying to the Data Scientist role.',
-    time: '09:00'
-  }, {
-    id: 2,
-    from: 'them',
-    text: 'Thank you! I\'m very excited about the opportunity.',
-    time: '09:15'
-  }]
-}, {
-  id: 3,
-  initials: 'EM',
-  name: 'Eltijona Mataj',
-  role: 'Mobile App Developer',
-  time: 'Yesterday',
-  unread: 1,
-  active: false,
-  messages: [{
-    id: 1,
-    from: 'them',
-    text: 'Hello, I completed the technical assessment you sent.',
-    time: 'Yesterday'
-  }, {
-    id: 2,
-    from: 'me',
-    text: 'Great work Eltijona, we\'ll review it and get back to you soon.',
-    time: 'Yesterday'
-  }, {
-    id: 3,
-    from: 'them',
-    text: 'Thank you, looking forward to hearing from you!',
-    time: 'Yesterday'
-  }]
-}, {
-  id: 4,
-  initials: 'MH',
-  name: 'Muhsin Hoxha',
-  role: 'UX/UI Designer',
-  time: 'Yesterday',
-  unread: 0,
-  active: false,
-  messages: [{
-    id: 1,
-    from: 'me',
-    text: 'Hi Muhsin, your portfolio is impressive. We\'d love to schedule a call.',
-    time: 'Yesterday'
-  }, {
-    id: 2,
-    from: 'them',
-    text: 'That sounds wonderful, I\'m available anytime next week.',
-    time: 'Yesterday'
-  }]
-}];
+
+
 var HireDashboardMessages = function HireDashboardMessages() {
-  var _active$messages;
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState2 = _slicedToArray(_useState, 2),
     search = _useState2[0],
     setSearch = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1),
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState4 = _slicedToArray(_useState3, 2),
     activeId = _useState4[0],
     setActiveId = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(conversations),
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState6 = _slicedToArray(_useState5, 2),
     allConvos = _useState6[0],
     setAllConvos = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState8 = _slicedToArray(_useState7, 2),
-    input = _useState8[0],
-    setInput = _useState8[1];
+    messages = _useState8[0],
+    setMessages = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState0 = _slicedToArray(_useState9, 2),
+    input = _useState0[0],
+    setInput = _useState0[1];
+  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+    _useState10 = _slicedToArray(_useState1, 2),
+    loadingList = _useState10[0],
+    setLoadingList = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState12 = _slicedToArray(_useState11, 2),
+    loadingThread = _useState12[0],
+    setLoadingThread = _useState12[1];
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState14 = _slicedToArray(_useState13, 2),
+    sending = _useState14[0],
+    setSending = _useState14[1];
+  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState16 = _slicedToArray(_useState15, 2),
+    error = _useState16[0],
+    setError = _useState16[1];
+  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState18 = _slicedToArray(_useState17, 2),
+    showNewChat = _useState18[0],
+    setShowNewChat = _useState18[1];
+  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState20 = _slicedToArray(_useState19, 2),
+    candidates = _useState20[0],
+    setCandidates = _useState20[1];
   var bottomRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var threadRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var prevIdRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(activeId);
-  var active = allConvos.find(function (c) {
-    return c.id === activeId;
-  });
-  var filtered = allConvos.filter(function (c) {
-    return c.name.toLowerCase().includes(search.toLowerCase()) || c.role.toLowerCase().includes(search.toLowerCase());
-  });
+  var loadConversations = /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+      var silent,
+        data,
+        convos,
+        _args = arguments,
+        _t;
+      return _regenerator().w(function (_context) {
+        while (1) switch (_context.p = _context.n) {
+          case 0:
+            silent = _args.length > 0 && _args[0] !== undefined ? _args[0] : false;
+            if (!silent) {
+              setLoadingList(true);
+            }
+            setError('');
+            _context.p = 1;
+            _context.n = 2;
+            return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.listConversations)();
+          case 2:
+            data = _context.v;
+            convos = (data.conversations || []).map(function (c) {
+              return _objectSpread(_objectSpread({}, c), {}, {
+                messages: []
+              });
+            });
+            setAllConvos(convos);
+            if (convos.length && !activeId) {
+              setActiveId(convos[0].id);
+            }
+            _context.n = 4;
+            break;
+          case 3:
+            _context.p = 3;
+            _t = _context.v;
+            if (!silent) {
+              setError('Could not load conversations. Log in as HR.');
+            }
+          case 4:
+            _context.p = 4;
+            if (!silent) {
+              setLoadingList(false);
+            }
+            return _context.f(4);
+          case 5:
+            return _context.a(2);
+        }
+      }, _callee, null, [[1, 3, 4, 5]]);
+    }));
+    return function loadConversations() {
+      return _ref.apply(this, arguments);
+    };
+  }();
+  var loadThread = /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(conversationId) {
+      var silent,
+        data,
+        _args2 = arguments,
+        _t2;
+      return _regenerator().w(function (_context2) {
+        while (1) switch (_context2.p = _context2.n) {
+          case 0:
+            silent = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : false;
+            if (conversationId) {
+              _context2.n = 1;
+              break;
+            }
+            setMessages([]);
+            return _context2.a(2);
+          case 1:
+            if (!silent) {
+              setLoadingThread(true);
+            }
+            _context2.p = 2;
+            _context2.n = 3;
+            return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.listMessages)(conversationId);
+          case 3:
+            data = _context2.v;
+            setMessages(data.messages || []);
+            setAllConvos(function (prev) {
+              return prev.map(function (c) {
+                return c.id === conversationId ? _objectSpread(_objectSpread({}, c), {}, {
+                  unread: 0
+                }) : c;
+              });
+            });
+            _context2.n = 5;
+            break;
+          case 4:
+            _context2.p = 4;
+            _t2 = _context2.v;
+            if (!silent) {
+              setError('Could not load messages for this conversation.');
+            }
+          case 5:
+            _context2.p = 5;
+            if (!silent) {
+              setLoadingThread(false);
+            }
+            return _context2.f(5);
+          case 6:
+            return _context2.a(2);
+        }
+      }, _callee2, null, [[2, 4, 5, 6]]);
+    }));
+    return function loadThread(_x) {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    loadConversations(false);
+    var listPollId = window.setInterval(function () {
+      return loadConversations(true);
+    }, _api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.MESSAGES_POLL_MS);
+    return function () {
+      return window.clearInterval(listPollId);
+    };
+  }, []);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (!activeId) {
+      setMessages([]);
+      return undefined;
+    }
+    loadThread(activeId, false);
+    var threadPollId = window.setInterval(function () {
+      return loadThread(activeId, true);
+    }, _api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.MESSAGES_POLL_MS);
+    return function () {
+      return window.clearInterval(threadPollId);
+    };
+  }, [activeId]);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     var switching = prevIdRef.current !== activeId;
     prevIdRef.current = activeId;
@@ -15339,66 +15465,181 @@ var HireDashboardMessages = function HireDashboardMessages() {
         behavior: 'smooth'
       });
     }
-  }, [activeId, active === null || active === void 0 || (_active$messages = active.messages) === null || _active$messages === void 0 ? void 0 : _active$messages.length]);
+  }, [activeId, messages.length]);
+  var active = allConvos.find(function (c) {
+    return c.id === activeId;
+  });
+  var filtered = allConvos.filter(function (c) {
+    return c.name.toLowerCase().includes(search.toLowerCase()) || (c.role || '').toLowerCase().includes(search.toLowerCase());
+  });
   var openConvo = function openConvo(id) {
     setActiveId(id);
-    setAllConvos(function (prev) {
-      return prev.map(function (c) {
-        return c.id === id ? _objectSpread(_objectSpread({}, c), {}, {
-          unread: 0
-        }) : c;
-      });
-    });
   };
-  var send = function send() {
-    var text = input.trim();
-    if (!text) return;
-    var newMsg = {
-      id: Date.now(),
-      from: 'me',
-      text: text,
-      time: new Date().toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+  var send = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      var text, data, newMsg, _t3;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.p = _context3.n) {
+          case 0:
+            text = input.trim();
+            if (!(!text || !activeId || sending)) {
+              _context3.n = 1;
+              break;
+            }
+            return _context3.a(2);
+          case 1:
+            setSending(true);
+            _context3.p = 2;
+            _context3.n = 3;
+            return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.sendMessage)(activeId, text);
+          case 3:
+            data = _context3.v;
+            newMsg = data.message;
+            setMessages(function (prev) {
+              return [].concat(_toConsumableArray(prev), [newMsg]);
+            });
+            setAllConvos(function (prev) {
+              return prev.map(function (c) {
+                return c.id === activeId ? _objectSpread(_objectSpread({}, c), {}, {
+                  lastMessage: newMsg.text,
+                  time: newMsg.time
+                }) : c;
+              });
+            });
+            setInput('');
+            _context3.n = 5;
+            break;
+          case 4:
+            _context3.p = 4;
+            _t3 = _context3.v;
+            setError('Could not send message.');
+          case 5:
+            _context3.p = 5;
+            setSending(false);
+            return _context3.f(5);
+          case 6:
+            return _context3.a(2);
+        }
+      }, _callee3, null, [[2, 4, 5, 6]]);
+    }));
+    return function send() {
+      return _ref3.apply(this, arguments);
     };
-    setAllConvos(function (prev) {
-      return prev.map(function (c) {
-        return c.id === activeId ? _objectSpread(_objectSpread({}, c), {}, {
-          messages: [].concat(_toConsumableArray(c.messages), [newMsg]),
-          time: newMsg.time
-        }) : c;
-      });
-    });
-    setInput('');
-  };
+  }();
   var handleKey = function handleKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       send();
     }
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("section", {
+  var openNewChatPicker = /*#__PURE__*/function () {
+    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+      var _yield$axios$get, data, _t4;
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.p = _context4.n) {
+          case 0:
+            setShowNewChat(true);
+            _context4.p = 1;
+            _context4.n = 2;
+            return axios__WEBPACK_IMPORTED_MODULE_1__["default"].get('/api/interviews/candidates');
+          case 2:
+            _yield$axios$get = _context4.v;
+            data = _yield$axios$get.data;
+            setCandidates(data.candidates || []);
+            _context4.n = 4;
+            break;
+          case 3:
+            _context4.p = 3;
+            _t4 = _context4.v;
+            setCandidates([]);
+          case 4:
+            return _context4.a(2);
+        }
+      }, _callee4, null, [[1, 3]]);
+    }));
+    return function openNewChatPicker() {
+      return _ref4.apply(this, arguments);
+    };
+  }();
+  var beginChatWithCandidate = /*#__PURE__*/function () {
+    var _ref5 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(candidateUserId) {
+      var data, _t5;
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.p = _context5.n) {
+          case 0:
+            _context5.p = 0;
+            _context5.n = 1;
+            return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.startConversation)({
+              candidate_user_id: candidateUserId
+            });
+          case 1:
+            data = _context5.v;
+            _context5.n = 2;
+            return loadConversations();
+          case 2:
+            setActiveId(data.conversation.id);
+            setShowNewChat(false);
+            _context5.n = 4;
+            break;
+          case 3:
+            _context5.p = 3;
+            _t5 = _context5.v;
+            setError('Could not start conversation.');
+          case 4:
+            return _context5.a(2);
+        }
+      }, _callee5, null, [[0, 3]]);
+    }));
+    return function beginChatWithCandidate(_x2) {
+      return _ref5.apply(this, arguments);
+    };
+  }();
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("section", {
     className: "hire-messages-section",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "hire-messages-wrapper",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
         className: "hire-messages-left",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "hire-messages-left-header",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h2", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h2", {
             children: "Messages"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+            type: "button",
+            className: "hire-messages-new-btn",
+            onClick: openNewChatPicker,
+            children: "New"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
             className: "hire-messages-total",
             children: allConvos.reduce(function (a, c) {
-              return a + c.unread;
-            }, 0) > 0 && allConvos.reduce(function (a, c) {
-              return a + c.unread;
-            }, 0)
+              return a + (c.unread || 0);
+            }, 0) || ''
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        }), showNewChat && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          className: "hire-messages-new-panel",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+            children: "Start chat with candidate:"
+          }), candidates.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+            children: "No candidates found."
+          }), candidates.map(function (c) {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+              type: "button",
+              className: "hire-messages-new-item",
+              onClick: function onClick() {
+                return beginChatWithCandidate(c.id);
+              },
+              children: c.name
+            }, c.id);
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+            type: "button",
+            onClick: function onClick() {
+              return setShowNewChat(false);
+            },
+            children: "Cancel"
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "hire-messages-search",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
             width: "14",
             height: "14",
             viewBox: "0 0 24 24",
@@ -15407,17 +15648,17 @@ var HireDashboardMessages = function HireDashboardMessages() {
             strokeWidth: "2",
             strokeLinecap: "round",
             strokeLinejoin: "round",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("circle", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
               cx: "11",
               cy: "11",
               r: "8"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("line", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
               x1: "21",
               y1: "21",
               x2: "16.65",
               y2: "16.65"
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
             type: "text",
             placeholder: "Search conversations...",
             value: search,
@@ -15425,35 +15666,40 @@ var HireDashboardMessages = function HireDashboardMessages() {
               return setSearch(e.target.value);
             }
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+        }), loadingList && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+          className: "hire-messages-status",
+          children: "Loading\u2026"
+        }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+          className: "hire-messages-status hire-messages-status--error",
+          children: error
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
           className: "hire-messages-list",
           children: filtered.map(function (c) {
-            var _c$messages;
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "hire-messages-item".concat(c.id === activeId ? ' active' : ''),
               onClick: function onClick() {
                 return openConvo(c.id);
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
                 className: "hire-msg-avatar",
                 children: c.initials
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                 className: "hire-msg-info",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                   className: "hire-msg-top",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                     className: "hire-msg-name",
                     children: c.name
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                     className: "hire-msg-time",
                     children: c.time
                   })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                   className: "hire-msg-bottom",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                     className: "hire-msg-preview",
-                    children: (_c$messages = c.messages[c.messages.length - 1]) === null || _c$messages === void 0 ? void 0 : _c$messages.text
-                  }), c.unread > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+                    children: c.lastMessage
+                  }), c.unread > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                     className: "hire-msg-badge",
                     children: c.unread
                   })]
@@ -15462,55 +15708,59 @@ var HireDashboardMessages = function HireDashboardMessages() {
             }, c.id);
           })
         })]
-      }), active ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+      }), active ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
         className: "hire-messages-right",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "hire-messages-thread-header",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             className: "hire-msg-avatar",
             children: active.initials
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
               className: "hire-thread-name",
               children: active.name
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
               className: "hire-thread-role",
-              children: active.role
+              children: active.role || 'Candidate'
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "hire-messages-thread",
           ref: threadRef,
-          children: [active.messages.map(function (msg) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+          children: [loadingThread && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+            className: "hire-messages-status",
+            children: "Loading messages\u2026"
+          }), messages.map(function (msg) {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "hire-bubble-wrap ".concat(msg.from === 'me' ? 'me' : 'them'),
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
                 className: "hire-bubble",
                 children: msg.text
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
                 className: "hire-bubble-time",
                 children: msg.time
               })]
             }, msg.id);
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             ref: bottomRef
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "hire-messages-input-bar",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
             type: "text",
             placeholder: "Type a message...",
             value: input,
             onChange: function onChange(e) {
               return setInput(e.target.value);
             },
-            onKeyDown: handleKey
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
+            onKeyDown: handleKey,
+            disabled: sending
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
             type: "button",
             className: "hire-send-btn",
             onClick: send,
-            disabled: !input.trim(),
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
+            disabled: !input.trim() || sending,
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
               width: "16",
               height: "16",
               viewBox: "0 0 24 24",
@@ -15519,21 +15769,21 @@ var HireDashboardMessages = function HireDashboardMessages() {
               strokeWidth: "2.5",
               strokeLinecap: "round",
               strokeLinejoin: "round",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("line", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
                 x1: "22",
                 y1: "2",
                 x2: "11",
                 y2: "13"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("polygon", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("polygon", {
                 points: "22 2 15 22 11 13 2 9 22 2"
               })]
             })
           })]
         })]
-      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         className: "hire-messages-right hire-messages-empty-state",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
-          children: "Select a conversation to start messaging"
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+          children: loadingList ? 'Loading…' : 'Select or start a conversation'
         })
       })]
     })
@@ -19018,18 +19268,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
-/* harmony import */ var _ChatWindow_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ChatWindow.scss */ "./resources/js/views/User-View/components/dashboard/pages/chat-window/ChatWindow.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+/* harmony import */ var _api_messagesApi__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../../api/messagesApi */ "./resources/js/api/messagesApi.js");
+/* harmony import */ var _ChatWindow_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ChatWindow.scss */ "./resources/js/views/User-View/components/dashboard/pages/chat-window/ChatWindow.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -19040,129 +19289,189 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-var staticMessages = {
-  1: [{
-    id: 1,
-    from: 'them',
-    text: 'Hi Vesa! We reviewed your application and we are impressed.',
-    time: '10:20'
-  }, {
-    id: 2,
-    from: 'me',
-    text: 'Thank you! I am very excited about this opportunity.',
-    time: '10:22'
-  }, {
-    id: 3,
-    from: 'them',
-    text: 'We would love to schedule an interview with you. Are you available this week?',
-    time: '10:30'
-  }],
-  2: [{
-    id: 1,
-    from: 'them',
-    text: 'Thank you for applying to StartupXYZ!',
-    time: '09:10'
-  }, {
-    id: 2,
-    from: 'them',
-    text: 'We will get back to you shortly.',
-    time: '09:15'
-  }],
-  3: [{
-    id: 1,
-    from: 'them',
-    text: 'Hello! Please complete the technical assessment sent to your email.',
-    time: 'Yesterday'
-  }],
-  4: [{
-    id: 1,
-    from: 'them',
-    text: 'Your application is currently under review.',
-    time: 'Yesterday'
-  }],
-  5: [{
-    id: 1,
-    from: 'them',
-    text: 'Hi! We reviewed your profile and think you could be a great fit.',
-    time: 'Mon'
-  }]
-};
+
 function ChatWindow(_ref) {
-  var conversation = _ref.conversation;
+  var conversation = _ref.conversation,
+    onMessageSent = _ref.onMessageSent;
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState2 = _slicedToArray(_useState, 2),
     input = _useState2[0],
     setInput = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(staticMessages),
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState4 = _slicedToArray(_useState3, 2),
     messages = _useState4[0],
     setMessages = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState6 = _slicedToArray(_useState5, 2),
+    loading = _useState6[0],
+    setLoading = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    sending = _useState8[0],
+    setSending = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState0 = _slicedToArray(_useState9, 2),
+    error = _useState0[0],
+    setError = _useState0[1];
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (!(conversation !== null && conversation !== void 0 && conversation.id)) {
+      setMessages([]);
+      return undefined;
+    }
+    var cancelled = false;
+    var load = /*#__PURE__*/function () {
+      var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+        var silent,
+          data,
+          _args = arguments,
+          _t;
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.p = _context.n) {
+            case 0:
+              silent = _args.length > 0 && _args[0] !== undefined ? _args[0] : false;
+              if (!silent) {
+                setLoading(true);
+              }
+              setError('');
+              _context.p = 1;
+              _context.n = 2;
+              return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.listMessages)(conversation.id);
+            case 2:
+              data = _context.v;
+              if (!cancelled) {
+                setMessages(data.messages || []);
+              }
+              _context.n = 4;
+              break;
+            case 3:
+              _context.p = 3;
+              _t = _context.v;
+              if (!cancelled && !silent) {
+                setError('Could not load messages.');
+                setMessages([]);
+              }
+            case 4:
+              _context.p = 4;
+              if (!cancelled && !silent) {
+                setLoading(false);
+              }
+              return _context.f(4);
+            case 5:
+              return _context.a(2);
+          }
+        }, _callee, null, [[1, 3, 4, 5]]);
+      }));
+      return function load() {
+        return _ref2.apply(this, arguments);
+      };
+    }();
+    load(false);
+    var pollId = window.setInterval(function () {
+      return load(true);
+    }, _api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.MESSAGES_POLL_MS);
+    return function () {
+      cancelled = true;
+      window.clearInterval(pollId);
+    };
+  }, [conversation === null || conversation === void 0 ? void 0 : conversation.id]);
   if (!conversation) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "chat-window chat-window--empty",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiMessageSquare, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiMessageSquare, {
         size: 48
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
         children: "Select a conversation to start messaging"
       })]
     });
   }
-  var currentMessages = messages[conversation.id] || [];
-  var handleSend = function handleSend() {
-    if (!input.trim()) return;
-    var newMessage = {
-      id: currentMessages.length + 1,
-      from: 'me',
-      text: input.trim(),
-      time: new Date().toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+  var handleSend = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+      var data, _t2;
+      return _regenerator().w(function (_context2) {
+        while (1) switch (_context2.p = _context2.n) {
+          case 0:
+            if (!(!input.trim() || sending)) {
+              _context2.n = 1;
+              break;
+            }
+            return _context2.a(2);
+          case 1:
+            setSending(true);
+            setError('');
+            _context2.p = 2;
+            _context2.n = 3;
+            return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.sendMessage)(conversation.id, input.trim());
+          case 3:
+            data = _context2.v;
+            setMessages(function (prev) {
+              return [].concat(_toConsumableArray(prev), [data.message]);
+            });
+            setInput('');
+            onMessageSent === null || onMessageSent === void 0 || onMessageSent();
+            _context2.n = 5;
+            break;
+          case 4:
+            _context2.p = 4;
+            _t2 = _context2.v;
+            setError('Could not send message.');
+          case 5:
+            _context2.p = 5;
+            setSending(false);
+            return _context2.f(5);
+          case 6:
+            return _context2.a(2);
+        }
+      }, _callee2, null, [[2, 4, 5, 6]]);
+    }));
+    return function handleSend() {
+      return _ref3.apply(this, arguments);
     };
-    setMessages(function (prev) {
-      return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, conversation.id, [].concat(_toConsumableArray(prev[conversation.id] || []), [newMessage])));
-    });
-    setInput('');
-  };
+  }();
   var handleKeyDown = function handleKeyDown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
     className: "chat-window",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "chat-window__header",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         className: "chat-window__avatar",
         children: conversation.initials
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
           className: "chat-window__name",
           children: conversation.name
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
           className: "chat-window__status",
-          children: "Active now"
+          children: "Messages with HR"
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "chat-window__messages",
-      children: currentMessages.map(function (msg) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      children: [loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+        className: "chat-window__status-line",
+        children: "Loading messages\u2026"
+      }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+        className: "chat-window__status-line chat-window__status-line--error",
+        children: error
+      }), messages.map(function (msg) {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "chat-window__message chat-window__message--".concat(msg.from),
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             className: "chat-window__bubble",
             children: msg.text
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
             className: "chat-window__time",
             children: msg.time
           })]
         }, msg.id);
-      })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "chat-window__input-wrap",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
         type: "text",
         className: "chat-window__input",
         placeholder: "Type a message...",
@@ -19170,11 +19479,13 @@ function ChatWindow(_ref) {
         onChange: function onChange(e) {
           return setInput(e.target.value);
         },
-        onKeyDown: handleKeyDown
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+        onKeyDown: handleKeyDown,
+        disabled: sending
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
         className: "chat-window__send",
         onClick: handleSend,
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiSend, {
+        disabled: sending || !input.trim(),
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiSend, {
           size: 18
         })
       })]
@@ -19198,8 +19509,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
-/* harmony import */ var _ConversationList_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ConversationList.scss */ "./resources/js/views/User-View/components/dashboard/pages/conversation-list/ConversationList.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _api_messagesApi__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../../api/messagesApi */ "./resources/js/api/messagesApi.js");
+/* harmony import */ var _ConversationList_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ConversationList.scss */ "./resources/js/views/User-View/components/dashboard/pages/conversation-list/ConversationList.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -19210,66 +19526,101 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-var conversations = [{
-  id: 1,
-  name: 'TechCorp HR',
-  lastMessage: 'We would love to schedule an interview...',
-  time: '10:30',
-  unread: 2,
-  initials: 'TC'
-}, {
-  id: 2,
-  name: 'StartupXYZ',
-  lastMessage: 'Thank you for applying!',
-  time: '09:15',
-  unread: 0,
-  initials: 'SX'
-}, {
-  id: 3,
-  name: 'Google Recruiting',
-  lastMessage: 'Please complete the assessment.',
-  time: 'Yesterday',
-  unread: 1,
-  initials: 'GR'
-}, {
-  id: 4,
-  name: 'Meta Careers',
-  lastMessage: 'Your application is under review.',
-  time: 'Yesterday',
-  unread: 0,
-  initials: 'MC'
-}, {
-  id: 5,
-  name: 'Amazon Jobs',
-  lastMessage: 'Hi! We reviewed your profile...',
-  time: 'Mon',
-  unread: 0,
-  initials: 'AJ'
-}];
+
 function ConversationList(_ref) {
   var selected = _ref.selected,
-    onSelect = _ref.onSelect;
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    onSelect = _ref.onSelect,
+    _ref$refreshKey = _ref.refreshKey,
+    refreshKey = _ref$refreshKey === void 0 ? 0 : _ref$refreshKey;
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState2 = _slicedToArray(_useState, 2),
-    search = _useState2[0],
-    setSearch = _useState2[1];
+    conversations = _useState2[0],
+    setConversations = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState4 = _slicedToArray(_useState3, 2),
+    search = _useState4[0],
+    setSearch = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+    _useState6 = _slicedToArray(_useState5, 2),
+    loading = _useState6[0],
+    setLoading = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState8 = _slicedToArray(_useState7, 2),
+    error = _useState8[0],
+    setError = _useState8[1];
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    var cancelled = false;
+    var load = /*#__PURE__*/function () {
+      var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+        var silent,
+          data,
+          _args = arguments,
+          _t;
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.p = _context.n) {
+            case 0:
+              silent = _args.length > 0 && _args[0] !== undefined ? _args[0] : false;
+              if (!silent) {
+                setLoading(true);
+              }
+              setError('');
+              _context.p = 1;
+              _context.n = 2;
+              return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.listConversations)();
+            case 2:
+              data = _context.v;
+              if (!cancelled) {
+                setConversations(data.conversations || []);
+              }
+              _context.n = 4;
+              break;
+            case 3:
+              _context.p = 3;
+              _t = _context.v;
+              if (!cancelled && !silent) {
+                setError('Could not load messages. Please log in.');
+              }
+            case 4:
+              _context.p = 4;
+              if (!cancelled && !silent) {
+                setLoading(false);
+              }
+              return _context.f(4);
+            case 5:
+              return _context.a(2);
+          }
+        }, _callee, null, [[1, 3, 4, 5]]);
+      }));
+      return function load() {
+        return _ref2.apply(this, arguments);
+      };
+    }();
+    load(false);
+    var pollId = window.setInterval(function () {
+      return load(true);
+    }, _api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.MESSAGES_POLL_MS);
+    return function () {
+      cancelled = true;
+      window.clearInterval(pollId);
+    };
+  }, [refreshKey]);
   var filtered = conversations.filter(function (c) {
     return c.name.toLowerCase().includes(search.toLowerCase());
   });
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
     className: "conversation-list",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
       className: "conversation-list__header",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h2", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h2", {
         className: "conversation-list__title",
         children: "Messages"
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "conversation-list__search",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiSearch, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiSearch, {
         size: 16,
         className: "conversation-list__search-icon"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
         type: "text",
         placeholder: "Search conversations...",
         value: search,
@@ -19277,34 +19628,43 @@ function ConversationList(_ref) {
           return setSearch(e.target.value);
         }
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("ul", {
+    }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+      className: "conversation-list__status",
+      children: "Loading\u2026"
+    }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+      className: "conversation-list__status conversation-list__status--error",
+      children: error
+    }), !loading && !error && filtered.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+      className: "conversation-list__status",
+      children: "No conversations yet."
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("ul", {
       className: "conversation-list__items",
       children: filtered.map(function (c) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("li", {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
           className: "conversation-list__item ".concat((selected === null || selected === void 0 ? void 0 : selected.id) === c.id ? 'conversation-list__item--active' : ''),
           onClick: function onClick() {
             return onSelect(c);
           },
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             className: "conversation-list__avatar",
             children: c.initials
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "conversation-list__info",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "conversation-list__top",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "conversation-list__name",
                 children: c.name
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "conversation-list__time",
                 children: c.time
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "conversation-list__bottom",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "conversation-list__preview",
                 children: c.lastMessage
-              }), c.unread > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              }), c.unread > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "conversation-list__badge",
                 children: c.unread
               })]
@@ -22652,44 +23012,49 @@ var JobsCards = function JobsCards() {
             className: "featured-badge",
             children: "Featured"
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-            className: "job-card-top",
+            className: "job-card-header",
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
               className: "job-initials",
               children: job.initials
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-              className: "job-card-content",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-                className: "job-title-row",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-                  className: "job-title-text",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
-                    children: job.title
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
-                    children: job.company
-                  })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
-                  className: "job-type",
-                  children: job.type
-                })]
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-                className: "job-details",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-                  children: job.location
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-                  children: job.salary
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-                  children: job.time
-                })]
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
-                className: "job-tags",
-                children: job.tags.map(function (tag) {
-                  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
-                    className: "job-tag",
-                    children: tag
-                  }, tag);
-                })
+              className: "job-title-block",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+                className: "job-title",
+                children: job.title
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+                className: "job-company",
+                children: job.company
               })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              className: "job-type",
+              children: job.type
             })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+            className: "job-card-meta",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              className: "job-meta-item",
+              children: job.location
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              className: "job-meta-divider",
+              "aria-hidden": "true"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              className: "job-meta-item",
+              children: job.salary
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              className: "job-meta-divider",
+              "aria-hidden": "true"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              className: "job-meta-item",
+              children: job.time
+            })]
+          }), job.tags.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+            className: "job-tags",
+            children: job.tags.map(function (tag) {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                className: "job-tag",
+                children: tag
+              }, tag);
+            })
           })]
         }, job.id);
       })
@@ -26959,6 +27324,15 @@ var MessagesPage = function MessagesPage() {
     _useState2 = _slicedToArray(_useState, 2),
     selected = _useState2[0],
     setSelected = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
+    _useState4 = _slicedToArray(_useState3, 2),
+    refreshKey = _useState4[0],
+    setRefreshKey = _useState4[1];
+  var handleMessageSent = function handleMessageSent() {
+    setRefreshKey(function (k) {
+      return k + 1;
+    });
+  };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_dashboard_shared_UserDashboardLayout_UserDashboardLayout__WEBPACK_IMPORTED_MODULE_1__["default"], {
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
       className: "messages-page",
@@ -26968,12 +27342,14 @@ var MessagesPage = function MessagesPage() {
           className: "messages-page__left",
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_dashboard_pages_conversation_list_ConversationList__WEBPACK_IMPORTED_MODULE_2__["default"], {
             selected: selected,
-            onSelect: setSelected
+            onSelect: setSelected,
+            refreshKey: refreshKey
           })
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
           className: "messages-page__right",
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_dashboard_pages_chat_window_ChatWindow__WEBPACK_IMPORTED_MODULE_3__["default"], {
-            conversation: selected
+            conversation: selected,
+            onMessageSent: handleMessageSent
           })
         })]
       })
@@ -30035,7 +30411,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".hire-messages-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 8px 24px 24px;\n}\n@media (max-width: 768px) {\n  .hire-messages-section {\n    padding: 24px 16px 40px;\n  }\n}\n\n.hire-messages-wrapper {\n  display: grid;\n  grid-template-columns: 320px 1fr;\n  height: calc(100vh - 100px);\n  min-height: 560px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  overflow: hidden;\n}\n@media (max-width: 768px) {\n  .hire-messages-wrapper {\n    grid-template-columns: 1fr;\n    height: auto;\n  }\n}\n\n.hire-messages-left {\n  display: flex;\n  flex-direction: column;\n  border-right: 1px solid #e7dfd4;\n  background: #fafaf8;\n  overflow: hidden;\n}\n\n.hire-messages-left-header {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 24px 20px 16px;\n}\n.hire-messages-left-header h2 {\n  margin: 0;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-messages-total {\n  background: #fdd535;\n  color: #111111;\n  font-size: 11px;\n  font-weight: 800;\n  border-radius: 999px;\n  padding: 2px 7px;\n  line-height: 1.4;\n}\n\n.hire-messages-search {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  margin: 0 16px 12px;\n  padding: 0 14px;\n  height: 38px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  transition: border-color 0.2s;\n}\n.hire-messages-search:focus-within {\n  border-color: #c8c2bb;\n}\n.hire-messages-search svg {\n  color: #b0a89e;\n  flex-shrink: 0;\n}\n.hire-messages-search input {\n  flex: 1;\n  border: none;\n  background: none;\n  outline: none;\n  font-size: 13px;\n  font-family: inherit;\n  color: #111111;\n}\n.hire-messages-search input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-messages-search input::placeholder {\n  color: #b0a89e;\n}\n\n.hire-messages-list {\n  flex: 1;\n  overflow-y: auto;\n  padding: 4px 0 12px;\n}\n.hire-messages-list::-webkit-scrollbar {\n  width: 4px;\n}\n.hire-messages-list::-webkit-scrollbar-track {\n  background: transparent;\n}\n.hire-messages-list::-webkit-scrollbar-thumb {\n  background: #e7dfd4;\n  border-radius: 4px;\n}\n\n.hire-messages-item {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 16px;\n  cursor: pointer;\n  transition: background 0.15s;\n}\n.hire-messages-item:hover {\n  background: #f2efea;\n}\n.hire-messages-item.active {\n  background: #fdf9e6;\n  border-left: 3px solid #fdd535;\n  padding-left: 13px;\n}\n\n.hire-msg-avatar {\n  width: 44px;\n  height: 44px;\n  border-radius: 50%;\n  background: #1b1f3b;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 800;\n  color: #fdd535;\n  flex-shrink: 0;\n  letter-spacing: 0.03em;\n}\n\n.hire-msg-info {\n  flex: 1;\n  min-width: 0;\n}\n\n.hire-msg-top {\n  display: flex;\n  justify-content: space-between;\n  align-items: baseline;\n  gap: 6px;\n  margin-bottom: 3px;\n}\n\n.hire-msg-name {\n  font-size: 13.5px;\n  font-weight: 600;\n  color: #111111;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.hire-msg-time {\n  font-size: 11.5px;\n  color: #b0a89e;\n  flex-shrink: 0;\n}\n\n.hire-msg-bottom {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 6px;\n}\n\n.hire-msg-preview {\n  font-size: 12.5px;\n  color: #7a746d;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  flex: 1;\n  min-width: 0;\n}\n\n.hire-msg-badge {\n  background: #fdd535;\n  color: #111111;\n  font-size: 10.5px;\n  font-weight: 800;\n  border-radius: 999px;\n  padding: 1px 6px;\n  flex-shrink: 0;\n  line-height: 1.5;\n}\n\n.hire-messages-right {\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n  background: #ffffff;\n}\n\n.hire-messages-thread-header {\n  display: flex;\n  align-items: center;\n  gap: 14px;\n  padding: 20px 24px;\n  border-bottom: 1px solid #f2efea;\n  flex-shrink: 0;\n}\n\n.hire-thread-name {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-thread-role {\n  font-size: 12px;\n  color: #7a746d;\n  margin-top: 1px;\n}\n\n.hire-messages-thread {\n  flex: 1;\n  overflow-y: auto;\n  padding: 24px 24px 16px;\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.hire-messages-thread::-webkit-scrollbar {\n  width: 4px;\n}\n.hire-messages-thread::-webkit-scrollbar-track {\n  background: transparent;\n}\n.hire-messages-thread::-webkit-scrollbar-thumb {\n  background: #e7dfd4;\n  border-radius: 4px;\n}\n\n.hire-bubble-wrap {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n  max-width: 68%;\n}\n.hire-bubble-wrap.me {\n  align-self: flex-end;\n  align-items: flex-end;\n}\n.hire-bubble-wrap.them {\n  align-self: flex-start;\n  align-items: flex-start;\n}\n.hire-bubble-wrap + .hire-bubble-wrap {\n  margin-top: 8px;\n}\n\n.hire-bubble {\n  padding: 10px 14px;\n  border-radius: 16px;\n  font-size: 13.5px;\n  line-height: 1.5;\n}\n.them .hire-bubble {\n  background: #f2efea;\n  color: #111111;\n  border-bottom-left-radius: 4px;\n}\n.me .hire-bubble {\n  background: #111111;\n  color: #ffffff;\n  border-bottom-right-radius: 4px;\n}\n\n.hire-bubble-time {\n  font-size: 11px;\n  color: #b0a89e;\n  padding: 0 4px;\n}\n\n.hire-messages-input-bar {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 16px 20px;\n  border-top: 1px solid #f2efea;\n  flex-shrink: 0;\n}\n.hire-messages-input-bar input {\n  flex: 1;\n  height: 44px;\n  padding: 0 16px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  font-size: 13.5px;\n  font-family: inherit;\n  color: #111111;\n  background: #fafaf8;\n  outline: none;\n  transition: border-color 0.2s;\n}\n.hire-messages-input-bar input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-messages-input-bar input::placeholder {\n  color: #b0a89e;\n}\n.hire-messages-input-bar input:focus {\n  border-color: #c8c2bb;\n  background: #ffffff;\n}\n\n.hire-send-btn {\n  width: 44px;\n  height: 44px;\n  border-radius: 12px;\n  background: #111111;\n  border: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #ffffff;\n  cursor: pointer;\n  flex-shrink: 0;\n  transition: opacity 0.15s;\n}\n.hire-send-btn:hover:not(:disabled) {\n  opacity: 0.82;\n}\n.hire-send-btn:disabled {\n  opacity: 0.35;\n  cursor: default;\n}\n\n.hire-messages-empty-state {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.hire-messages-empty-state p {\n  font-size: 14px;\n  color: #b0a89e;\n  margin: 0;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".hire-messages-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 8px 24px 24px;\n}\n@media (max-width: 768px) {\n  .hire-messages-section {\n    padding: 24px 16px 40px;\n  }\n}\n\n.hire-messages-wrapper {\n  display: grid;\n  grid-template-columns: 320px 1fr;\n  height: calc(100vh - 100px);\n  min-height: 560px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  overflow: hidden;\n}\n@media (max-width: 768px) {\n  .hire-messages-wrapper {\n    grid-template-columns: 1fr;\n    height: auto;\n  }\n}\n\n.hire-messages-left {\n  display: flex;\n  flex-direction: column;\n  border-right: 1px solid #e7dfd4;\n  background: #fafaf8;\n  overflow: hidden;\n}\n\n.hire-messages-new-btn {\n  margin-left: auto;\n  padding: 4px 10px;\n  font-size: 12px;\n  font-weight: 600;\n  border: 1px solid #e7dfd4;\n  border-radius: 8px;\n  background: #fff;\n  cursor: pointer;\n}\n\n.hire-messages-new-panel {\n  padding: 12px 16px;\n  border-bottom: 1px solid #e7dfd4;\n  font-size: 13px;\n}\n.hire-messages-new-panel .hire-messages-new-item {\n  display: block;\n  width: 100%;\n  text-align: left;\n  margin: 4px 0;\n  padding: 6px 8px;\n  border: none;\n  background: #fff;\n  border-radius: 6px;\n  cursor: pointer;\n}\n\n.hire-messages-status {\n  padding: 8px 16px;\n  font-size: 13px;\n  color: #6b7280;\n}\n.hire-messages-status--error {\n  color: #b91c1c;\n}\n\n.hire-messages-left-header {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 24px 20px 16px;\n}\n.hire-messages-left-header h2 {\n  margin: 0;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-messages-total {\n  background: #fdd535;\n  color: #111111;\n  font-size: 11px;\n  font-weight: 800;\n  border-radius: 999px;\n  padding: 2px 7px;\n  line-height: 1.4;\n}\n\n.hire-messages-search {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  margin: 0 16px 12px;\n  padding: 0 14px;\n  height: 38px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  transition: border-color 0.2s;\n}\n.hire-messages-search:focus-within {\n  border-color: #c8c2bb;\n}\n.hire-messages-search svg {\n  color: #b0a89e;\n  flex-shrink: 0;\n}\n.hire-messages-search input {\n  flex: 1;\n  border: none;\n  background: none;\n  outline: none;\n  font-size: 13px;\n  font-family: inherit;\n  color: #111111;\n}\n.hire-messages-search input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-messages-search input::placeholder {\n  color: #b0a89e;\n}\n\n.hire-messages-list {\n  flex: 1;\n  overflow-y: auto;\n  padding: 4px 0 12px;\n}\n.hire-messages-list::-webkit-scrollbar {\n  width: 4px;\n}\n.hire-messages-list::-webkit-scrollbar-track {\n  background: transparent;\n}\n.hire-messages-list::-webkit-scrollbar-thumb {\n  background: #e7dfd4;\n  border-radius: 4px;\n}\n\n.hire-messages-item {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 16px;\n  cursor: pointer;\n  transition: background 0.15s;\n}\n.hire-messages-item:hover {\n  background: #f2efea;\n}\n.hire-messages-item.active {\n  background: #fdf9e6;\n  border-left: 3px solid #fdd535;\n  padding-left: 13px;\n}\n\n.hire-msg-avatar {\n  width: 44px;\n  height: 44px;\n  border-radius: 50%;\n  background: #1b1f3b;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 800;\n  color: #fdd535;\n  flex-shrink: 0;\n  letter-spacing: 0.03em;\n}\n\n.hire-msg-info {\n  flex: 1;\n  min-width: 0;\n}\n\n.hire-msg-top {\n  display: flex;\n  justify-content: space-between;\n  align-items: baseline;\n  gap: 6px;\n  margin-bottom: 3px;\n}\n\n.hire-msg-name {\n  font-size: 13.5px;\n  font-weight: 600;\n  color: #111111;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.hire-msg-time {\n  font-size: 11.5px;\n  color: #b0a89e;\n  flex-shrink: 0;\n}\n\n.hire-msg-bottom {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 6px;\n}\n\n.hire-msg-preview {\n  font-size: 12.5px;\n  color: #7a746d;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  flex: 1;\n  min-width: 0;\n}\n\n.hire-msg-badge {\n  background: #fdd535;\n  color: #111111;\n  font-size: 10.5px;\n  font-weight: 800;\n  border-radius: 999px;\n  padding: 1px 6px;\n  flex-shrink: 0;\n  line-height: 1.5;\n}\n\n.hire-messages-right {\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n  background: #ffffff;\n}\n\n.hire-messages-thread-header {\n  display: flex;\n  align-items: center;\n  gap: 14px;\n  padding: 20px 24px;\n  border-bottom: 1px solid #f2efea;\n  flex-shrink: 0;\n}\n\n.hire-thread-name {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-thread-role {\n  font-size: 12px;\n  color: #7a746d;\n  margin-top: 1px;\n}\n\n.hire-messages-thread {\n  flex: 1;\n  overflow-y: auto;\n  padding: 24px 24px 16px;\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.hire-messages-thread::-webkit-scrollbar {\n  width: 4px;\n}\n.hire-messages-thread::-webkit-scrollbar-track {\n  background: transparent;\n}\n.hire-messages-thread::-webkit-scrollbar-thumb {\n  background: #e7dfd4;\n  border-radius: 4px;\n}\n\n.hire-bubble-wrap {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n  max-width: 68%;\n}\n.hire-bubble-wrap.me {\n  align-self: flex-end;\n  align-items: flex-end;\n}\n.hire-bubble-wrap.them {\n  align-self: flex-start;\n  align-items: flex-start;\n}\n.hire-bubble-wrap + .hire-bubble-wrap {\n  margin-top: 8px;\n}\n\n.hire-bubble {\n  padding: 10px 14px;\n  border-radius: 16px;\n  font-size: 13.5px;\n  line-height: 1.5;\n}\n.them .hire-bubble {\n  background: #f2efea;\n  color: #111111;\n  border-bottom-left-radius: 4px;\n}\n.me .hire-bubble {\n  background: #111111;\n  color: #ffffff;\n  border-bottom-right-radius: 4px;\n}\n\n.hire-bubble-time {\n  font-size: 11px;\n  color: #b0a89e;\n  padding: 0 4px;\n}\n\n.hire-messages-input-bar {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 16px 20px;\n  border-top: 1px solid #f2efea;\n  flex-shrink: 0;\n}\n.hire-messages-input-bar input {\n  flex: 1;\n  height: 44px;\n  padding: 0 16px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  font-size: 13.5px;\n  font-family: inherit;\n  color: #111111;\n  background: #fafaf8;\n  outline: none;\n  transition: border-color 0.2s;\n}\n.hire-messages-input-bar input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-messages-input-bar input::placeholder {\n  color: #b0a89e;\n}\n.hire-messages-input-bar input:focus {\n  border-color: #c8c2bb;\n  background: #ffffff;\n}\n\n.hire-send-btn {\n  width: 44px;\n  height: 44px;\n  border-radius: 12px;\n  background: #111111;\n  border: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #ffffff;\n  cursor: pointer;\n  flex-shrink: 0;\n  transition: opacity 0.15s;\n}\n.hire-send-btn:hover:not(:disabled) {\n  opacity: 0.82;\n}\n.hire-send-btn:disabled {\n  opacity: 0.35;\n  cursor: default;\n}\n\n.hire-messages-empty-state {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.hire-messages-empty-state p {\n  font-size: 14px;\n  color: #b0a89e;\n  margin: 0;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -30803,7 +31179,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "@charset \"UTF-8\";\n.jobs-cards-section {\n  width: 100%;\n  max-width: 1400px;\n  margin: 0 auto;\n  padding: 0 32px 60px;\n}\n.jobs-cards-section .jobs-cards-wrapper {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 20px;\n}\n.jobs-cards-section .job-card {\n  width: calc((100% - 40px) / 3);\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 28px 24px 24px;\n  position: relative;\n  transition: 0.25s ease;\n}\n.jobs-cards-section .job-card:hover {\n  border: 1px solid #000;\n  transform: translateY(-4px);\n}\n.jobs-cards-section .job-card.featured {\n  border: 1px solid #f2bc1b;\n  background: #fffdf6;\n}\n.jobs-cards-section .job-card .featured-badge {\n  position: absolute;\n  top: -18px;\n  right: 24px;\n  background: #fff3cd;\n  color: #c58a00;\n  border: 1px solid #f2d27a;\n  border-radius: 999px;\n  padding: 8px 18px;\n  font-size: 14px;\n  font-weight: 600;\n  line-height: 1;\n}\n.jobs-cards-section .job-card .job-card-top {\n  display: flex;\n  align-items: flex-start;\n  gap: 20px;\n}\n.jobs-cards-section .job-card .job-initials {\n  width: 76px;\n  height: 76px;\n  background: #f2efea;\n  border-radius: 18px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 26px;\n  font-weight: 600;\n  color: #111111;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card .job-card-content {\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n}\n.jobs-cards-section .job-card .job-title-row {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-start;\n  gap: 12px;\n}\n.jobs-cards-section .job-card .job-title-text {\n  min-height: 92px;\n}\n.jobs-cards-section .job-card .job-title-text h3 {\n  margin: 0 0 8px 0;\n  font-size: 18px;\n  font-weight: 700;\n  line-height: 1.35;\n  color: #111111;\n}\n.jobs-cards-section .job-card .job-title-text p {\n  margin: 0;\n  font-size: 16px;\n  color: #777777;\n  line-height: 1.4;\n}\n.jobs-cards-section .job-card .job-type {\n  background: #f2bc1b;\n  color: #111111;\n  border-radius: 999px;\n  padding: 10px 16px;\n  font-size: 14px;\n  white-space: nowrap;\n  line-height: 1;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card .job-details {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 14px;\n}\n.jobs-cards-section .job-card .job-details span {\n  font-size: 15px;\n  color: #7a746d;\n  line-height: 1.4;\n}\n.jobs-cards-section .job-card .job-tags {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 10px;\n}\n.jobs-cards-section .job-card .job-tags .job-tag {\n  background: #f2efea;\n  color: #7a746d;\n  border-radius: 999px;\n  padding: 7px 14px;\n  font-size: 14px;\n  line-height: 1;\n}\n.jobs-cards-section .jobs-pagination {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  gap: 10px;\n  margin-top: 40px;\n}\n.jobs-cards-section .jobs-pagination button {\n  width: 48px;\n  height: 48px;\n  border: 1px solid #dddddd;\n  background: #ffffff;\n  border-radius: 14px;\n  cursor: pointer;\n  font-size: 16px;\n}\n.jobs-cards-section .jobs-pagination .active-page {\n  background: #111111;\n  color: #ffffff;\n  border: 1px solid #111111;\n}\n.jobs-cards-section .jobs-pagination button:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n\n/* ── Responsive ── */\n@media (max-width: 1024px) {\n  .jobs-cards-section .job-card {\n    width: calc((100% - 20px) / 2);\n  }\n}\n@media (max-width: 768px) {\n  .jobs-cards-section {\n    padding: 0 20px 60px;\n  }\n  .jobs-cards-section .job-card {\n    width: 100%;\n  }\n}\n@media (max-width: 480px) {\n  .jobs-cards-section {\n    padding: 0 16px 40px;\n  }\n  .jobs-cards-section .job-card {\n    padding: 24px 16px 20px;\n  }\n  .jobs-cards-section .job-card .job-initials {\n    width: 56px;\n    height: 56px;\n    font-size: 20px;\n    border-radius: 14px;\n  }\n  .jobs-cards-section .job-card .job-title-text {\n    min-height: unset;\n  }\n  .jobs-cards-section .job-card .job-title-text h3 {\n    font-size: 16px;\n  }\n  .jobs-cards-section .job-card .job-title-text p {\n    font-size: 14px;\n  }\n  .jobs-cards-section .job-card .job-type {\n    font-size: 12px;\n    padding: 8px 12px;\n  }\n  .jobs-cards-section .job-card .job-details span {\n    font-size: 13px;\n  }\n  .jobs-cards-section .job-card .job-tags .job-tag {\n    font-size: 12px;\n    padding: 6px 12px;\n  }\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".jobs-cards-section {\n  width: 100%;\n  max-width: 1400px;\n  margin: 0 auto;\n  padding: 0 32px 60px;\n  text-align: left;\n}\n.jobs-cards-section .jobs-cards-wrapper {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 28px 20px;\n  padding-top: 12px;\n}\n.jobs-cards-section .job-card {\n  width: calc((100% - 40px) / 3);\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 28px 24px 24px;\n  position: relative;\n  transition: 0.25s ease;\n  display: flex;\n  flex-direction: column;\n  align-items: stretch;\n  gap: 16px;\n  text-align: left;\n}\n.jobs-cards-section .job-card:hover {\n  border: 1px solid #000;\n  transform: translateY(-4px);\n}\n.jobs-cards-section .job-card.featured {\n  border: 1px solid #f2bc1b;\n  background: #fffdf6;\n}\n.jobs-cards-section .job-card .featured-badge {\n  position: absolute;\n  top: -18px;\n  right: 24px;\n  background: #fff3cd;\n  color: #c58a00;\n  border: 1px solid #f2d27a;\n  border-radius: 999px;\n  padding: 8px 18px;\n  font-size: 14px;\n  font-weight: 600;\n  line-height: 1;\n  white-space: nowrap;\n  z-index: 2;\n}\n.jobs-cards-section .job-card .job-card-header {\n  display: flex;\n  align-items: flex-start;\n  gap: 16px;\n  width: 100%;\n}\n.jobs-cards-section .job-card .job-initials {\n  width: 76px;\n  height: 76px;\n  background: #f2efea;\n  border-radius: 18px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 26px;\n  font-weight: 600;\n  color: #111111;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card .job-title-block {\n  flex: 1;\n  min-width: 0;\n  padding-top: 4px;\n}\n.jobs-cards-section .job-card .job-title-block .job-title {\n  margin: 0 0 6px;\n  font-size: 18px;\n  font-weight: 700;\n  line-height: 1.35;\n  color: #111111;\n  word-break: break-word;\n}\n.jobs-cards-section .job-card .job-title-block .job-company {\n  margin: 0;\n  font-size: 16px;\n  color: #777777;\n  line-height: 1.4;\n}\n.jobs-cards-section .job-card .job-type {\n  background: #f2bc1b;\n  color: #111111;\n  border-radius: 999px;\n  padding: 10px 16px;\n  font-size: 14px;\n  white-space: nowrap;\n  line-height: 1;\n  flex-shrink: 0;\n  align-self: flex-start;\n  max-width: 38%;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.jobs-cards-section .job-card.featured .job-type {\n  margin-top: 6px;\n}\n.jobs-cards-section .job-card .job-card-meta {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  justify-content: flex-start;\n  gap: 8px 12px;\n  width: 100%;\n  padding-left: 92px;\n}\n.jobs-cards-section .job-card .job-card-meta .job-meta-item {\n  font-size: 15px;\n  color: #7a746d;\n  line-height: 1.4;\n  white-space: nowrap;\n}\n.jobs-cards-section .job-card .job-card-meta .job-meta-divider {\n  width: 4px;\n  height: 4px;\n  border-radius: 50%;\n  background: #c8c0b5;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card .job-tags {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: flex-start;\n  justify-content: flex-start;\n  gap: 10px;\n  width: 100%;\n  padding-left: 92px;\n}\n.jobs-cards-section .job-card .job-tags .job-tag {\n  background: #f2efea;\n  color: #7a746d;\n  border-radius: 999px;\n  padding: 7px 14px;\n  font-size: 14px;\n  line-height: 1;\n}\n.jobs-cards-section .jobs-pagination {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  gap: 10px;\n  margin-top: 40px;\n}\n.jobs-cards-section .jobs-pagination button {\n  width: 48px;\n  height: 48px;\n  border: 1px solid #dddddd;\n  background: #ffffff;\n  border-radius: 14px;\n  cursor: pointer;\n  font-size: 16px;\n}\n.jobs-cards-section .jobs-pagination .active-page {\n  background: #111111;\n  color: #ffffff;\n  border: 1px solid #111111;\n}\n.jobs-cards-section .jobs-pagination button:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n\n@media (max-width: 1024px) {\n  .jobs-cards-section .job-card {\n    width: calc((100% - 20px) / 2);\n  }\n}\n@media (max-width: 768px) {\n  .jobs-cards-section {\n    padding: 0 20px 60px;\n  }\n  .jobs-cards-section .job-card {\n    width: 100%;\n  }\n  .jobs-cards-section .job-card .job-card-meta,\n  .jobs-cards-section .job-card .job-tags {\n    padding-left: 0;\n  }\n}\n@media (max-width: 480px) {\n  .jobs-cards-section {\n    padding: 0 16px 40px;\n  }\n  .jobs-cards-section .job-card {\n    padding: 24px 16px 20px;\n  }\n  .jobs-cards-section .job-card .job-initials {\n    width: 56px;\n    height: 56px;\n    font-size: 20px;\n    border-radius: 14px;\n  }\n  .jobs-cards-section .job-card .job-title-block .job-title {\n    font-size: 16px;\n  }\n  .jobs-cards-section .job-card .job-title-block .job-company {\n    font-size: 14px;\n  }\n  .jobs-cards-section .job-card .job-type {\n    font-size: 12px;\n    padding: 8px 12px;\n  }\n  .jobs-cards-section .job-card .job-card-meta .job-meta-item {\n    font-size: 13px;\n  }\n  .jobs-cards-section .job-card .job-tags .job-tag {\n    font-size: 12px;\n    padding: 6px 12px;\n  }\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
