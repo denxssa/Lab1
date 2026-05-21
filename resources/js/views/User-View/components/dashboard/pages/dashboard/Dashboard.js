@@ -1,13 +1,9 @@
 import React from "react";
 import { FiBriefcase, FiFileText, FiMessageSquare, FiBell } from "react-icons/fi";
+import { usePlatformAdmin } from "../../../../../../context/PlatformAdminContext";
 import "./dashboard.scss";
 
-const stats = [
-  { id: "applied", icon: FiBriefcase, value: 1, label: "Applied Jobs", theme: "yellow" },
-  { id: "unfinished", icon: FiFileText, value: 0, label: "Unfinished Jobs", theme: "yellow" },
-  { id: "messages", icon: FiMessageSquare, value: 0, label: "New Message", theme: "yellow" },
-  { id: "notifications", icon: FiBell, value: 1, label: "Notification", theme: "yellow" },
-];
+const iconMap = { FiBriefcase, FiFileText, FiMessageSquare, FiBell };
 
 function StatCard({ icon: Icon, value, label, theme }) {
   return (
@@ -24,6 +20,13 @@ function StatCard({ icon: Icon, value, label, theme }) {
 }
 
  function Dashboard() {
+  const { data } = usePlatformAdmin();
+  const stats = data.userDashboardCards.map((card) => ({
+    ...card,
+    icon: iconMap[card.icon] || FiBriefcase,
+    theme: "yellow",
+  }));
+
   return (
     <main className="dash">
       <section className="stats-grid">
@@ -38,9 +41,6 @@ function StatCard({ icon: Icon, value, label, theme }) {
             <h3 className="panel-title">Unfinished Jobs</h3>
           </header>
           <div className="empty">
-            <div className="empty-icon" aria-hidden="true">
-              <FiBriefcase />
-            </div>
             <div className="empty-title">No jobs found.</div>
           </div>
         </div>
@@ -50,9 +50,6 @@ function StatCard({ icon: Icon, value, label, theme }) {
             <h3 className="panel-title">Pending Assessments</h3>
           </header>
           <div className="empty">
-            <div className="empty-icon is-doc" aria-hidden="true">
-              <FiFileText />
-            </div>
             <div className="empty-title">No assessments found.</div>
           </div>
         </div>

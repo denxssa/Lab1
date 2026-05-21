@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaFacebookF, FaGoogle, FaXTwitter } from 'react-icons/fa6';
 import { FiLock, FiMail } from 'react-icons/fi';
+import { useAuth } from '../../../../../context/AuthContext';
+import { getHomePathForRole } from '../../../../../utils/authRedirect';
 import './login.scss';
 
 const socialItems = [
@@ -27,14 +30,39 @@ function validate(values) {
     return errors;
 }
 
+function mapServerErrors(error) {
+    const data = error?.response?.data;
+    if (!data) {
+        return { form: 'Unable to sign in. Please try again.' };
+    }
+
+    if (data.errors) {
+        const mapped = {};
+        Object.entries(data.errors).forEach(([key, messages]) => {
+            mapped[key] = Array.isArray(messages) ? messages[0] : messages;
+        });
+        return mapped;
+    }
+
+    return { form: data.message || 'Invalid email or password.' };
+}
+
 export default function LoginContent() {
+    const navigate = useNavigate();
+    const { login, user, loading: authLoading } = useAuth();
     const [values, setValues] = useState({
         email: '',
         password: '',
         remember: false,
     });
     const [errors, setErrors] = useState({});
-    const [ok, setOk] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (!authLoading && user) {
+            navigate(getHomePathForRole(user.role), { replace: true });
+        }
+    }, [authLoading, user, navigate]);
 
     const onChange = (event) => {
         const { name, type, checked, value } = event.target;
@@ -44,23 +72,37 @@ export default function LoginContent() {
         };
 
         setValues(nextValues);
-        setErrors(validate(nextValues));
-        setOk(false);
+        setErrors((prev) => {
+            const next = { ...prev };
+            delete next[name];
+            delete next.form;
+            return { ...next, ...validate(nextValues) };
+        });
     };
 
-    const onSubmit = (event) => {
+    const onSubmit = async (event) => {
         event.preventDefault();
         const nextErrors = validate(values);
         setErrors(nextErrors);
 
         if (Object.keys(nextErrors).length > 0) {
-            setOk(false);
             return;
         }
 
-        setOk(true);
-        setValues({ email: '', password: '', remember: false });
-        setErrors({});
+        setSubmitting(true);
+
+        try {
+            const loggedInUser = await login({
+                email: values.email.trim(),
+                password: values.password,
+                remember: values.remember,
+            });
+            navigate(getHomePathForRole(loggedInUser?.role), { replace: true });
+        } catch (error) {
+            setErrors(mapServerErrors(error));
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -73,6 +115,10 @@ export default function LoginContent() {
                 </div>
 
                 <form className="li-form" onSubmit={onSubmit} noValidate>
+                    {errors.form && (
+                        <div className="li-form-error" role="alert">{errors.form}</div>
+                    )}
+
                     <label className={`li-field ${errors.email ? 'err' : ''}`} htmlFor="login-email">
                         <FiMail />
                         <input
@@ -82,6 +128,8 @@ export default function LoginContent() {
                             placeholder="Email"
                             value={values.email}
                             onChange={onChange}
+                            autoComplete="email"
+                            disabled={submitting}
                         />
                     </label>
                     <span className="li-msg">{errors.email ?? ''}</span>
@@ -95,6 +143,8 @@ export default function LoginContent() {
                             placeholder="Password"
                             value={values.password}
                             onChange={onChange}
+                            autoComplete="current-password"
+                            disabled={submitting}
                         />
                     </label>
                     <span className="li-msg">{errors.password ?? ''}</span>
@@ -107,16 +157,16 @@ export default function LoginContent() {
                                 type="checkbox"
                                 checked={values.remember}
                                 onChange={onChange}
+                                disabled={submitting}
                             />
                             <span>Remember me</span>
                         </label>
                         <a href="#" className="li-link">Forgot password?</a>
                     </div>
 
-                    <button type="submit" className="li-btn">Sign in</button>
-                    <div className={`li-ok ${ok ? 'show' : ''}`} role="status" aria-live="polite">
-                        Login details look good.
-                    </div>
+                    <button type="submit" className="li-btn" disabled={submitting || authLoading}>
+                        {submitting ? 'Signing in…' : 'Sign in'}
+                    </button>
                 </form>
 
                 <p className="li-alt">Don&apos;t have an account? <a href="/signup">Register</a></p>

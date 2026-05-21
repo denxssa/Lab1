@@ -8,7 +8,7 @@ const Sidebar = (props) => {
   return (
     <div className="mobile-sidebar">
       <div className="sidebar-logo-row">
-        <a href="/dashboard">
+        <a href="/user-dashboard/dashboard">
           <div className="mobile-logo-container"></div>
         </a>
         <button onClick={props.click}>
@@ -18,56 +18,56 @@ const Sidebar = (props) => {
 
       <div className="mobile-sidebar-links">
         <div className="nav-sidebar-link">
-          <a href="/dashboard" className="nav-anchor">
+          <a href="/user-dashboard/dashboard" className="nav-anchor">
             <FaHome />
             Dashboard
           </a>
         </div>
 
         <div className="nav-sidebar-link">
-          <a href="/resume" className="nav-anchor">
+          <a href="/user-dashboard/resume" className="nav-anchor">
             <FaFileAlt />
             Resume
           </a>
         </div>
 
         <div className="nav-sidebar-link">
-          <a href="/profile" className="nav-anchor">
+          <a href="/user-dashboard/profile" className="nav-anchor">
             <FaUser />
             Profile
           </a>
         </div>
 
         <div className="nav-sidebar-link">
-          <a href="/applied-jobs" className="nav-anchor">
+          <a href="/user-dashboard/applied-jobs" className="nav-anchor">
             <MdWork />
             Applied Jobs
           </a>
         </div>
 
         <div className="nav-sidebar-link">
-          <a href="/unfinished-jobs" className="nav-anchor">
+          <a href="/user-dashboard/unfinished-jobs" className="nav-anchor">
             <MdWork />
             Unfinished Jobs
           </a>
         </div>
 
         <div className="nav-sidebar-link">
-          <a href="/saved-jobs" className="nav-anchor">
+          <a href="/user-dashboard/saved-jobs" className="nav-anchor">
             <MdWork />
             Saved Jobs
           </a>
         </div>
 
         <div className="nav-sidebar-link">
-          <a href="/interviews" className="nav-anchor">
+          <a href="/user-dashboard/interviews" className="nav-anchor">
             <FaBriefcase />
             Interviews
           </a>
         </div>
 
         <div className="nav-sidebar-link">
-          <a href="/messages" className="nav-anchor">
+          <a href="/user-dashboard/messages" className="nav-anchor">
             <FaBriefcase />
             Messages
           </a>

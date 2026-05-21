@@ -4,14 +4,27 @@ import { FaLocationDot, FaUsers } from 'react-icons/fa6';
 import './CompaniesDetails.scss';
 import CompaniesForm from '../companiesForm/CompaniesForm';
 import CompaniesReview from '../companiesReview/CompaniesReview';
-
-import { companiesDetailsData } from './data';
+import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
 
 const CompaniesDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { data } = usePlatformAdmin();
+  const section = (data.homeSections || []).find((s) => s.key === 'companies_cards');
 
-  const company = companiesDetailsData.find((item) => item.id === Number(id));
+  const company = (section?.items || [])
+    .filter((item) => item.isActive !== false)
+    .map((item) => ({
+      id: item.metadata?.companyId ?? item.id,
+      name: item.title || 'Company',
+      logo: item.imageUrl,
+      location: item.metadata?.location || '—',
+      employees: item.metadata?.employees || '—',
+      history: item.metadata?.history || item.description || '',
+      intro: item.metadata?.detailIntro || 'Learn about the company story and read feedback shared by people who have worked there.',
+      reviews: Array.isArray(item.metadata?.reviews) ? item.metadata.reviews : [],
+    }))
+    .find((item) => String(item.id) === String(id));
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
@@ -47,7 +60,7 @@ const CompaniesDetails = () => {
               <div className="company-details-hero-content">
 
                 <p className="company-details-intro" data-aos="fade-up">
-                  Learn about the company story and read feedback shared by people who have worked there.
+                  {company.intro}
                 </p>
 
                 <div className="company-details-meta" data-aos="fade-up">

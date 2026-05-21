@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaFacebookF, FaGoogle, FaXTwitter } from 'react-icons/fa6';
 import { FiLock, FiMail, FiUser } from 'react-icons/fi';
+import { useAuth } from '../../../../../context/AuthContext';
+import { getHomePathForRole } from '../../../../../utils/authRedirect';
 import './Signup.scss';
 
 const socialItems = [
@@ -41,7 +44,26 @@ function validate(values) {
     return errors;
 }
 
+function mapServerErrors(error) {
+    const data = error?.response?.data;
+    if (!data) {
+        return { form: 'Unable to create account. Please try again.' };
+    }
+
+    if (data.errors) {
+        const mapped = {};
+        Object.entries(data.errors).forEach(([key, messages]) => {
+            mapped[key] = Array.isArray(messages) ? messages[0] : messages;
+        });
+        return mapped;
+    }
+
+    return { form: data.message || 'Registration failed.' };
+}
+
 export default function SignupContent() {
+    const navigate = useNavigate();
+    const { register, user, loading: authLoading } = useAuth();
     const [values, setValues] = useState({
         full_name: '',
         email: '',
@@ -51,7 +73,13 @@ export default function SignupContent() {
         newsletter: false,
     });
     const [errors, setErrors] = useState({});
-    const [ok, setOk] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (!authLoading && user) {
+            navigate(getHomePathForRole(user.role), { replace: true });
+        }
+    }, [authLoading, user, navigate]);
 
     const onChange = (event) => {
         const { name, type, checked, value } = event.target;
@@ -61,30 +89,38 @@ export default function SignupContent() {
         };
 
         setValues(nextValues);
-        setErrors(validate(nextValues));
-        setOk(false);
+        setErrors((prev) => {
+            const next = { ...prev };
+            delete next[name];
+            delete next.form;
+            return { ...next, ...validate(nextValues) };
+        });
     };
 
-    const onSubmit = (event) => {
+    const onSubmit = async (event) => {
         event.preventDefault();
         const nextErrors = validate(values);
         setErrors(nextErrors);
 
         if (Object.keys(nextErrors).length > 0) {
-            setOk(false);
             return;
         }
 
-        setOk(true);
-        setValues({
-            full_name: '',
-            email: '',
-            password: '',
-            password_confirmation: '',
-            terms: false,
-            newsletter: false,
-        });
-        setErrors({});
+        setSubmitting(true);
+
+        try {
+            const registeredUser = await register({
+                full_name: values.full_name.trim(),
+                email: values.email.trim(),
+                password: values.password,
+                password_confirmation: values.password_confirmation,
+            });
+            navigate(getHomePathForRole(registeredUser?.role), { replace: true });
+        } catch (error) {
+            setErrors(mapServerErrors(error));
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -97,6 +133,10 @@ export default function SignupContent() {
                 </div>
 
                 <form className="su-form" onSubmit={onSubmit} noValidate>
+                    {errors.form && (
+                        <div className="su-form-error" role="alert">{errors.form}</div>
+                    )}
+
                     <label className={`su-field ${errors.full_name ? 'err' : ''}`} htmlFor="signup-name">
                         <FiUser />
                         <input
@@ -106,6 +146,8 @@ export default function SignupContent() {
                             placeholder="Full name"
                             value={values.full_name}
                             onChange={onChange}
+                            autoComplete="name"
+                            disabled={submitting}
                         />
                     </label>
                     <span className="su-msg">{errors.full_name ?? ''}</span>
@@ -119,6 +161,8 @@ export default function SignupContent() {
                             placeholder="Email"
                             value={values.email}
                             onChange={onChange}
+                            autoComplete="email"
+                            disabled={submitting}
                         />
                     </label>
                     <span className="su-msg">{errors.email ?? ''}</span>
@@ -132,6 +176,8 @@ export default function SignupContent() {
                             placeholder="Password"
                             value={values.password}
                             onChange={onChange}
+                            autoComplete="new-password"
+                            disabled={submitting}
                         />
                     </label>
                     <span className="su-msg">{errors.password ?? ''}</span>
@@ -145,6 +191,8 @@ export default function SignupContent() {
                             placeholder="Confirm password"
                             value={values.password_confirmation}
                             onChange={onChange}
+                            autoComplete="new-password"
+                            disabled={submitting}
                         />
                     </label>
                     <span className="su-msg">{errors.password_confirmation ?? ''}</span>
@@ -156,6 +204,7 @@ export default function SignupContent() {
                             type="checkbox"
                             checked={values.terms}
                             onChange={onChange}
+                            disabled={submitting}
                         />
                         <span>I agree to the Terms and Privacy Policy.</span>
                     </label>
@@ -168,14 +217,14 @@ export default function SignupContent() {
                             type="checkbox"
                             checked={values.newsletter}
                             onChange={onChange}
+                            disabled={submitting}
                         />
                         <span>Send me product and hiring updates.</span>
                     </label>
 
-                    <button type="submit" className="su-btn">Create account</button>
-                    <div className={`su-ok ${ok ? 'show' : ''}`} role="status" aria-live="polite">
-                        Your details look good.
-                    </div>
+                    <button type="submit" className="su-btn" disabled={submitting || authLoading}>
+                        {submitting ? 'Creating account…' : 'Create account'}
+                    </button>
                 </form>
 
                 <p className="su-alt">Already have an account? <a href="/login">Log in</a></p>

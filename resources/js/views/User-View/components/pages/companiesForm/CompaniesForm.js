@@ -48,8 +48,8 @@ function CompaniesForm({ companyName = 'this company', onAddReview }) {
   };
 
   return (
-    <section className="company-review-form-section">
-      <article className="company-review-card">
+    <section className="company-review-form-section" data-aos="fade-up">
+      <article className="company-review-card" data-aos="fade-up">
         <div className="company-review-card-head">
           <p className="company-review-eyebrow">Add review</p>
           <h2>Share your experience with {companyName}.</h2>
@@ -58,7 +58,7 @@ function CompaniesForm({ companyName = 'this company', onAddReview }) {
           </p>
         </div>
 
-        <form className="company-review-form" onSubmit={handleSubmit} noValidate>
+        <form className="company-review-form" onSubmit={handleSubmit} noValidate data-aos="fade-up">
           <div className="company-review-form-row">
             <Field
               id="review-author"
@@ -69,6 +69,7 @@ function CompaniesForm({ companyName = 'this company', onAddReview }) {
               error={errors.author}
               icon={<FiUser />}
               onChange={handleChange}
+              
             />
 
             <Field

@@ -1,19 +1,48 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
     FaArrowRight,
 } from "react-icons/fa6";
+import { usePlatformAdmin } from "../../../../../context/PlatformAdminContext";
+import { getCategoryIcon } from "../../../../../utils/categoryIcons";
 import "./Categories.scss";
-import categories from "./data";
+import categoriesFallback from "./data";
 
 const Categories = () => {
+    const { data } = usePlatformAdmin();
+    const homeContent = data.homeContent || {};
+    const categoriesSection = (data.homeSections || []).find((s) => s.key === "categories");
+
+    const categories = useMemo(() => {
+        const raw = (categoriesSection?.items || []).filter((item) => item.isActive !== false);
+        if (raw.length === 0) {
+            return categoriesFallback.map(({ slug, title, positions, Icon }) => ({
+                slug,
+                title,
+                positions,
+                Icon,
+            }));
+        }
+        return raw.map((item) => {
+            const slug = item.metadata?.slug || String(item.title || "").toLowerCase().replace(/\s+/g, "-");
+            const positions = item.metadata?.positions ?? 0;
+            const Icon = getCategoryIcon(item.metadata?.iconKey);
+            return {
+                slug,
+                title: item.title || slug,
+                positions,
+                Icon,
+            };
+        });
+    }, [categoriesSection]);
+
     return (
         <section className="category-section" data-aos="slide-up">
             <header className="category-section-header">
                 <h2 id="category-section-title" className="category-section-title">
-                    Popular category
+                    {homeContent.categoriesTitle || 'Popular category'}
                 </h2>
                 <a href="/categories" className="category-section-link">
-                    View All <FaArrowRight className="category-section-link-icon" aria-hidden />
+                    {homeContent.categoriesCta || 'View All'} <FaArrowRight className="category-section-link-icon" aria-hidden />
                 </a>
             </header>
 

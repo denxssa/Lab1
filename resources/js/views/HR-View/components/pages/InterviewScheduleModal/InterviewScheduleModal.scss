@@ -1,0 +1,33 @@
+@import '../ScheduleInterviewModal/ScheduleInterviewModal.scss';
+
+.ism-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3d3832;
+
+  input,
+  select,
+  textarea {
+    font-weight: 400;
+    padding: 10px 12px;
+    border: 1px solid #e7dfd4;
+    border-radius: 10px;
+    font-family: inherit;
+  }
+}
+
+.ism-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ism-error {
+  color: #b42318;
+  font-size: 13px;
+  margin: 0 0 12px;
+}

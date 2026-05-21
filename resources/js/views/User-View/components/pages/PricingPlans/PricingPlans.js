@@ -1,15 +1,19 @@
 import React from 'react';
 import './PricingPlans.scss';
+import usePricingContent from '../../../../../hooks/usePricingContent';
 
-const plans = [
+const FALLBACK_PLANS = [
   {
+    id: 'basic',
     name: 'Basic',
     price: '$19.99',
     period: '/month',
     summary: 'For small teams hiring occasionally.',
     highlights: ['1 active role', 'Up to 5 evaluators', 'Email support'],
+    featured: false,
   },
   {
+    id: 'standard',
     name: 'Standard',
     price: '$49.99',
     period: '/month',
@@ -18,22 +22,31 @@ const plans = [
     featured: true,
   },
   {
+    id: 'premium',
     name: 'Premium',
     price: '$99',
     period: '/month',
     summary: 'For organizations with strict workflows and compliance needs.',
     highlights: ['Unlimited roles', 'Approval workflows', 'SSO and audit export'],
+    featured: false,
   },
 ];
 
 const PricingPlans = () => {
+  const { plans: apiPlans } = usePricingContent();
+
+  // Use API plans if loaded and non-empty, else fallback
+  const plans = (apiPlans && apiPlans.length > 0) ? apiPlans : FALLBACK_PLANS;
+
   return (
     <section className="pricing-plans">
       <div className="pricing-container pricing-plans__grid">
-        {plans.map((plan) => (
+        {plans.map((plan, i) => (
           <article
             className={`pricing-card ${plan.featured ? 'pricing-card--featured' : ''}`.trim()}
-            key={plan.name}
+            key={plan.id || plan.name}
+            data-aos="fade-up"
+            data-aos-delay={i * 100}
           >
             {plan.featured && <span className="pricing-card__badge">Most Popular</span>}
             <h3>{plan.name}</h3>
@@ -43,7 +56,7 @@ const PricingPlans = () => {
             </p>
             <p className="pricing-card__summary">{plan.summary}</p>
             <ul>
-              {plan.highlights.map((item) => (
+              {(plan.highlights || []).map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>

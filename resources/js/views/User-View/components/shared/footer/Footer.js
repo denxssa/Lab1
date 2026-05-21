@@ -1,12 +1,75 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
+import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
+import { getFooterSocialIcon } from '../../../../../utils/footerSocialIcons';
 import { FooterData, SocialMedia } from './data';
-// import SelectLanguage from '../SelectLanguage/SelectLanguage';
 import './footer.scss'
 
-const Footer = (props) => {
+const Footer = () => {
+    const { data } = usePlatformAdmin();
+    const section = (data.homeSections || []).find((s) => s.key === "footer");
+    const config = section?.items?.[0]?.metadata;
 
-    return(
+    if (config && config.brand) {
+        const { brand, social = [], columns = [], copyright } = config;
+        return (
+            <div className='shared-footer'>
+                <div className="main-row">
+                    <div className="first-col">
+                        <div className="top">
+                            <a href='/' className='logo-container'>
+                                <div className="logo"></div>
+                            </a>
+                            <h5>{brand.tagline || 'Find the best job for you.'}</h5>
+                            <p><span className="footer-label">PHONE</span>: {brand.phone || ''}</p>
+                            <p><span className="footer-label">EMAIL</span>: {brand.email || ''}</p>
+                        </div>
+                        <div className="links1">
+                            {social.map((row, index) => {
+                                const Icon = getFooterSocialIcon(row.iconKey);
+                                return (
+                                    <a
+                                        key={`${row.url}-${index}`}
+                                        href={row.url || '/'}
+                                        aria-label={row.label || `Social link ${index + 1}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        <Icon />
+                                    </a>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className='all-footer-links'>
+                        {(columns || []).map((col, categoryIndex) => (
+                            <div className="footer-list" key={`footer-category-${categoryIndex}`}>
+                                <h6>{col.category}</h6>
+                                <div className="links">
+                                    {(col.links || []).map((l, linkIndex) => (
+                                        <a
+                                            key={`${l.href}-${linkIndex}`}
+                                            href={l.href || '/'}
+                                            className="footer-item"
+                                        >
+                                            {l.label}
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="last-row">
+                    <p>{copyright || '© 2026 BEE HIRED  | ALL RIGHTS RESERVED'}</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
         <div className='shared-footer'>
 
             <div className="main-row">
@@ -62,11 +125,6 @@ const Footer = (props) => {
             <div className="last-row">
 
                 <p><FormattedMessage id='footer-paragraph2' defaultMessage='© 2026 BEE HIRED  | ALL RIGHTS RESERVED' /></p>
-     
-                {/* <SelectLanguage
-                    setLanguage={props.setLanguage}
-                    language={props.language}
-                /> */}
             </div>
         </div>
     )

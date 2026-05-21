@@ -1,11 +1,32 @@
-import React from "react";
+import React, { useMemo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { FormattedMessage } from "react-intl";
-import { Data } from "./data";
+import { usePlatformAdmin } from "../../../../../context/PlatformAdminContext";
+import { Data as testimonialsFallback } from "./data";
 import { ImQuotesLeft } from "react-icons/im";
 import "./Testimonal.scss";
 
 const Testimonials = () => {
+  const { data } = usePlatformAdmin();
+  const section = (data.homeSections || []).find((s) => s.key === "testimonials");
+
+  const slides = useMemo(() => {
+    const raw = (section?.items || []).filter((item) => item.isActive !== false);
+    if (raw.length === 0) {
+      return testimonialsFallback.map((item) => ({
+        quote: item.comment.defaultMessage,
+        name: item.name,
+        location: item.location.defaultMessage,
+      }));
+    }
+    return raw.map((item) => ({
+      quote: item.description || '',
+      name: item.title || '',
+      location: item.subtitle || '',
+    }));
+  }, [section]);
+
+  const heading = section?.title || 'What our clients say about us';
+
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "start",
@@ -17,16 +38,13 @@ const Testimonials = () => {
   return (
     <div className="shared-testimonials">
       <h1 data-aos="fade-up">
-        <FormattedMessage
-          id="shared-testimonials-title"
-          defaultMessage="What our clients say about us"
-        />
+        {heading}
       </h1>
 
       <div className="embla" data-aos="slide-up">
         <div className="embla__viewport" ref={emblaRef}>
           <div className="embla__container">
-            {Data.map((item, index) => (
+            {slides.map((item, index) => (
               <div className="embla__slide" key={index} data-aos="flip-left">
                 <div className="slider-item">
                   <div className="bg"></div>
@@ -36,23 +54,13 @@ const Testimonials = () => {
                       <div className="quote">
                         <ImQuotesLeft />
                       </div>
-                      <p>
-                        <FormattedMessage
-                          id={item.comment.id}
-                          defaultMessage={item.comment.defaultMessage}
-                        />
-                      </p>
+                      <p>{item.quote}</p>
                     </div>
 
                     <div className="bottom">
                       <div className="line2"></div>
                       <h6>{item.name}</h6>
-                      <small>
-                        <FormattedMessage
-                          id={item.location.id}
-                          defaultMessage={item.location.defaultMessage}
-                        />
-                      </small>
+                      <small>{item.location}</small>
                     </div>
                   </div>
                 </div>
