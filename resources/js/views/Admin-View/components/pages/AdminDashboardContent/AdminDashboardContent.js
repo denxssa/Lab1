@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FiEdit2, FiExternalLink } from 'react-icons/fi';
+import { FiEdit2, FiExternalLink, FiUsers } from 'react-icons/fi';
 import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
 import AdminHomeSectionsPanel from './AdminHomeSectionsPanel';
 import '../../shared/AdminShared.scss';
@@ -162,6 +162,36 @@ const AdminDashboardContent = () => {
           heading="Companies database"
           description="Manage company listing cards and each company details page from the same database records."
         />
+      )}
+
+      {activePage === 'about' && (
+        <section className="admin-card">
+          <div className="admin-card-head">
+            <div>
+              <h2>Team Members</h2>
+              <p>Manage the team photos, names, and bios that appear on the About Us page.</p>
+            </div>
+            <a className="admin-btn admin-btn-dark" href="/admin-dashboard/team">
+              <FiUsers />
+              Manage Team
+            </a>
+          </div>
+        </section>
+      )}
+
+      {activePage === 'pricing' && (
+        <section className="admin-card">
+          <div className="admin-card-head">
+            <div>
+              <h2>Pricing Plans</h2>
+              <p>Add, edit, or remove the pricing plans that appear on the Pricing page.</p>
+            </div>
+            <a className="admin-btn admin-btn-dark" href="/admin-dashboard/pricing">
+              <FiUsers />
+              Manage Plans
+            </a>
+          </div>
+        </section>
       )}
 
       {fields.length > 0 && (

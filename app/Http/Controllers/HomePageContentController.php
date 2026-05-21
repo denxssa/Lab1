@@ -35,6 +35,17 @@ class HomePageContentController extends Controller
         'find_job_highlight' => 'Opportunity',
         'find_job_description' => 'Browse 20+ open positions across top companies. Your dream job is one search away.',
         'find_job_cta' => 'Explore the job market',
+        'about_hero_eyebrow' => 'About Bee Hired',
+        'about_hero_title' => 'People hire people. BeeHired keeps it fair.',
+        'about_hero_description' => 'From the first announcement to the final shortlist, every step stays visible, structured, and easy for teams to manage together.',
+        'about_mission_title' => 'Built to keep hiring clear, structured, and easy to manage',
+        'about_mission_description' => 'Recruitment is often fragmented across email, spreadsheets, and disconnected tools. BeeHired consolidates announcements, applications, evaluations, and decisions in one secure platform.',
+        'about_stats_title' => 'Our Work',
+        'about_primary_cta' => 'Read About BeeHired',
+        'pricing_hero_eyebrow' => 'Pricing',
+        'pricing_hero_title' => 'Scale your team, not your costs.',
+        'pricing_hero_description' => 'Launch lean, scale as you grow, and keep every hiring decision visible from first application to final offer.',
+        'pricing_primary_cta' => 'Get Started',
     ];
 
     private const DEFAULT_SECTIONS = [
@@ -233,10 +244,49 @@ class HomePageContentController extends Controller
             'findJobHighlight' => ['nullable', 'string', 'max:255'],
             'findJobDescription' => ['nullable', 'string'],
             'findJobCta' => ['nullable', 'string', 'max:255'],
+            'heroEyebrow' => ['nullable', 'string', 'max:255'],
+            'missionTitle' => ['nullable', 'string', 'max:255'],
+            'missionDescription' => ['nullable', 'string'],
+            'statsTitle' => ['nullable', 'string', 'max:255'],
+            'plansTitle' => ['nullable', 'string', 'max:255'],
+            'faqTitle' => ['nullable', 'string', 'max:255'],
         ]);
 
         $content = $this->ensureDefaultContent();
         $pageKey = $validated['_pageKey'] ?? 'home';
+
+        if ($pageKey === 'pricing') {
+            $content->fill([
+                'pricing_hero_eyebrow'     => $validated['heroEyebrow']     ?? $content->pricing_hero_eyebrow,
+                'pricing_hero_title'       => $validated['heroTitle']        ?? $content->pricing_hero_title,
+                'pricing_hero_description' => $validated['heroDescription']  ?? $content->pricing_hero_description,
+                'pricing_primary_cta'      => $validated['primaryCta']       ?? $content->pricing_primary_cta,
+            ]);
+            $content->save();
+
+            return response()->json([
+                'message'     => 'Pricing page content updated successfully.',
+                'pageContent' => $this->toPageContentShape($content),
+            ]);
+        }
+
+        if ($pageKey === 'about') {
+            $content->fill([
+                'about_hero_eyebrow'        => $validated['heroEyebrow']        ?? $content->about_hero_eyebrow,
+                'about_hero_title'          => $validated['heroTitle']          ?? $content->about_hero_title,
+                'about_hero_description'    => $validated['heroDescription']    ?? $content->about_hero_description,
+                'about_mission_title'       => $validated['missionTitle']       ?? $content->about_mission_title,
+                'about_mission_description' => $validated['missionDescription'] ?? $content->about_mission_description,
+                'about_stats_title'         => $validated['statsTitle']         ?? $content->about_stats_title,
+                'about_primary_cta'         => $validated['primaryCta']         ?? $content->about_primary_cta,
+            ]);
+            $content->save();
+
+            return response()->json([
+                'message' => 'About page content updated successfully.',
+                'pageContent' => $this->toPageContentShape($content),
+            ]);
+        }
 
         if ($pageKey === 'companies') {
             $content->fill([
@@ -414,12 +464,27 @@ class HomePageContentController extends Controller
         return [
             'home' => $this->toFrontendShape($content),
             'companies' => [
-                'heroEyebrow' => $content->companies_page_hero_eyebrow,
-                'heroTitle' => $content->companies_page_hero_title,
-                'heroDescription' => $content->companies_page_hero_description,
-                'featuredTitle' => $content->companies_page_featured_title,
-                'featuredDescription' => $content->companies_page_featured_description,
-                'primaryCta' => $content->companies_page_primary_cta,
+                'heroEyebrow'        => $content->companies_page_hero_eyebrow,
+                'heroTitle'          => $content->companies_page_hero_title,
+                'heroDescription'    => $content->companies_page_hero_description,
+                'featuredTitle'      => $content->companies_page_featured_title,
+                'featuredDescription'=> $content->companies_page_featured_description,
+                'primaryCta'         => $content->companies_page_primary_cta,
+            ],
+            'pricing' => [
+                'heroEyebrow'    => $content->pricing_hero_eyebrow,
+                'heroTitle'      => $content->pricing_hero_title,
+                'heroDescription'=> $content->pricing_hero_description,
+                'primaryCta'     => $content->pricing_primary_cta,
+            ],
+            'about' => [
+                'heroEyebrow'        => $content->about_hero_eyebrow,
+                'heroTitle'          => $content->about_hero_title,
+                'heroDescription'    => $content->about_hero_description,
+                'missionTitle'       => $content->about_mission_title,
+                'missionDescription' => $content->about_mission_description,
+                'statsTitle'         => $content->about_stats_title,
+                'primaryCta'         => $content->about_primary_cta,
             ],
         ];
     }

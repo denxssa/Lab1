@@ -28,5 +28,16 @@ class HomePageContent extends Model
         'find_job_highlight',
         'find_job_description',
         'find_job_cta',
+        'about_hero_eyebrow',
+        'about_hero_title',
+        'about_hero_description',
+        'about_mission_title',
+        'about_mission_description',
+        'about_stats_title',
+        'about_primary_cta',
+        'pricing_hero_eyebrow',
+        'pricing_hero_title',
+        'pricing_hero_description',
+        'pricing_primary_cta',
     ];
 }
