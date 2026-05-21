@@ -1,33 +1,226 @@
-@import '../ScheduleInterviewModal/ScheduleInterviewModal.scss';
+.ism-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(17, 17, 17, 0.46);
+}
+
+.ism-modal {
+  width: min(100%, 620px);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #e7dfd4;
+  border-radius: 18px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);
+}
+
+.ism-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 26px 28px 0;
+
+  h2 {
+    margin: 0 0 5px;
+    color: #111111;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  p {
+    margin: 0;
+    color: #7a746d;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
+
+.ism-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 10px;
+  background: #f2efea;
+  color: #7a746d;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background: #e7dfd4;
+    color: #111111;
+  }
+}
+
+.ism-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 28px 28px;
+}
 
 .ism-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 14px;
+  gap: 7px;
+  color: #111111;
   font-size: 13px;
   font-weight: 600;
-  color: #3d3832;
 
   input,
   select,
   textarea {
-    font-weight: 400;
-    padding: 10px 12px;
+    width: 100%;
     border: 1px solid #e7dfd4;
-    border-radius: 10px;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #111111;
     font-family: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+
+    &::placeholder {
+      color: #b0a89e;
+    }
+
+    &:focus {
+      border-color: #c8c2bb;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    }
+
+    &:disabled {
+      background: #fafaf8;
+      color: #9a948c;
+      cursor: not-allowed;
+    }
+  }
+
+  input,
+  select {
+    height: 44px;
+    padding: 0 14px;
+  }
+
+  textarea {
+    min-height: 92px;
+    resize: vertical;
+    padding: 12px 14px;
+    line-height: 1.5;
   }
 }
 
 .ism-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .ism-error {
-  color: #b42318;
+  margin: 0;
+  border: 1px solid #f5b4b4;
+  border-radius: 12px;
+  background: #fde8e8;
+  color: #bf1603;
   font-size: 13px;
-  margin: 0 0 12px;
+  line-height: 1.45;
+  padding: 10px 12px;
+}
+
+.ism-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.ism-cancel,
+.ism-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  border-radius: 10px;
+  padding: 0 18px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.ism-cancel {
+  border: 1px solid #e7dfd4;
+  background: #ffffff;
+  color: #555050;
+
+  &:hover {
+    border-color: #c8c2bb;
+    color: #111111;
+  }
+}
+
+.ism-submit {
+  border: none;
+  background: #fdd535;
+  color: #111111;
+
+  &:hover:not(:disabled) {
+    background: #f5cb00;
+    box-shadow: 0 4px 14px rgba(253, 213, 53, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 640px) {
+  .ism-overlay {
+    align-items: flex-end;
+    padding: 12px;
+  }
+
+  .ism-modal {
+    max-height: 94vh;
+    border-radius: 16px;
+  }
+
+  .ism-header {
+    padding: 22px 18px 0;
+  }
+
+  .ism-form {
+    padding: 20px 18px 22px;
+  }
+
+  .ism-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ism-footer {
+    flex-direction: column-reverse;
+  }
+
+  .ism-cancel,
+  .ism-submit {
+    width: 100%;
+  }
 }
