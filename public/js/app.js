@@ -17573,9 +17573,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _api_interviewsApi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../api/interviewsApi */ "./resources/js/api/interviewsApi.js");
-/* harmony import */ var _InterviewScheduleModal_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./InterviewScheduleModal.scss */ "./resources/js/views/HR-View/components/pages/InterviewScheduleModal/InterviewScheduleModal.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
+/* harmony import */ var _api_interviewsApi__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../api/interviewsApi */ "./resources/js/api/interviewsApi.js");
+/* harmony import */ var _InterviewScheduleModal_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./InterviewScheduleModal.scss */ "./resources/js/views/HR-View/components/pages/InterviewScheduleModal/InterviewScheduleModal.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
@@ -17592,6 +17593,7 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+
 
 
 
@@ -17639,7 +17641,7 @@ var InterviewScheduleModal = function InterviewScheduleModal(_ref3) {
     error = _useState8[0],
     setError = _useState8[1];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    (0,_api_interviewsApi__WEBPACK_IMPORTED_MODULE_1__.listCandidates)().then(function (data) {
+    (0,_api_interviewsApi__WEBPACK_IMPORTED_MODULE_2__.listCandidates)().then(function (data) {
       setCandidates((data.candidates || []).map(normalizeCandidate).filter(function (c) {
         return c.id;
       }));
@@ -17738,55 +17740,57 @@ var InterviewScheduleModal = function InterviewScheduleModal(_ref3) {
       return _ref4.apply(this, arguments);
     };
   }();
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
     className: "ism-overlay",
     onClick: onClose,
     role: "presentation",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "ism-modal",
       onClick: function onClick(e) {
         return e.stopPropagation();
       },
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
         className: "ism-header",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h2", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h2", {
             children: interview ? 'Edit interview' : 'Schedule interview'
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
             children: "Assign a candidate and generate a secure interview link."
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
           type: "button",
           className: "ism-close",
           onClick: onClose,
           "aria-label": "Close",
-          children: "\u2715"
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiX, {
+            "aria-hidden": "true"
+          })
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("form", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("form", {
         className: "ism-form",
         onSubmit: handleSubmit,
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
           className: "ism-field",
-          children: ["Candidate", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("select", {
+          children: ["Candidate", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("select", {
             value: form.candidate_user_id,
             onChange: function onChange(e) {
               return handleChange('candidate_user_id', e.target.value);
             },
             required: true,
             disabled: Boolean(interview),
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
               value: "",
               children: "Select candidate"
             }), candidates.map(function (c) {
-              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("option", {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("option", {
                 value: c.id,
                 children: [c.name, c.email ? " (".concat(c.email, ")") : '']
               }, c.id);
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
           className: "ism-field",
-          children: ["Position / title", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+          children: ["Position / title", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
             type: "text",
             value: form.title,
             onChange: function onChange(e) {
@@ -17795,9 +17799,9 @@ var InterviewScheduleModal = function InterviewScheduleModal(_ref3) {
             placeholder: "Senior Frontend Developer",
             required: true
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
           className: "ism-field",
-          children: ["Company", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+          children: ["Company", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
             type: "text",
             value: form.company,
             onChange: function onChange(e) {
@@ -17805,11 +17809,11 @@ var InterviewScheduleModal = function InterviewScheduleModal(_ref3) {
             },
             placeholder: "TechHive"
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "ism-row",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
             className: "ism-field",
-            children: ["Date", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+            children: ["Date", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
               type: "date",
               value: form.scheduled_at,
               onChange: function onChange(e) {
@@ -17817,9 +17821,9 @@ var InterviewScheduleModal = function InterviewScheduleModal(_ref3) {
               },
               required: true
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
             className: "ism-field",
-            children: ["Time", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+            children: ["Time", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
               type: "time",
               value: form.scheduled_time,
               onChange: function onChange(e) {
@@ -17828,51 +17832,51 @@ var InterviewScheduleModal = function InterviewScheduleModal(_ref3) {
               required: true
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "ism-row",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
             className: "ism-field",
-            children: ["Duration", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("select", {
+            children: ["Duration", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("select", {
               value: form.duration_minutes,
               onChange: function onChange(e) {
                 return handleChange('duration_minutes', e.target.value);
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
                 value: "30",
                 children: "30 min"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
                 value: "45",
                 children: "45 min"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
                 value: "60",
                 children: "1 hour"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
                 value: "90",
                 children: "1.5 hours"
               })]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
             className: "ism-field",
-            children: ["Format", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("select", {
+            children: ["Format", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("select", {
               value: form.type,
               onChange: function onChange(e) {
                 return handleChange('type', e.target.value);
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
                 value: "video",
                 children: "Video"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
                 value: "phone",
                 children: "Phone"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
                 value: "in_person",
                 children: "In-person"
               })]
             })]
           })]
-        }), form.type === 'in_person' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+        }), form.type === 'in_person' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
           className: "ism-field",
-          children: ["Location", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+          children: ["Location", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
             type: "text",
             value: form.location,
             onChange: function onChange(e) {
@@ -17880,9 +17884,9 @@ var InterviewScheduleModal = function InterviewScheduleModal(_ref3) {
             },
             placeholder: "Office \u2013 Room 3A"
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
           className: "ism-field",
-          children: ["Interviewer", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+          children: ["Interviewer", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
             type: "text",
             value: form.interviewer_name,
             onChange: function onChange(e) {
@@ -17890,9 +17894,9 @@ var InterviewScheduleModal = function InterviewScheduleModal(_ref3) {
             },
             placeholder: "Sarah K."
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
           className: "ism-field",
-          children: ["Notes", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("textarea", {
+          children: ["Notes", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("textarea", {
             value: form.notes,
             onChange: function onChange(e) {
               return handleChange('notes', e.target.value);
@@ -17900,17 +17904,17 @@ var InterviewScheduleModal = function InterviewScheduleModal(_ref3) {
             rows: 3,
             placeholder: "Optional notes for the candidate"
           })]
-        }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
           className: "ism-error",
           children: error
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "ism-footer",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
             type: "button",
             className: "ism-cancel",
             onClick: onClose,
             children: "Cancel"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
             type: "submit",
             className: "ism-submit",
             disabled: loading,
@@ -18677,10 +18681,7 @@ var HireDashboard = function HireDashboard() {
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_pages_HireDashboardHeader_HireDashboardHeader__WEBPACK_IMPORTED_MODULE_1__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_pages_HireDashboardStats_HireDashboardStats__WEBPACK_IMPORTED_MODULE_2__["default"], {
       setActiveTab: setActiveTab
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_pages_HireDashboardApplications_HireDashboardApplications__WEBPACK_IMPORTED_MODULE_3__["default"], {
-      activeTab: activeTab,
-      setActiveTab: setActiveTab
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_pages_HireDashboardListings_HireDashboardListings__WEBPACK_IMPORTED_MODULE_4__["default"], {})]
+    })]
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (HireDashboard);
@@ -30363,7 +30364,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".hire-dashboard-interviews-section {\n  width: 100%;\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-dashboard-interviews-section {\n    padding: 24px 16px 48px;\n  }\n}\n.hire-dashboard-interviews-section .hire-interviews-wrapper {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 28px 24px 24px;\n}\n@media (max-width: 768px) {\n  .hire-dashboard-interviews-section .hire-interviews-wrapper {\n    padding: 20px 14px;\n  }\n}\n.hire-dashboard-interviews-section .hire-interviews-eyebrow {\n  display: block;\n  color: #0b7a75;\n  font-size: 12px;\n  font-weight: 700;\n  letter-spacing: 0.04em;\n  text-transform: uppercase;\n  margin-bottom: 4px;\n}\n.hire-dashboard-interviews-section .hire-interviews-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-start;\n  flex-wrap: wrap;\n  gap: 14px;\n  margin-bottom: 20px;\n}\n.hire-dashboard-interviews-section .hire-interviews-header h2 {\n  margin: 0;\n  font-size: 22px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-dashboard-interviews-section .hire-interviews-header-actions {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  flex-wrap: wrap;\n}\n.hire-dashboard-interviews-section .hire-interviews-schedule-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 7px;\n  height: 38px;\n  padding: 0 16px;\n  background: #111111;\n  color: #ffffff;\n  border: none;\n  border-radius: 999px;\n  font-size: 13px;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  white-space: nowrap;\n  transition: background 0.2s, transform 0.15s;\n}\n.hire-dashboard-interviews-section .hire-interviews-schedule-btn:hover {\n  background: #333333;\n  transform: translateY(-1px);\n}\n.hire-dashboard-interviews-section .hire-interviews-empty {\n  text-align: center;\n  color: #7a746d;\n  font-size: 14px;\n  padding: 32px 0;\n  margin: 0;\n}\n.hire-dashboard-interviews-section .hire-interviews-tabs {\n  display: flex;\n  gap: 8px;\n  flex-wrap: wrap;\n}\n.hire-dashboard-interviews-section .hire-interviews-tabs .hire-tab {\n  background: #f2efea;\n  border: none;\n  border-radius: 999px;\n  padding: 8px 16px;\n  font-size: 13px;\n  font-weight: 500;\n  color: #7a746d;\n  cursor: pointer;\n  transition: 0.2s ease;\n  font-family: inherit;\n}\n.hire-dashboard-interviews-section .hire-interviews-tabs .hire-tab.active {\n  background: #111111;\n  color: #ffffff;\n}\n.hire-dashboard-interviews-section .hire-interviews-tabs .hire-tab:hover:not(.active) {\n  background: #e7dfd4;\n  color: #111111;\n}\n.hire-dashboard-interviews-section .hire-interviews-join {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 24px;\n  padding: 20px 22px;\n  margin-bottom: 20px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  background: #fafaf8;\n  flex-wrap: wrap;\n}\n.hire-dashboard-interviews-section .hire-interviews-join h3 {\n  margin: 0 0 6px;\n  font-size: 16px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-dashboard-interviews-section .hire-interviews-join p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n.hire-dashboard-interviews-section .hire-interviews-join-form {\n  display: flex;\n  gap: 10px;\n  width: min(100%, 440px);\n  flex-shrink: 0;\n}\n.hire-dashboard-interviews-section .hire-interviews-join-form input {\n  flex: 1;\n  min-width: 0;\n  height: 42px;\n  border: 1px solid #e7dfd4;\n  border-radius: 8px;\n  padding: 0 14px;\n  color: #111111;\n  font-size: 14px;\n  font-family: inherit;\n  background: #ffffff;\n  outline: none;\n  transition: border-color 0.2s, box-shadow 0.2s;\n}\n.hire-dashboard-interviews-section .hire-interviews-join-form input::-moz-placeholder {\n  color: #b0a99f;\n}\n.hire-dashboard-interviews-section .hire-interviews-join-form input::placeholder {\n  color: #b0a99f;\n}\n.hire-dashboard-interviews-section .hire-interviews-join-form input:focus {\n  border-color: #0b7a75;\n  box-shadow: 0 0 0 3px rgba(11, 122, 117, 0.12);\n}\n.hire-dashboard-interviews-section .hire-interviews-join-form button {\n  display: inline-flex;\n  align-items: center;\n  gap: 7px;\n  height: 42px;\n  padding: 0 18px;\n  background: #0b7a75;\n  color: #ffffff;\n  border: none;\n  border-radius: 8px;\n  font-size: 14px;\n  font-weight: 700;\n  font-family: inherit;\n  cursor: pointer;\n  white-space: nowrap;\n  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;\n}\n.hire-dashboard-interviews-section .hire-interviews-join-form button:hover {\n  background: #09625e;\n  box-shadow: 0 8px 20px rgba(11, 122, 117, 0.2);\n  transform: translateY(-1px);\n}\n@media (max-width: 500px) {\n  .hire-dashboard-interviews-section .hire-interviews-join-form {\n    width: 100%;\n    flex-direction: column;\n  }\n  .hire-dashboard-interviews-section .hire-interviews-join-form button {\n    width: 100%;\n    justify-content: center;\n  }\n}\n.hire-dashboard-interviews-section .hire-interviews-list {\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n}\n.hire-dashboard-interviews-section .hire-interview-invite-panel {\n  margin-bottom: 22px;\n  padding: 20px;\n  border: 1px solid #e7dfd4;\n  border-radius: 16px;\n  background: #fafaf8;\n}\n.hire-dashboard-interviews-section .hire-interview-invite-copy {\n  margin-bottom: 16px;\n}\n.hire-dashboard-interviews-section .hire-interview-invite-copy h3 {\n  margin: 4px 0 6px;\n  color: #111111;\n  font-size: 18px;\n  font-weight: 700;\n}\n.hire-dashboard-interviews-section .hire-interview-invite-copy p {\n  margin: 0;\n  color: #7a746d;\n  font-size: 13px;\n}\n.hire-dashboard-interviews-section .hire-interview-eyebrow {\n  color: #b98200;\n  font-size: 12px;\n  font-weight: 700;\n  letter-spacing: 0;\n  text-transform: uppercase;\n}\n.hire-dashboard-interviews-section .hire-interview-form-grid {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 12px;\n}\n@media (max-width: 720px) {\n  .hire-dashboard-interviews-section .hire-interview-form-grid {\n    grid-template-columns: 1fr;\n  }\n}\n.hire-dashboard-interviews-section .hire-interview-form-grid label {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  color: #5f5850;\n  font-size: 12px;\n  font-weight: 700;\n}\n.hire-dashboard-interviews-section .hire-interview-form-grid input {\n  height: 42px;\n  border: 1px solid #e1d8ca;\n  border-radius: 10px;\n  background: #ffffff;\n  color: #111111;\n  font: inherit;\n  padding: 0 12px;\n  outline: none;\n}\n.hire-dashboard-interviews-section .hire-interview-form-grid input:focus {\n  border-color: #c58a00;\n  box-shadow: 0 0 0 3px rgba(197, 138, 0, 0.14);\n}\n.hire-dashboard-interviews-section .hire-interview-invite-actions,\n.hire-dashboard-interviews-section .hire-interview-actions {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  flex-wrap: wrap;\n}\n.hire-dashboard-interviews-section .hire-interview-invite-actions button,\n.hire-dashboard-interviews-section .hire-interview-invite-actions a,\n.hire-dashboard-interviews-section .hire-interview-actions button,\n.hire-dashboard-interviews-section .hire-interview-actions a {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 34px;\n  border: 1px solid #e1d8ca;\n  border-radius: 10px;\n  background: #ffffff;\n  color: #111111;\n  cursor: pointer;\n  font: inherit;\n  font-size: 12px;\n  font-weight: 700;\n  padding: 0 12px;\n  text-decoration: none;\n  transition: 0.2s ease;\n}\n.hire-dashboard-interviews-section .hire-interview-invite-actions button:hover,\n.hire-dashboard-interviews-section .hire-interview-invite-actions a:hover,\n.hire-dashboard-interviews-section .hire-interview-actions button:hover,\n.hire-dashboard-interviews-section .hire-interview-actions a:hover {\n  border-color: #c58a00;\n  background: #fff8e8;\n}\n.hire-dashboard-interviews-section .hire-interview-invite-actions {\n  margin-top: 14px;\n}\n.hire-dashboard-interviews-section .hire-interview-invite-actions .hire-interview-primary-action {\n  border-color: #111111;\n  background: #111111;\n  color: #ffffff;\n}\n.hire-dashboard-interviews-section .hire-interview-invite-actions .hire-interview-primary-action:hover {\n  border-color: #111111;\n  background: #2a2a2a;\n}\n.hire-dashboard-interviews-section .hire-interview-generated-link {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  margin-top: 14px;\n  border-radius: 12px;\n  background: #ffffff;\n  padding: 12px;\n}\n.hire-dashboard-interviews-section .hire-interview-generated-link span {\n  color: #7a746d;\n  font-size: 12px;\n  font-weight: 700;\n}\n.hire-dashboard-interviews-section .hire-interview-generated-link strong {\n  overflow-wrap: anywhere;\n  color: #111111;\n  font-size: 13px;\n}\n.hire-dashboard-interviews-section .hire-interview-row {\n  display: flex;\n  align-items: center;\n  gap: 16px;\n  padding: 14px 16px;\n  border-radius: 14px;\n  border: 1px solid #f2efea;\n  background: #fafaf8;\n  transition: 0.2s ease;\n  flex-wrap: wrap;\n}\n@media (max-width: 600px) {\n  .hire-dashboard-interviews-section .hire-interview-row {\n    gap: 10px;\n  }\n}\n.hire-dashboard-interviews-section .hire-interview-row:hover {\n  border-color: #e7dfd4;\n  background: #ffffff;\n}\n.hire-dashboard-interviews-section .hire-interview-initials {\n  width: 44px;\n  height: 44px;\n  background: #f2efea;\n  border-radius: 12px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 15px;\n  font-weight: 600;\n  color: #111111;\n  flex-shrink: 0;\n}\n.hire-dashboard-interviews-section .hire-interview-info {\n  flex: 1;\n  min-width: 140px;\n}\n.hire-dashboard-interviews-section .hire-interview-info .hire-interview-name {\n  font-size: 15px;\n  font-weight: 600;\n  color: #111111;\n  margin-bottom: 3px;\n}\n.hire-dashboard-interviews-section .hire-interview-info .hire-interview-role {\n  font-size: 13px;\n  color: #7a746d;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.hire-dashboard-interviews-section .hire-interview-type-badge {\n  display: inline-flex;\n  align-items: center;\n  gap: 5px;\n  padding: 4px 10px;\n  border-radius: 999px;\n  font-size: 12px;\n  font-weight: 600;\n  flex-shrink: 0;\n}\n.hire-dashboard-interviews-section .hire-interview-type-badge.type-video {\n  background: #e8f5fb;\n  color: #0d6a9e;\n  border: 1px solid #b8ddf0;\n}\n.hire-dashboard-interviews-section .hire-interview-type-badge.type-physical {\n  background: #f0f4ff;\n  color: #3b52c4;\n  border: 1px solid #c5cef5;\n}\n.hire-dashboard-interviews-section .hire-interview-date,\n.hire-dashboard-interviews-section .hire-interview-location,\n.hire-dashboard-interviews-section .hire-interview-interviewer {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  font-size: 13px;\n  color: #7a746d;\n  white-space: nowrap;\n  flex-shrink: 0;\n}\n@media (max-width: 600px) {\n  .hire-dashboard-interviews-section .hire-interview-date,\n  .hire-dashboard-interviews-section .hire-interview-location,\n  .hire-dashboard-interviews-section .hire-interview-interviewer {\n    font-size: 12px;\n  }\n}\n.hire-dashboard-interviews-section .hire-interview-status {\n  border-radius: 999px;\n  padding: 6px 14px;\n  font-size: 13px;\n  font-weight: 600;\n  flex-shrink: 0;\n}\n.hire-dashboard-interviews-section .hire-interview-status.status-scheduled {\n  background: #fff3cd;\n  color: #c58a00;\n  border: 1px solid #f2d27a;\n}\n.hire-dashboard-interviews-section .hire-interview-status.status-in_progress {\n  background: #e3f2fd;\n  color: #1565c0;\n  border: 1px solid #90caf9;\n}\n.hire-dashboard-interviews-section .hire-interview-status.status-rescheduled {\n  background: #fff8e1;\n  color: #f57f17;\n  border: 1px solid #ffe082;\n}\n.hire-dashboard-interviews-section .hire-interview-status.status-completed {\n  background: #e8f5e9;\n  color: #2e7d32;\n  border: 1px solid #c8e6c9;\n}\n.hire-dashboard-interviews-section .hire-interview-status.status-cancelled {\n  background: #f2efea;\n  color: #7a746d;\n  border: 1px solid #e7dfd4;\n}\n.hire-dashboard-interviews-section .hire-interview-company {\n  font-size: 12px;\n  color: #9a948c;\n  margin-top: 2px;\n}\n\n.hire-interview-details-overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.45);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 9999;\n  padding: 24px;\n}\n\n.hire-interview-details {\n  background: #fff;\n  border-radius: 16px;\n  padding: 24px;\n  max-width: 480px;\n  width: 100%;\n}\n.hire-interview-details h3 {\n  margin: 0 0 12px;\n}\n.hire-interview-details p {\n  margin: 0 0 8px;\n  font-size: 14px;\n  color: #444;\n}\n.hire-interview-details button {\n  margin-top: 12px;\n  padding: 8px 16px;\n  border-radius: 8px;\n  border: 1px solid #e7dfd4;\n  background: #fff;\n  cursor: pointer;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".hire-dashboard-interviews-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-dashboard-interviews-section {\n    padding: 24px 16px 48px;\n  }\n}\n\n.hire-interviews-wrapper {\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n}\n\n.hire-interviews-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-end;\n  flex-wrap: wrap;\n  gap: 16px;\n}\n.hire-interviews-header h2 {\n  margin: 0 0 4px;\n  color: #111111;\n  font-size: 24px;\n  font-weight: 700;\n}\n\n.hire-interviews-eyebrow {\n  display: block;\n  color: #7a746d;\n  font-size: 13px;\n  line-height: 1.45;\n}\n\n.hire-interviews-header-actions {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  flex-wrap: wrap;\n}\n\n.hire-interviews-tabs {\n  display: flex;\n  gap: 6px;\n  flex-wrap: wrap;\n}\n\n.hire-tab {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 6px 14px;\n  border: 1px solid #e7dfd4;\n  border-radius: 999px;\n  background: #ffffff;\n  color: #7a746d;\n  font-family: inherit;\n  font-size: 13px;\n  font-weight: 500;\n  cursor: pointer;\n  transition: border-color 0.15s, color 0.15s, background 0.15s;\n}\n.hire-tab:hover {\n  border-color: #c8c2bb;\n  color: #111111;\n}\n.hire-tab.active {\n  border-color: #fdd535;\n  background: #fdd535;\n  color: #111111;\n  font-weight: 600;\n}\n\n.hire-interviews-schedule-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  height: 40px;\n  padding: 0 20px;\n  border: none;\n  border-radius: 10px;\n  background: #fdd535;\n  color: #111111;\n  font-family: inherit;\n  font-size: 13.5px;\n  font-weight: 700;\n  cursor: pointer;\n  white-space: nowrap;\n  transition: background 0.18s, box-shadow 0.18s;\n}\n.hire-interviews-schedule-btn:hover {\n  background: #f5cb00;\n  box-shadow: 0 4px 14px rgba(253, 213, 53, 0.45);\n}\n\n.hire-interviews-empty {\n  margin: 0;\n  padding: 48px 24px;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  background: #ffffff;\n  color: #7a746d;\n  text-align: center;\n  font-size: 14px;\n}\n\n.hire-interviews-list {\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  background: #ffffff;\n}\n\n.hire-interview-row {\n  display: grid;\n  grid-template-columns: 44px minmax(180px, 1fr) auto minmax(170px, auto) minmax(120px, auto) auto;\n  grid-template-areas: \"avatar info type date interviewer status\" \"actions actions actions actions actions actions\";\n  align-items: start;\n  gap: 14px;\n  padding: 16px 20px;\n  border-bottom: 1px solid #f2efea;\n  transition: background 0.15s;\n}\n.hire-interview-row:last-child {\n  border-bottom: none;\n}\n.hire-interview-row:hover {\n  background: #fafaf8;\n}\n@media (max-width: 1120px) {\n  .hire-interview-row {\n    grid-template-columns: 44px minmax(180px, 1fr) auto auto;\n    grid-template-areas: \"avatar info type status\" \". date interviewer interviewer\" \"actions actions actions actions\";\n  }\n  .hire-interview-row .hire-interview-interviewer,\n  .hire-interview-row .hire-interview-status {\n    justify-self: start;\n  }\n}\n@media (max-width: 680px) {\n  .hire-interview-row {\n    grid-template-columns: 40px minmax(0, 1fr);\n    grid-template-areas: \"avatar info\" \". type\" \". date\" \". interviewer\" \". status\" \"actions actions\";\n    align-items: flex-start;\n    padding: 14px;\n  }\n}\n\n.hire-interview-initials {\n  grid-area: avatar;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 44px;\n  height: 44px;\n  border-radius: 12px;\n  background: #fdd535;\n  color: #111111;\n  font-size: 13px;\n  font-weight: 800;\n}\n\n.hire-interview-info {\n  grid-area: info;\n  min-width: 0;\n}\n\n.hire-interview-name {\n  color: #111111;\n  font-size: 14px;\n  font-weight: 700;\n  line-height: 1.25;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.hire-interview-role {\n  margin-top: 3px;\n  color: #7a746d;\n  font-size: 12.5px;\n  line-height: 1.35;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.hire-interview-company {\n  margin-top: 2px;\n  color: #b0a89e;\n  font-size: 12px;\n  line-height: 1.35;\n}\n\n.hire-interview-type-badge,\n.hire-interview-status {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 6px;\n  width: -moz-max-content;\n  width: max-content;\n  border-radius: 999px;\n  white-space: nowrap;\n}\n\n.hire-interview-type-badge {\n  grid-area: type;\n  padding: 5px 11px;\n  border: 1px solid #e7dfd4;\n  background: #f2efea;\n  color: #555050;\n  font-size: 12px;\n  font-weight: 600;\n}\n.hire-interview-type-badge.type-video {\n  border-color: #b0c4f8;\n  background: #e8f0fe;\n  color: #3b5bdb;\n}\n.hire-interview-type-badge.type-phone {\n  border-color: #c2e0d4;\n  background: #eef7f2;\n  color: #2d7a5a;\n}\n.hire-interview-type-badge.type-in_person, .hire-interview-type-badge.type-physical {\n  border-color: #edd98a;\n  background: #fef9ec;\n  color: #9a7000;\n}\n\n.hire-interview-date,\n.hire-interview-interviewer {\n  display: inline-flex;\n  align-items: center;\n  gap: 7px;\n  min-width: 0;\n  color: #7a746d;\n  font-size: 12.5px;\n  white-space: nowrap;\n}\n.hire-interview-date svg,\n.hire-interview-interviewer svg {\n  flex-shrink: 0;\n  color: #b0a89e;\n}\n\n.hire-interview-date {\n  grid-area: date;\n}\n\n.hire-interview-interviewer {\n  grid-area: interviewer;\n}\n\n.hire-interview-status {\n  grid-area: status;\n  padding: 5px 11px;\n  border: 1px solid transparent;\n  font-size: 12px;\n  font-weight: 700;\n}\n.hire-interview-status.status-scheduled {\n  border-color: #f5d87a;\n  background: #fff8e1;\n  color: #b88a00;\n}\n.hire-interview-status.status-in_progress {\n  border-color: #b0c4f8;\n  background: #e8f0fe;\n  color: #3b5bdb;\n}\n.hire-interview-status.status-rescheduled {\n  border-color: #edd98a;\n  background: #fef9ec;\n  color: #9a7000;\n}\n.hire-interview-status.status-completed {\n  border-color: #a8d8be;\n  background: #e8f5ee;\n  color: #2d7a5a;\n}\n.hire-interview-status.status-cancelled {\n  border-color: #e7dfd4;\n  background: #f2efea;\n  color: #9e9890;\n}\n\n.hire-interview-actions {\n  grid-area: actions;\n  display: flex;\n  align-items: center;\n  justify-content: flex-start;\n  gap: 7px;\n  flex-wrap: wrap;\n  min-width: 0;\n  padding-top: 2px;\n}\n.hire-interview-actions button,\n.hire-interview-actions a {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 6px;\n  min-height: 32px;\n  border: 1px solid #e7dfd4;\n  border-radius: 9px;\n  background: #ffffff;\n  color: #555050;\n  cursor: pointer;\n  font-family: inherit;\n  font-size: 12px;\n  font-weight: 700;\n  padding: 0 10px;\n  text-decoration: none;\n  white-space: nowrap;\n  transition: background 0.15s, border-color 0.15s, color 0.15s;\n}\n.hire-interview-actions button:hover,\n.hire-interview-actions a:hover {\n  border-color: #c8c2bb;\n  background: #fafaf8;\n  color: #111111;\n}\n.hire-interview-actions .hire-interview-join-btn {\n  border-color: #111111;\n  background: #111111;\n  color: #ffffff;\n}\n.hire-interview-actions .hire-interview-join-btn:hover {\n  border-color: #111111;\n  background: #333333;\n  color: #ffffff;\n}\n\n.hire-interview-details-overlay {\n  position: fixed;\n  inset: 0;\n  z-index: 9999;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 24px;\n  background: rgba(17, 17, 17, 0.46);\n}\n\n.hire-interview-details {\n  width: min(100%, 520px);\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  background: #ffffff;\n  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);\n  padding: 24px;\n}\n.hire-interview-details h3 {\n  margin: 0 0 14px;\n  color: #111111;\n  font-size: 20px;\n  font-weight: 700;\n}\n.hire-interview-details p {\n  margin: 0;\n  padding: 10px 0;\n  border-bottom: 1px solid #f2efea;\n  color: #555050;\n  font-size: 13px;\n  line-height: 1.5;\n  overflow-wrap: anywhere;\n}\n.hire-interview-details p:last-of-type {\n  border-bottom: none;\n}\n.hire-interview-details strong {\n  color: #111111;\n}\n.hire-interview-details button {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 38px;\n  margin-top: 16px;\n  border: none;\n  border-radius: 10px;\n  background: #fdd535;\n  color: #111111;\n  cursor: pointer;\n  font-family: inherit;\n  font-size: 13.5px;\n  font-weight: 700;\n  padding: 0 18px;\n}\n.hire-interview-details button:hover {\n  background: #f5cb00;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -30555,7 +30556,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".sim-overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.45);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 9999;\n  padding: 24px;\n}\n\n.sim-modal {\n  background: #ffffff;\n  border-radius: 24px;\n  width: 100%;\n  max-width: 560px;\n  max-height: 90vh;\n  overflow-y: auto;\n  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.16);\n}\n\n.sim-header {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 16px;\n  padding: 28px 28px 0;\n}\n.sim-header h2 {\n  margin: 0 0 4px;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n.sim-header p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n.sim-header strong {\n  color: #111111;\n}\n\n.sim-close {\n  background: #f2efea;\n  border: none;\n  border-radius: 999px;\n  width: 34px;\n  height: 34px;\n  font-size: 13px;\n  cursor: pointer;\n  color: #7a746d;\n  flex-shrink: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  transition: 0.2s ease;\n}\n.sim-close:hover {\n  background: #e7dfd4;\n  color: #111111;\n}\n\n.sim-form {\n  padding: 24px 28px 28px;\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n}\n\n.sim-row {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 14px;\n}\n\n.sim-field {\n  display: flex;\n  flex-direction: column;\n  gap: 7px;\n}\n.sim-field label {\n  font-size: 13px;\n  font-weight: 600;\n  color: #111111;\n}\n.sim-field .sim-hint {\n  font-weight: 400;\n  color: #7a746d;\n}\n.sim-field input, .sim-field select, .sim-field textarea {\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  padding: 11px 14px;\n  font-size: 14px;\n  color: #111111;\n  outline: none;\n  background: #fafaf8;\n  font-family: inherit;\n  transition: 0.2s ease;\n}\n.sim-field input:focus, .sim-field select:focus, .sim-field textarea:focus {\n  border-color: #c8c2bb;\n  background: #ffffff;\n}\n.sim-field input::-moz-placeholder, .sim-field select::-moz-placeholder, .sim-field textarea::-moz-placeholder {\n  color: #b0a89e;\n}\n.sim-field input::placeholder, .sim-field select::placeholder, .sim-field textarea::placeholder {\n  color: #b0a89e;\n}\n.sim-field textarea {\n  resize: vertical;\n  min-height: 90px;\n}\n\n.sim-field-full {\n  grid-column: 1/-1;\n}\n\n.sim-preview {\n  background: #fafaf8;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  padding: 16px 18px;\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n}\n\n.sim-preview-label {\n  font-size: 11px;\n  font-weight: 700;\n  color: #b0a89e;\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n}\n\n.sim-preview-card {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.sim-preview-row {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  font-size: 13px;\n  color: #444444;\n}\n.sim-preview-row svg {\n  color: #7a746d;\n  flex-shrink: 0;\n}\n\n.sim-preview-note {\n  color: #7a746d;\n  font-style: italic;\n}\n\n.sim-footer {\n  display: flex;\n  gap: 10px;\n  justify-content: flex-end;\n}\n\n.sim-cancel {\n  background: #f2efea;\n  color: #111111;\n  border: none;\n  border-radius: 999px;\n  padding: 12px 22px;\n  font-size: 14px;\n  font-weight: 600;\n  cursor: pointer;\n  font-family: inherit;\n  transition: 0.2s ease;\n}\n.sim-cancel:hover {\n  background: #e7dfd4;\n}\n\n.sim-submit {\n  background: #111111;\n  color: #ffffff;\n  border: none;\n  border-radius: 999px;\n  padding: 12px 24px;\n  font-size: 14px;\n  font-weight: 600;\n  cursor: pointer;\n  font-family: inherit;\n  transition: 0.2s ease;\n}\n.sim-submit:hover {\n  background: #333333;\n}\n\n.ism-field {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin-bottom: 14px;\n  font-size: 13px;\n  font-weight: 600;\n  color: #3d3832;\n}\n.ism-field input,\n.ism-field select,\n.ism-field textarea {\n  font-weight: 400;\n  padding: 10px 12px;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  font-family: inherit;\n}\n\n.ism-row {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 12px;\n}\n\n.ism-error {\n  color: #b42318;\n  font-size: 13px;\n  margin: 0 0 12px;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".ism-overlay {\n  position: fixed;\n  inset: 0;\n  z-index: 9999;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 24px;\n  background: rgba(17, 17, 17, 0.46);\n}\n\n.ism-modal {\n  width: min(100%, 620px);\n  max-height: 90vh;\n  overflow-y: auto;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);\n}\n\n.ism-header {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 18px;\n  padding: 26px 28px 0;\n}\n.ism-header h2 {\n  margin: 0 0 5px;\n  color: #111111;\n  font-size: 22px;\n  font-weight: 700;\n  line-height: 1.2;\n}\n.ism-header p {\n  margin: 0;\n  color: #7a746d;\n  font-size: 13px;\n  line-height: 1.5;\n}\n\n.ism-close {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  width: 34px;\n  height: 34px;\n  flex-shrink: 0;\n  border: none;\n  border-radius: 10px;\n  background: #f2efea;\n  color: #7a746d;\n  cursor: pointer;\n  transition: background 0.15s, color 0.15s;\n}\n.ism-close svg {\n  width: 18px;\n  height: 18px;\n}\n.ism-close:hover {\n  background: #e7dfd4;\n  color: #111111;\n}\n\n.ism-form {\n  display: flex;\n  flex-direction: column;\n  gap: 14px;\n  padding: 24px 28px 28px;\n}\n\n.ism-field {\n  display: flex;\n  flex-direction: column;\n  gap: 7px;\n  color: #111111;\n  font-size: 13px;\n  font-weight: 600;\n}\n.ism-field input,\n.ism-field select,\n.ism-field textarea {\n  width: 100%;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  background: #ffffff;\n  color: #111111;\n  font-family: inherit;\n  font-size: 14px;\n  font-weight: 400;\n  outline: none;\n  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;\n}\n.ism-field input::-moz-placeholder, .ism-field select::-moz-placeholder, .ism-field textarea::-moz-placeholder {\n  color: #b0a89e;\n}\n.ism-field input::placeholder,\n.ism-field select::placeholder,\n.ism-field textarea::placeholder {\n  color: #b0a89e;\n}\n.ism-field input:focus,\n.ism-field select:focus,\n.ism-field textarea:focus {\n  border-color: #c8c2bb;\n  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);\n}\n.ism-field input:disabled,\n.ism-field select:disabled,\n.ism-field textarea:disabled {\n  background: #fafaf8;\n  color: #9a948c;\n  cursor: not-allowed;\n}\n.ism-field input,\n.ism-field select {\n  height: 44px;\n  padding: 0 14px;\n}\n.ism-field textarea {\n  min-height: 92px;\n  resize: vertical;\n  padding: 12px 14px;\n  line-height: 1.5;\n}\n\n.ism-row {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 14px;\n}\n\n.ism-error {\n  margin: 0;\n  border: 1px solid #f5b4b4;\n  border-radius: 12px;\n  background: #fde8e8;\n  color: #bf1603;\n  font-size: 13px;\n  line-height: 1.45;\n  padding: 10px 12px;\n}\n\n.ism-footer {\n  display: flex;\n  justify-content: flex-end;\n  gap: 10px;\n  padding-top: 4px;\n}\n\n.ism-cancel,\n.ism-submit {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 40px;\n  border-radius: 10px;\n  padding: 0 18px;\n  font-family: inherit;\n  font-size: 13.5px;\n  font-weight: 700;\n  cursor: pointer;\n  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;\n}\n\n.ism-cancel {\n  border: 1px solid #e7dfd4;\n  background: #ffffff;\n  color: #555050;\n}\n.ism-cancel:hover {\n  border-color: #c8c2bb;\n  color: #111111;\n}\n\n.ism-submit {\n  border: none;\n  background: #fdd535;\n  color: #111111;\n}\n.ism-submit:hover:not(:disabled) {\n  background: #f5cb00;\n  box-shadow: 0 4px 14px rgba(253, 213, 53, 0.4);\n}\n.ism-submit:disabled {\n  opacity: 0.65;\n  cursor: not-allowed;\n}\n\n@media (max-width: 640px) {\n  .ism-overlay {\n    align-items: flex-end;\n    padding: 12px;\n  }\n  .ism-modal {\n    max-height: 94vh;\n    border-radius: 16px;\n  }\n  .ism-header {\n    padding: 22px 18px 0;\n  }\n  .ism-form {\n    padding: 20px 18px 22px;\n  }\n  .ism-row {\n    grid-template-columns: 1fr;\n  }\n  .ism-footer {\n    flex-direction: column-reverse;\n  }\n  .ism-cancel,\n  .ism-submit {\n    width: 100%;\n  }\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
