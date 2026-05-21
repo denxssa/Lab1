@@ -1,5 +1,7 @@
+import axios from 'axios';
 import React, { useState } from 'react';
 import { FiFileText, FiMail, FiUser } from 'react-icons/fi';
+import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
 import './ContactForm.scss';
 
 const details = [
@@ -16,33 +18,43 @@ const initialValues = {
 };
 
 function ContactForm() {
+  const { data } = usePlatformAdmin();
+  const contactContent = data.pageContent?.contact || {};
+
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
-  const [showFeedback, setShowFeedback] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [serverError, setServerError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     const nextValues = { ...values, [name]: value };
-
     setValues(nextValues);
     setErrors(validate(nextValues));
-    setShowFeedback(false);
+    setServerError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const nextErrors = validate(values);
     setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) return;
 
-    if (Object.keys(nextErrors).length) {
-      setShowFeedback(false);
-      return;
+    setSubmitting(true);
+    setServerError('');
+
+    try {
+      await axios.post('/api/contact', values);
+      setSubmitted(true);
+      setValues(initialValues);
+      setErrors({});
+    } catch {
+      setServerError('Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
-
-    setShowFeedback(true);
-    setValues(initialValues);
-    setErrors({});
   };
 
   return (
@@ -51,10 +63,9 @@ function ContactForm() {
         <div className="container grid">
           <article className="card form-card">
             <div className="card-head">
-              <h2>Tell us what you need.</h2>
+              <h2>{contactContent.formTitle || 'Tell us what you need.'}</h2>
               <p>
-                Keep it short and direct. We only ask for the details needed to
-                respond properly.
+                {contactContent.formDescription || 'Keep it short and direct. We only ask for the details needed to respond properly.'}
               </p>
             </div>
 
@@ -68,13 +79,17 @@ function ContactForm() {
 
               <Field id="notes" name="notes" label="Notes" placeholder="Tell us a bit about your question" value={values.notes}  error={errors.notes} icon={<FiFileText />} onChange={handleChange} textarea/>
 
+              {serverError && (
+                <div className="feedback error" role="alert">{serverError}</div>
+              )}
+
               <div className="form-actions">
-                <button type="submit" className="btn">
-                  Send message
+                <button type="submit" className="btn" disabled={submitting}>
+                  {submitting ? 'Sending…' : (contactContent.primaryCta || 'Send message')}
                 </button>
 
-                <div className={`feedback ${showFeedback ? 'show' : ''}`} role="status" aria-live="polite">
-                  Your message looks ready to send.
+                <div className={`feedback ${submitted ? 'show' : ''}`} role="status" aria-live="polite">
+                  Message sent! We'll get back to you soon.
                 </div>
               </div>
             </form>

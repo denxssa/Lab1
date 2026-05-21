@@ -1,22 +1,24 @@
 import React from 'react';
 import './aboutHero.scss';
+import useAboutContent from '../../../../../hooks/useAboutContent';
 
 const AboutHero = () => {
+    const content = useAboutContent();
+
+    const heroTitle     = content.heroTitle     || 'People hire people. BeeHired keeps it fair.';
+    const heroDesc      = content.heroDescription || 'From the first announcement to the final shortlist, every step stays visible, structured, and easy for teams to manage together.';
+    const primaryCta    = content.primaryCta    || 'Read About BeeHired';
+    const heroEyebrow   = content.heroEyebrow   || null;
+
     return (
-        <section className="about-hero"  data-aos="fade-up">
+        <section className="about-hero" data-aos="fade-up">
             <div className="about-hero__wrap">
                 <div className="about-hero__copy">
-                    <h1  data-aos="fade-up">
-                        People hire people.
-                        <br />
-                        <span className="about-hero__accent">BeeHired</span> keeps it fair.
-                    </h1>
-                    <p  data-aos="fade-up">
-                        From the first announcement to the final shortlist, every step stays visible,
-                        structured, and easy for teams to manage together.
-                    </p>
-                    <a className="about-hero__cta" href="#about-story"  data-aos="fade-up">
-                        Read About BeeHired <span>→</span>
+                    {heroEyebrow && <span className="about-hero__eyebrow" data-aos="fade-up">{heroEyebrow}</span>}
+                    <h1 data-aos="fade-up">{heroTitle}</h1>
+                    <p data-aos="fade-up">{heroDesc}</p>
+                    <a className="about-hero__cta" href="#about-story" data-aos="fade-up">
+                        {primaryCta} <span>→</span>
                     </a>
                 </div>
             </div>

@@ -12,9 +12,9 @@ const PinIcon = () => (
 const HireDashboardTeam = () => {
   // ── Hiring Team ──────────────────────────────────────────────────────
   const [team, setTeam] = useState([
-    { id: 1, name: 'Sarah Mitchell', role: 'HR Manager',         initials: 'SM', photo: null },
-    { id: 2, name: 'James Park',     role: 'Talent Acquisition', initials: 'JP', photo: null },
-    { id: 3, name: 'Elena Rossi',    role: 'Recruiter',          initials: 'ER', photo: null },
+    { id: 1, name: 'Denisa Gjuraj',  role: 'HR Manager',         initials: 'DG', photo: null },
+    { id: 2, name: 'Migjen Prenaj', role: 'Talent Acquisition', initials: 'MP', photo: null },
+    { id: 3, name: 'John Doe',      role: 'Recruiter',          initials: 'JD', photo: null },
   ]);
   const [showAddMember, setShowAddMember] = useState(false);
   const [newMember,     setNewMember]     = useState({ name: '', role: '', photo: null });
@@ -49,10 +49,10 @@ const HireDashboardTeam = () => {
 
   // ── Team Notes ───────────────────────────────────────────────────────
   const [notes, setNotes] = useState([
-    { id: 1, from: 'Sarah', to: 'James', content: 'Review shortlisted candidates for the Frontend role before Friday.', done: false },
-    { id: 2, from: 'Elena', to: 'Sarah', content: 'Can you schedule the panel interview for Fatima Al-Zahra?',          done: false },
-    { id: 3, from: 'James', to: 'Elena', content: 'Reminder: send rejection emails to candidates from last week.',      done: true  },
-    { id: 4, from: 'Sarah', to: 'All',   content: 'Weekly sync moved to Thursday 2 PM this week.',                      done: false },
+    { id: 1, from: 'Denisa', to: 'Migjen', content: 'Review shortlisted candidates for the Frontend role before Friday.', done: false },
+    { id: 2, from: 'John',   to: 'Denisa', content: 'Can you schedule the panel interview for Fatima Al-Zahra?',          done: false },
+    { id: 3, from: 'Migjen', to: 'John',   content: 'Reminder: send rejection emails to candidates from last week.',      done: true  },
+    { id: 4, from: 'Denisa', to: 'All',    content: 'Weekly sync moved to Thursday 2 PM this week.',                      done: false },
   ]);
   const [showAddNote, setShowAddNote] = useState(false);
   const [newNote,     setNewNote]     = useState({ from: '', to: '', content: '' });

@@ -2,7 +2,7 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 48px 32px 60px;
+  padding: 8px 24px 24px;
 
   @media (max-width: 768px) { padding: 24px 16px 40px; }
 }
@@ -10,7 +10,7 @@
 .hire-messages-wrapper {
   display: grid;
   grid-template-columns: 320px 1fr;
-  height: calc(100vh - 160px);
+  height: calc(100vh - 100px);
   min-height: 560px;
   background: #ffffff;
   border: 1px solid #e7dfd4;
@@ -116,17 +116,18 @@
 
 // ── Shared avatar ─────────────────────────────────────────────────
 .hire-msg-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
-  background: #111111;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #1b1f3b;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   font-weight: 800;
-  color: #ffffff;
+  color: #fdd535;
   flex-shrink: 0;
+  letter-spacing: 0.03em;
 }
 
 .hire-msg-info { flex: 1; min-width: 0; }

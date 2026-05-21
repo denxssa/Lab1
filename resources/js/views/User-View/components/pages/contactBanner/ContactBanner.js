@@ -1,21 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
 import './ContactBanner.scss';
 
-
 function ContactBanner() {
+    const { data } = usePlatformAdmin();
+    const contactContent = data.pageContent?.contact || {};
+
     return (
         <div className="contact-page">
             <section className="contact-hero">
                 <div className="contact-container contact-hero__inner">
-                    <p className="contact-eyebrow">Contact Us</p>
+                    <p className="contact-eyebrow">
+                        {contactContent.heroEyebrow || 'Contact Us'}
+                    </p>
                     <h1>
-                        Build the next hire
-                        <span> with clarity.</span>
+                        {contactContent.heroTitle || 'Build the next hire with clarity.'}
                     </h1>
                     <p className="contact-hero__copy">
-                        Reach out for hiring support, partnership questions, or product help.
-                        The page now follows the same clean structure and visual system used
-                        across the rest of the site.
+                        {contactContent.heroDescription || 'Reach out for hiring support, partnership questions, or product help.'}
                     </p>
                 </div>
             </section>

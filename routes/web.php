@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomePageContentController;
 use App\Http\Controllers\HomePageSectionItemController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\CvProfileController;
 use App\Http\Controllers\ResumeController;
+use App\Http\Controllers\PricingPlanController;
+use App\Http\Controllers\TeamMemberController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,6 +31,9 @@ Route::view('/admin-dashboard/users', 'welcome');
 Route::view('/admin-dashboard/reports', 'welcome');
 Route::view('/admin-dashboard/logs', 'welcome');
 Route::view('/admin-dashboard/settings', 'welcome');
+Route::view('/admin-dashboard/messages', 'welcome');
+Route::view('/admin-dashboard/team', 'welcome');
+Route::view('/admin-dashboard/pricing', 'welcome');
 Route::view('/about-us', 'welcome');
 Route::view('/companies', 'welcome');
 Route::view('/companies/{any}', 'welcome')->where('any', '.*');
@@ -59,6 +65,16 @@ Route::view('/user-dashboard/interviews/{roomName}', 'welcome');
 Route::view('/user-dashboard/messages', 'welcome');
 Route::view('/user-dashboard/resume', 'welcome');
 
+Route::get('/api/pricing-plans', [PricingPlanController::class, 'index']);
+Route::post('/api/pricing-plans', [PricingPlanController::class, 'store']);
+Route::post('/api/pricing-plans/{id}', [PricingPlanController::class, 'update']);
+Route::delete('/api/pricing-plans/{id}', [PricingPlanController::class, 'destroy']);
+
+Route::get('/api/team-members', [TeamMemberController::class, 'index']);
+Route::post('/api/team-members', [TeamMemberController::class, 'store']);
+Route::post('/api/team-members/{id}', [TeamMemberController::class, 'update']);
+Route::delete('/api/team-members/{id}', [TeamMemberController::class, 'destroy']);
+
 Route::get('/api/home-page-content', [HomePageContentController::class, 'show']);
 Route::get('/api/home-page-sections/media/{path}', [HomePageContentController::class, 'media'])->where('path', '.*');
 Route::put('/api/admin/home-page-content', [HomePageContentController::class, 'update']);
@@ -69,13 +85,16 @@ Route::put('/api/admin/home-page-section-items/{item}', [HomePageSectionItemCont
 Route::delete('/api/admin/home-page-section-items/{item}', [HomePageSectionItemController::class, 'destroy']);
 
 Route::get('/api/job-listings', [JobListingController::class, 'index']);
+Route::post('/api/contact', [ContactController::class, 'store']);
+Route::get('/api/admin/contact-submissions', [ContactController::class, 'index'])->middleware('auth:api');
 
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
-Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth');
-Route::get('/auth/user', [AuthController::class, 'user'])->middleware('auth');
+Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:api');
+Route::post('/auth/refresh', [AuthController::class, 'refresh'])->middleware('auth:api');
+Route::get('/auth/user', [AuthController::class, 'user'])->middleware('auth:api');
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:api')->group(function () {
     Route::get('/api/job-listings/manage', [JobListingController::class, 'manage']);
     Route::post('/api/job-listings', [JobListingController::class, 'store']);
     Route::put('/api/job-listings/{jobListing}', [JobListingController::class, 'update']);

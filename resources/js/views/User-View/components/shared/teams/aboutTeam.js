@@ -1,55 +1,54 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./aboutTeam.scss";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { RiArrowRightSFill } from "react-icons/ri";
-import { PanelData, TabData } from "./data";
+import yellowBG from "../../../assets/home/yellowBG.png";
 
 const AboutTeam = () => {
-  const tabs = Array.isArray(TabData) ? TabData : [];
-  const panels = Array.isArray(PanelData) ? PanelData : [];
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  if (!tabs.length || !panels.length) {
-    return <p>Team data is missing or wrong.</p>;
-  }
+  useEffect(() => {
+    fetch("/api/team-members")
+      .then(res => res.json())
+      .then(data => {
+        setMembers(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading || !members.length) return null;
 
   return (
     <div className="shared-top-academy-teachers" data-aos="fade-up">
-      <Tabs  data-aos="fade-up">
+      <Tabs>
         <TabList>
-          {tabs.map((item, index) => (
+          {members.map((item, index) => (
             <Tab key={index}>
-              <div className="line"></div>
-
+              <div className="line" />
               <div className="img-container">
-                {item?.img && <img src={item.img} alt="" className="img" />}
+                {item.img && <img src={item.img} alt="" className="img" />}
               </div>
-
               <RiArrowRightSFill className="arrow" />
             </Tab>
           ))}
         </TabList>
 
         <div className="tab-panel">
-          {panels.map((item, index) => (
+          {members.map((item, index) => (
             <TabPanel key={index}>
               <div className="inner-tab-panel flex-box">
                 <div className="images">
-                  {item?.bg && <img src={item.bg} alt="" className="bg" />}
-
-                  <div className="circle"></div>
-
+                  <img src={yellowBG} alt="" className="bg" />
+                  <div className="circle" />
                   <div className="profile-container">
                     <div className="info">
-                      {item?.img && (
-                        <img
-                          src={item.img}
-                          alt={item?.name || ""}
-                          className="profile"
-                        />
+                      {item.img && (
+                        <img src={item.img} alt={item.name} className="profile" />
                       )}
-
-                      <h6>{item?.name || "No name"}</h6>
-                      <p>{item?.occupation || "No occupation"}</p>
+                      <h6>{item.name}</h6>
+                      <p>{item.occupation}</p>
                     </div>
                   </div>
                 </div>
@@ -57,16 +56,14 @@ const AboutTeam = () => {
                 <div className="right-content">
                   <div className="inline inline1">
                     <div className="block">
-                      <h6>{item?.name || "No name"}</h6>
-                      
-                      <p>{item?.occupation || "No occupation"}</p>
+                      <h6>{item.name}</h6>
+                      <p>{item.occupation}</p>
                     </div>
                   </div>
-
                   <div className="bio">
                     <h5 className="uppercase">About</h5>
-                    <br></br>
-                    <p>{item?.bio || "No bio available."}</p>
+                    <br />
+                    <p>{item.bio}</p>
                   </div>
                 </div>
               </div>

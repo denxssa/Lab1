@@ -1,5 +1,6 @@
 import React, {useState} from 'react'
 import { FormattedMessage } from "react-intl";
+import useAboutContent from '../../../../../hooks/useAboutContent';
 import './results.scss'
 import CountUp from "react-countup";
 import VisibilitySensor from "react-visibility-sensor";
@@ -26,12 +27,13 @@ const Data = [
 const Results = () => {
 
     const [viewPortEntered, setViewPortEntered] = useState(false);
+    const content = useAboutContent();
+    const statsTitle = content.statsTitle || null;
 
     return (
         <div className='shared-results-numbers'>
             <h1 data-aos="fade-up" data-aos-anchor-placement="top-bottom">
-                <FormattedMessage id='shared-results-title' 
-                    defaultMessage='Our Work' />
+                {statsTitle || <FormattedMessage id='shared-results-title' defaultMessage='Our Work' />}
             </h1>
             <div className="numbers">
                 {Data.map((props) => {

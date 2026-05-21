@@ -39,6 +39,9 @@ import AdminDashboardUsersPage from './views/Admin-View/pages/AdminDashboardUser
 import AdminDashboardSettingsPage from './views/Admin-View/pages/AdminDashboardSettingsPage/AdminDashboardSettingsPage';
 import AdminDashboardLogsPage from './views/Admin-View/pages/AdminDashboardLogsPage/AdminDashboardLogsPage';
 import AdminDashboardReportsPage from './views/Admin-View/pages/AdminDashboardReportsPage/AdminDashboardReportsPage';
+import AdminDashboardMessagesPage from './views/Admin-View/pages/AdminDashboardMessagesPage/AdminDashboardMessagesPage';
+import AdminTeam from './views/Admin-View/pages/AdminTeam/AdminTeam';
+import AdminPricing from './views/Admin-View/pages/AdminPricing/AdminPricing';
 import AdminActivityTracker from './views/Admin-View/components/shared/AdminActivityTracker';
 import { PlatformAdminProvider } from './context/PlatformAdminContext';
 import { AuthProvider } from './context/AuthContext';
@@ -107,6 +110,9 @@ export default function App() {
                         <Route path="/admin-dashboard/reports" element={<AdminDashboardReportsPage />} />
                         <Route path="/admin-dashboard/logs" element={<AdminDashboardLogsPage />} />
                         <Route path="/admin-dashboard/settings" element={<AdminDashboardSettingsPage />} />
+                        <Route path="/admin-dashboard/messages" element={<AdminDashboardMessagesPage />} />
+                        <Route path="/admin-dashboard/team" element={<AdminTeam />} />
+                        <Route path="/admin-dashboard/pricing" element={<AdminPricing />} />
                     </Route>
                 </Routes>
             </AuthProvider>

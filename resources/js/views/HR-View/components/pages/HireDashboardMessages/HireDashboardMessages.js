@@ -3,46 +3,38 @@ import './HireDashboardMessages.scss';
 
 const conversations = [
   {
-    id: 1, initials: 'AR', name: 'Alex Rivera', role: 'Senior Frontend Dev',
+    id: 1, initials: 'NF', name: 'Norbert Frrokaj', role: 'Senior Frontend Dev',
     time: '10:42', unread: 2, active: true,
     messages: [
       { id: 1, from: 'them', text: 'Hi, I wanted to follow up on my application.', time: '10:30' },
       { id: 2, from: 'them', text: 'Is there any update on the interview schedule?', time: '10:31' },
-      { id: 3, from: 'me',   text: 'Hi Alex! Yes, we\'d love to move forward. Are you available this week?', time: '10:40' },
+      { id: 3, from: 'me',   text: 'Hi Norbert! Yes, we\'d love to move forward. Are you available this week?', time: '10:40' },
       { id: 4, from: 'them', text: 'Absolutely, Thursday or Friday works great for me.', time: '10:42' },
     ],
   },
   {
-    id: 2, initials: 'FA', name: 'Fatima Al-Zahra', role: 'Data Scientist',
+    id: 2, initials: 'EK', name: 'Edmond Krasniqi', role: 'Data Scientist',
     time: '09:15', unread: 0, active: false,
     messages: [
-      { id: 1, from: 'me',   text: 'Hi Fatima, thank you for applying to the Data Scientist role.', time: '09:00' },
+      { id: 1, from: 'me',   text: 'Hi Edmond, thank you for applying to the Data Scientist role.', time: '09:00' },
       { id: 2, from: 'them', text: 'Thank you! I\'m very excited about the opportunity.', time: '09:15' },
     ],
   },
   {
-    id: 3, initials: 'LN', name: 'Liam Nguyen', role: 'Mobile App Developer',
+    id: 3, initials: 'EM', name: 'Eltijona Mataj', role: 'Mobile App Developer',
     time: 'Yesterday', unread: 1, active: false,
     messages: [
       { id: 1, from: 'them', text: 'Hello, I completed the technical assessment you sent.', time: 'Yesterday' },
-      { id: 2, from: 'me',   text: 'Great work Liam, we\'ll review it and get back to you soon.', time: 'Yesterday' },
+      { id: 2, from: 'me',   text: 'Great work Eltijona, we\'ll review it and get back to you soon.', time: 'Yesterday' },
       { id: 3, from: 'them', text: 'Thank you, looking forward to hearing from you!', time: 'Yesterday' },
     ],
   },
   {
-    id: 4, initials: 'PS', name: 'Priya Sharma', role: 'UX/UI Designer',
+    id: 4, initials: 'MH', name: 'Muhsin Hoxha', role: 'UX/UI Designer',
     time: 'Yesterday', unread: 0, active: false,
     messages: [
-      { id: 1, from: 'me',   text: 'Hi Priya, your portfolio is impressive. We\'d love to schedule a call.', time: 'Yesterday' },
+      { id: 1, from: 'me',   text: 'Hi Muhsin, your portfolio is impressive. We\'d love to schedule a call.', time: 'Yesterday' },
       { id: 2, from: 'them', text: 'That sounds wonderful, I\'m available anytime next week.', time: 'Yesterday' },
-    ],
-  },
-  {
-    id: 5, initials: 'JO', name: "James O'Brien", role: 'Backend Engineer',
-    time: 'Mon', unread: 0, active: false,
-    messages: [
-      { id: 1, from: 'them', text: 'Hi, I saw the Backend Engineer role and I\'m very interested.', time: 'Mon' },
-      { id: 2, from: 'me',   text: 'Hi James, your experience looks like a great fit. Let\'s connect.', time: 'Mon' },
     ],
   },
 ];
@@ -52,7 +44,9 @@ const HireDashboardMessages = () => {
   const [activeId,     setActiveId]     = useState(1);
   const [allConvos,    setAllConvos]    = useState(conversations);
   const [input,        setInput]        = useState('');
-  const bottomRef = useRef(null);
+  const bottomRef  = useRef(null);
+  const threadRef  = useRef(null);
+  const prevIdRef  = useRef(activeId);
 
   const active = allConvos.find((c) => c.id === activeId);
 
@@ -62,7 +56,13 @@ const HireDashboardMessages = () => {
   );
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const switching = prevIdRef.current !== activeId;
+    prevIdRef.current = activeId;
+    if (switching) {
+      if (threadRef.current) threadRef.current.scrollTop = threadRef.current.scrollHeight;
+    } else {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [activeId, active?.messages?.length]);
 
   const openConvo = (id) => {
@@ -144,7 +144,7 @@ const HireDashboardMessages = () => {
               </div>
             </div>
 
-            <div className="hire-messages-thread">
+            <div className="hire-messages-thread" ref={threadRef}>
               {active.messages.map((msg) => (
                 <div key={msg.id} className={`hire-bubble-wrap ${msg.from === 'me' ? 'me' : 'them'}`}>
                   <div className="hire-bubble">{msg.text}</div>
