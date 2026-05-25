@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'App\\Http\\Controllers\\AuthController' => $baseDir . '/app/Http/Controllers/AuthController.php',
+    'App\\Http\\Controllers\\ContactController' => $baseDir . '/app/Http/Controllers/ContactController.php',
     'App\\Http\\Controllers\\Controller' => $baseDir . '/app/Http/Controllers/Controller.php',
     'App\\Http\\Controllers\\CvProfileController' => $baseDir . '/app/Http/Controllers/CvProfileController.php',
     'App\\Http\\Controllers\\HomePageContentController' => $baseDir . '/app/Http/Controllers/HomePageContentController.php',
@@ -16,6 +17,7 @@ return array(
     'App\\Http\\Controllers\\PricingPlanController' => $baseDir . '/app/Http/Controllers/PricingPlanController.php',
     'App\\Http\\Controllers\\ResumeController' => $baseDir . '/app/Http/Controllers/ResumeController.php',
     'App\\Http\\Controllers\\TeamMemberController' => $baseDir . '/app/Http/Controllers/TeamMemberController.php',
+    'App\\Models\\ContactSubmission' => $baseDir . '/app/Models/ContactSubmission.php',
     'App\\Models\\CvCertification' => $baseDir . '/app/Models/CvCertification.php',
     'App\\Models\\CvEducation' => $baseDir . '/app/Models/CvEducation.php',
     'App\\Models\\CvExperience' => $baseDir . '/app/Models/CvExperience.php',
