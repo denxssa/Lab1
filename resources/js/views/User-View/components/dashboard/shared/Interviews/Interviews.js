@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaCalendarAlt, FaExternalLinkAlt, FaMapMarkerAlt, FaVideo } from 'react-icons/fa';
-import InterviewMeeting from '../../../../../../components/InterviewMeeting/InterviewMeeting';
+import InterviewMeeting from '../../../../../HR-View/components/pages/InterviewMeeting/InterviewMeeting';
 import { listInterviews } from '../../../../../../api/interviewsApi';
 import {
   formatInterviewDate,

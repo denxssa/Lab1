@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/team-members',
             'api/team-members/*',
             'api/*',
+            'auth/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

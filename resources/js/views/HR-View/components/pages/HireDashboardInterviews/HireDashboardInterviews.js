@@ -9,7 +9,7 @@ import {
   FaTrash,
   FaVideo,
 } from 'react-icons/fa';
-import InterviewMeeting from '../../../../../components/InterviewMeeting/InterviewMeeting';
+import InterviewMeeting from '../InterviewMeeting/InterviewMeeting';
 import {
   createInterview,
   deleteInterview,
