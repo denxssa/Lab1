@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomePageContentController;
 use App\Http\Controllers\HomePageSectionItemController;
@@ -90,8 +91,8 @@ Route::get('/api/admin/contact-submissions', [ContactController::class, 'index']
 
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/refresh', [AuthController::class, 'refresh']);
 Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:api');
-Route::post('/auth/refresh', [AuthController::class, 'refresh'])->middleware('auth:api');
 Route::get('/auth/user', [AuthController::class, 'user'])->middleware('auth:api');
 
 Route::middleware('auth:api')->group(function () {
@@ -118,6 +119,11 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/api/interviews/{interview}', [InterviewController::class, 'show']);
     Route::put('/api/interviews/{interview}', [InterviewController::class, 'update']);
     Route::delete('/api/interviews/{interview}', [InterviewController::class, 'destroy']);
+
+    Route::get('/api/conversations', [ConversationController::class, 'index']);
+    Route::post('/api/conversations', [ConversationController::class, 'store']);
+    Route::get('/api/conversations/{conversation}/messages', [ConversationController::class, 'messages']);
+    Route::post('/api/conversations/{conversation}/messages', [ConversationController::class, 'storeMessage']);
 });
 
 Route::get('/api/job-listings/{jobListing}', [JobListingController::class, 'show']);

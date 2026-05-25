@@ -40,9 +40,9 @@ export function AuthProvider({ children }) {
 
     const bootstrap = async () => {
       try {
-        const data = await authApi.getCurrentUser();
+        const data = await authApi.bootstrapAuth();
         if (!cancelled) {
-          applyUser(data.user);
+          applyUser(data?.user ?? null);
         }
       } catch {
         if (!cancelled) {
@@ -59,6 +59,16 @@ export function AuthProvider({ children }) {
 
     return () => {
       cancelled = true;
+    };
+  }, [applyUser]);
+
+  useEffect(() => {
+    const handleTokenCleared = () => applyUser(null);
+
+    window.addEventListener('auth:token-cleared', handleTokenCleared);
+
+    return () => {
+      window.removeEventListener('auth:token-cleared', handleTokenCleared);
     };
   }, [applyUser]);
 
