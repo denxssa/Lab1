@@ -76,6 +76,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Conversation::class, 'hr_user_id');
     }
 
+    public function candidateApplications(): HasMany
+    {
+        return $this->hasMany(JobApplication::class, 'candidate_user_id');
+    }
+
     public function isHr(): bool
     {
         return $this->role === self::ROLE_HR || $this->role === self::ROLE_ADMIN;

@@ -5626,26 +5626,98 @@ function getRoomAccess(token) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   JOB_LISTING_TYPES: () => (/* reexport safe */ _utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_1__.JOB_LISTING_TYPES),
 /* harmony export */   createJobListing: () => (/* binding */ createJobListing),
+/* harmony export */   deleteJobListing: () => (/* binding */ deleteJobListing),
+/* harmony export */   filterJobListings: () => (/* binding */ filterJobListings),
 /* harmony export */   getJobListing: () => (/* binding */ getJobListing),
+/* harmony export */   jobMatchesAllTypeFilters: () => (/* binding */ jobMatchesAllTypeFilters),
+/* harmony export */   jobMatchesTypeFilter: () => (/* binding */ jobMatchesTypeFilter),
 /* harmony export */   listJobListings: () => (/* binding */ listJobListings),
 /* harmony export */   listJobListingsForHr: () => (/* binding */ listJobListingsForHr),
 /* harmony export */   mapJobListing: () => (/* binding */ mapJobListing),
 /* harmony export */   mapJobListingForHr: () => (/* binding */ mapJobListingForHr),
+/* harmony export */   updateJobListing: () => (/* binding */ updateJobListing),
 /* harmony export */   updateJobListingStatus: () => (/* binding */ updateJobListingStatus)
 /* harmony export */ });
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+/* harmony import */ var _utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/jobFormUtils */ "./resources/js/utils/jobFormUtils.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 
+
+
+function normalizeTags(tags) {
+  if (Array.isArray(tags)) {
+    return tags;
+  }
+  if (typeof tags === 'string' && tags.trim()) {
+    try {
+      var parsed = JSON.parse(tags);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_unused) {
+      return [];
+    }
+  }
+  return [];
+}
+
+/** True if the job is tagged with this type (it may also have other types). */
+function jobMatchesTypeFilter(job, filter) {
+  var types = (0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_1__.normalizeJobTypes)(job.types, job.type);
+  if (filter === 'Remote') {
+    return types.includes('Remote') || /remote/i.test(job.location || '');
+  }
+  return types.includes(filter);
+}
+
+/** Job must include every selected type; extra types on the job are allowed. */
+function jobMatchesAllTypeFilters(job, typeFilters) {
+  if (!typeFilters.length) {
+    return true;
+  }
+  return typeFilters.every(function (filter) {
+    return jobMatchesTypeFilter(job, filter);
+  });
+}
 function listJobListings() {
-  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/job-listings').then(function (response) {
+  var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/job-listings', {
+    params: params
+  }).then(function (response) {
     return response.data;
   });
+}
+function filterJobListings(jobs) {
+  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+    _ref$typeFilters = _ref.typeFilters,
+    typeFilters = _ref$typeFilters === void 0 ? [] : _ref$typeFilters,
+    _ref$searchQuery = _ref.searchQuery,
+    searchQuery = _ref$searchQuery === void 0 ? '' : _ref$searchQuery;
+  var result = jobs;
+  if (typeFilters.length > 0) {
+    result = result.filter(function (job) {
+      return jobMatchesAllTypeFilters(job, typeFilters);
+    });
+  }
+  var query = searchQuery.trim().toLowerCase();
+  if (query) {
+    result = result.filter(function (job) {
+      var haystack = [job.title, job.company, job.location, job.salary, job.description, job.type].concat(_toConsumableArray(job.types || []), _toConsumableArray(job.tags || [])).filter(Boolean).join(' ').toLowerCase();
+      return haystack.includes(query);
+    });
+  }
+  return result;
 }
 function getJobListing(id) {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get("/api/job-listings/".concat(id)).then(function (response) {
@@ -5669,6 +5741,16 @@ function updateJobListingStatus(id, status) {
     return response.data;
   });
 }
+function updateJobListing(id, payload) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].put("/api/job-listings/".concat(id), payload).then(function (response) {
+    return response.data;
+  });
+}
+function deleteJobListing(id) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"]["delete"]("/api/job-listings/".concat(id)).then(function (response) {
+    return response.data;
+  });
+}
 function mapJobListing(job) {
   var index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
   var company = job.company || '';
@@ -5681,6 +5763,8 @@ function mapJobListing(job) {
     var days = Math.floor((Date.now() - posted.getTime()) / (1000 * 60 * 60 * 24));
     if (days === 0) time = 'Today';else if (days === 1) time = '1 day ago';else time = "".concat(days, " days ago");
   }
+  var types = (0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_1__.normalizeJobTypes)(job.types, job.type);
+  var type = (0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_1__.jobTypesLabel)(types);
   return {
     id: job.id,
     initials: initials || 'JB',
@@ -5689,9 +5773,10 @@ function mapJobListing(job) {
     location: job.location || '—',
     salary: job.salary || '—',
     time: time,
-    type: job.type || 'Full-time',
+    types: types,
+    type: type,
     featured: index < 2,
-    tags: Array.isArray(job.tags) ? job.tags : [],
+    tags: normalizeTags(job.tags),
     description: job.description || ''
   };
 }
@@ -5708,6 +5793,90 @@ function mapJobListingForHr(job) {
     daysLeft: status === 'active' ? 30 : 0,
     postedDays: postedDays,
     featured: false
+  });
+}
+
+/***/ },
+
+/***/ "./resources/js/api/messagesApi.js"
+/*!*****************************************!*\
+  !*** ./resources/js/api/messagesApi.js ***!
+  \*****************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   MESSAGES_POLL_MS: () => (/* binding */ MESSAGES_POLL_MS),
+/* harmony export */   listConversations: () => (/* binding */ listConversations),
+/* harmony export */   listMessageableCandidates: () => (/* binding */ listMessageableCandidates),
+/* harmony export */   listMessages: () => (/* binding */ listMessages),
+/* harmony export */   sendMessage: () => (/* binding */ sendMessage),
+/* harmony export */   startConversation: () => (/* binding */ startConversation)
+/* harmony export */ });
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+
+
+/** How often open message views refetch from the API (ms). */
+var MESSAGES_POLL_MS = 4000;
+function listConversations() {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/conversations').then(function (response) {
+    return response.data;
+  });
+}
+function listMessageableCandidates() {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/conversations/messageable-candidates').then(function (response) {
+    return response.data;
+  });
+}
+function startConversation(payload) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/api/conversations', payload).then(function (response) {
+    return response.data;
+  });
+}
+function listMessages(conversationId) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get("/api/conversations/".concat(conversationId, "/messages")).then(function (response) {
+    return response.data;
+  });
+}
+function sendMessage(conversationId, body) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post("/api/conversations/".concat(conversationId, "/messages"), {
+    body: body
+  }).then(function (response) {
+    return response.data;
+  });
+}
+
+/***/ },
+
+/***/ "./resources/js/api/profileApi.js"
+/*!****************************************!*\
+  !*** ./resources/js/api/profileApi.js ***!
+  \****************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   clearCandidateProfile: () => (/* binding */ clearCandidateProfile),
+/* harmony export */   getCandidateProfile: () => (/* binding */ getCandidateProfile),
+/* harmony export */   saveCandidateProfile: () => (/* binding */ saveCandidateProfile)
+/* harmony export */ });
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+
+function getCandidateProfile() {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/candidate/profile').then(function (r) {
+    return r.data;
+  });
+}
+function saveCandidateProfile(payload) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].put('/api/candidate/profile', payload).then(function (r) {
+    return r.data;
+  });
+}
+function clearCandidateProfile() {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"]["delete"]('/api/candidate/profile').then(function (r) {
+    return r.data;
   });
 }
 
@@ -7543,6 +7712,334 @@ var typeLabel = function typeLabel(type) {
   if (type === 'phone') return 'Phone';
   return 'Video';
 };
+
+/***/ },
+
+/***/ "./resources/js/utils/jobFormUtils.js"
+/*!********************************************!*\
+  !*** ./resources/js/utils/jobFormUtils.js ***!
+  \********************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   JOB_LISTING_TYPES: () => (/* binding */ JOB_LISTING_TYPES),
+/* harmony export */   hasJobFormErrors: () => (/* binding */ hasJobFormErrors),
+/* harmony export */   jobTypesLabel: () => (/* binding */ jobTypesLabel),
+/* harmony export */   mapApiErrorsToJobForm: () => (/* binding */ mapApiErrorsToJobForm),
+/* harmony export */   normalizeJobTypes: () => (/* binding */ normalizeJobTypes),
+/* harmony export */   validateJobForm: () => (/* binding */ validateJobForm)
+/* harmony export */ });
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+var JOB_LISTING_TYPES = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Remote'];
+function normalizeJobTypes(types) {
+  var fallbackType = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  var source = Array.isArray(types) ? types : fallbackType ? [fallbackType] : [];
+  var allowed = new Set(JOB_LISTING_TYPES);
+  var normalized = [];
+  source.forEach(function (value) {
+    var trimmed = String(value !== null && value !== void 0 ? value : '').trim();
+    if (trimmed && allowed.has(trimmed) && !normalized.includes(trimmed)) {
+      normalized.push(trimmed);
+    }
+  });
+  return normalized;
+}
+function jobTypesLabel(types) {
+  var fallbackType = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'Full-time';
+  var normalized = normalizeJobTypes(types, fallbackType);
+  return normalized.length > 0 ? normalized.join(', ') : fallbackType;
+}
+function validateJobForm(form) {
+  var _form$title, _form$company, _form$location, _form$salary;
+  var errors = {};
+  var title = ((_form$title = form.title) !== null && _form$title !== void 0 ? _form$title : '').trim();
+  var company = ((_form$company = form.company) !== null && _form$company !== void 0 ? _form$company : '').trim();
+  var location = ((_form$location = form.location) !== null && _form$location !== void 0 ? _form$location : '').trim();
+  var salary = ((_form$salary = form.salary) !== null && _form$salary !== void 0 ? _form$salary : '').trim();
+  var types = normalizeJobTypes(form.types, form.type);
+  if (!title) {
+    errors.title = 'Job title is required.';
+  } else if (title.length < 2) {
+    errors.title = 'Job title must be at least 2 characters.';
+  }
+  if (!company) {
+    errors.company = 'Company name is required.';
+  } else if (company.length < 2) {
+    errors.company = 'Company name must be at least 2 characters.';
+  }
+  if (!location) {
+    errors.location = 'Location is required.';
+  } else if (location.length < 2) {
+    errors.location = 'Location must be at least 2 characters.';
+  }
+  if (!salary) {
+    errors.salary = 'Salary range is required.';
+  } else if (salary.length < 2) {
+    errors.salary = 'Enter a valid salary range.';
+  }
+  if (types.length === 0) {
+    errors.types = 'Select at least one job type.';
+  }
+  return errors;
+}
+function mapApiErrorsToJobForm(apiErrors) {
+  if (!apiErrors || _typeof(apiErrors) !== 'object') {
+    return {};
+  }
+  var mapped = {};
+  Object.entries(apiErrors).forEach(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2),
+      key = _ref2[0],
+      messages = _ref2[1];
+    var field = key.startsWith('types.') ? 'types' : key;
+    var message = Array.isArray(messages) ? messages[0] : messages;
+    if (message && !mapped[field]) {
+      mapped[field] = message;
+    }
+  });
+  return mapped;
+}
+function hasJobFormErrors(errors) {
+  return Object.keys(errors).length > 0;
+}
+
+/***/ },
+
+/***/ "./resources/js/utils/profileFormUtils.js"
+/*!************************************************!*\
+  !*** ./resources/js/utils/profileFormUtils.js ***!
+  \************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   PROFILE_ABOUT_MAX: () => (/* binding */ PROFILE_ABOUT_MAX),
+/* harmony export */   PROFILE_AVAILABILITY_OPTIONS: () => (/* binding */ PROFILE_AVAILABILITY_OPTIONS),
+/* harmony export */   PROFILE_JOB_TYPES: () => (/* binding */ PROFILE_JOB_TYPES),
+/* harmony export */   emptyProfileForm: () => (/* binding */ emptyProfileForm),
+/* harmony export */   formToProfilePayload: () => (/* binding */ formToProfilePayload),
+/* harmony export */   hasProfileErrors: () => (/* binding */ hasProfileErrors),
+/* harmony export */   mapApiErrorsToForm: () => (/* binding */ mapApiErrorsToForm),
+/* harmony export */   profileToForm: () => (/* binding */ profileToForm),
+/* harmony export */   validateProfileForm: () => (/* binding */ validateProfileForm)
+/* harmony export */ });
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+var PROFILE_JOB_TYPES = ['Remote', 'On-site', 'Hybrid'];
+var PROFILE_AVAILABILITY_OPTIONS = ['Immediately', '1 week notice', '2 weeks notice', '1 month notice'];
+var PROFILE_ABOUT_MAX = 500;
+var emptyProfileForm = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  location: '',
+  dateOfBirth: '',
+  nationality: '',
+  jobTitle: '',
+  linkedin: '',
+  github: '',
+  portfolio: '',
+  desiredRole: '',
+  jobType: 'Remote',
+  expectedSalary: '',
+  availability: 'Immediately',
+  about: ''
+};
+var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+var PHONE_RE = /^[+]?[\d\s().-]{7,64}$/;
+var NAME_RE = /^[a-zA-ZÀ-ÿĀ-ž\s'-]+$/;
+var LINKEDIN_RE = /^(https?:\/\/)?(?:[\w-]+\.)*linkedin\.com\/[\w\-./%]+$/i;
+var GITHUB_RE = /^(https?:\/\/)?(?:[\w-]+\.)*github\.com\/[\w\-./%]+$/i;
+var PORTFOLIO_RE = /^(https?:\/\/)?[\w.-]+(\.[\w.-]+)+([\w\-./?%+]*)?$/i;
+function profileToForm(profile) {
+  var _profile$firstName, _profile$lastName, _profile$email, _profile$phone, _profile$location, _profile$dateOfBirth, _profile$nationality, _profile$jobTitle, _profile$linkedin, _profile$github, _profile$portfolio, _profile$desiredRole, _profile$jobType, _profile$expectedSala, _profile$availability, _profile$about;
+  if (!profile) {
+    return _objectSpread({}, emptyProfileForm);
+  }
+  return {
+    firstName: (_profile$firstName = profile.firstName) !== null && _profile$firstName !== void 0 ? _profile$firstName : '',
+    lastName: (_profile$lastName = profile.lastName) !== null && _profile$lastName !== void 0 ? _profile$lastName : '',
+    email: (_profile$email = profile.email) !== null && _profile$email !== void 0 ? _profile$email : '',
+    phone: (_profile$phone = profile.phone) !== null && _profile$phone !== void 0 ? _profile$phone : '',
+    location: (_profile$location = profile.location) !== null && _profile$location !== void 0 ? _profile$location : '',
+    dateOfBirth: (_profile$dateOfBirth = profile.dateOfBirth) !== null && _profile$dateOfBirth !== void 0 ? _profile$dateOfBirth : '',
+    nationality: (_profile$nationality = profile.nationality) !== null && _profile$nationality !== void 0 ? _profile$nationality : '',
+    jobTitle: (_profile$jobTitle = profile.jobTitle) !== null && _profile$jobTitle !== void 0 ? _profile$jobTitle : '',
+    linkedin: (_profile$linkedin = profile.linkedin) !== null && _profile$linkedin !== void 0 ? _profile$linkedin : '',
+    github: (_profile$github = profile.github) !== null && _profile$github !== void 0 ? _profile$github : '',
+    portfolio: (_profile$portfolio = profile.portfolio) !== null && _profile$portfolio !== void 0 ? _profile$portfolio : '',
+    desiredRole: (_profile$desiredRole = profile.desiredRole) !== null && _profile$desiredRole !== void 0 ? _profile$desiredRole : '',
+    jobType: (_profile$jobType = profile.jobType) !== null && _profile$jobType !== void 0 ? _profile$jobType : 'Remote',
+    expectedSalary: (_profile$expectedSala = profile.expectedSalary) !== null && _profile$expectedSala !== void 0 ? _profile$expectedSala : '',
+    availability: (_profile$availability = profile.availability) !== null && _profile$availability !== void 0 ? _profile$availability : 'Immediately',
+    about: (_profile$about = profile.about) !== null && _profile$about !== void 0 ? _profile$about : ''
+  };
+}
+function formToProfilePayload(form) {
+  var _form$firstName$trim, _form$firstName, _form$lastName$trim, _form$lastName, _form$email$trim, _form$email, _form$phone$trim, _form$phone, _form$location$trim, _form$location, _form$nationality$tri, _form$nationality, _form$jobTitle$trim, _form$jobTitle, _form$linkedin$trim, _form$linkedin, _form$github$trim, _form$github, _form$portfolio$trim, _form$portfolio, _form$desiredRole$tri, _form$desiredRole, _form$jobType, _form$availability, _form$about$trim, _form$about;
+  return {
+    firstName: (_form$firstName$trim = (_form$firstName = form.firstName) === null || _form$firstName === void 0 ? void 0 : _form$firstName.trim()) !== null && _form$firstName$trim !== void 0 ? _form$firstName$trim : '',
+    lastName: (_form$lastName$trim = (_form$lastName = form.lastName) === null || _form$lastName === void 0 ? void 0 : _form$lastName.trim()) !== null && _form$lastName$trim !== void 0 ? _form$lastName$trim : '',
+    email: (_form$email$trim = (_form$email = form.email) === null || _form$email === void 0 ? void 0 : _form$email.trim()) !== null && _form$email$trim !== void 0 ? _form$email$trim : '',
+    phone: (_form$phone$trim = (_form$phone = form.phone) === null || _form$phone === void 0 ? void 0 : _form$phone.trim()) !== null && _form$phone$trim !== void 0 ? _form$phone$trim : '',
+    location: (_form$location$trim = (_form$location = form.location) === null || _form$location === void 0 ? void 0 : _form$location.trim()) !== null && _form$location$trim !== void 0 ? _form$location$trim : '',
+    dateOfBirth: form.dateOfBirth || null,
+    nationality: (_form$nationality$tri = (_form$nationality = form.nationality) === null || _form$nationality === void 0 ? void 0 : _form$nationality.trim()) !== null && _form$nationality$tri !== void 0 ? _form$nationality$tri : '',
+    jobTitle: (_form$jobTitle$trim = (_form$jobTitle = form.jobTitle) === null || _form$jobTitle === void 0 ? void 0 : _form$jobTitle.trim()) !== null && _form$jobTitle$trim !== void 0 ? _form$jobTitle$trim : '',
+    linkedin: (_form$linkedin$trim = (_form$linkedin = form.linkedin) === null || _form$linkedin === void 0 ? void 0 : _form$linkedin.trim()) !== null && _form$linkedin$trim !== void 0 ? _form$linkedin$trim : '',
+    github: (_form$github$trim = (_form$github = form.github) === null || _form$github === void 0 ? void 0 : _form$github.trim()) !== null && _form$github$trim !== void 0 ? _form$github$trim : '',
+    portfolio: (_form$portfolio$trim = (_form$portfolio = form.portfolio) === null || _form$portfolio === void 0 ? void 0 : _form$portfolio.trim()) !== null && _form$portfolio$trim !== void 0 ? _form$portfolio$trim : '',
+    desiredRole: (_form$desiredRole$tri = (_form$desiredRole = form.desiredRole) === null || _form$desiredRole === void 0 ? void 0 : _form$desiredRole.trim()) !== null && _form$desiredRole$tri !== void 0 ? _form$desiredRole$tri : '',
+    jobType: (_form$jobType = form.jobType) !== null && _form$jobType !== void 0 ? _form$jobType : '',
+    expectedSalary: form.expectedSalary === '' ? null : Number(form.expectedSalary),
+    availability: (_form$availability = form.availability) !== null && _form$availability !== void 0 ? _form$availability : '',
+    about: (_form$about$trim = (_form$about = form.about) === null || _form$about === void 0 ? void 0 : _form$about.trim()) !== null && _form$about$trim !== void 0 ? _form$about$trim : ''
+  };
+}
+function validateProfileForm(form) {
+  var _form$firstName2, _form$lastName2, _form$email2, _form$phone2, _form$location2, _form$nationality2, _form$jobTitle2, _form$linkedin2, _form$github2, _form$portfolio2, _form$desiredRole2, _form$about2, _form$dateOfBirth, _form$expectedSalary;
+  var errors = {};
+  var firstName = ((_form$firstName2 = form.firstName) !== null && _form$firstName2 !== void 0 ? _form$firstName2 : '').trim();
+  var lastName = ((_form$lastName2 = form.lastName) !== null && _form$lastName2 !== void 0 ? _form$lastName2 : '').trim();
+  var email = ((_form$email2 = form.email) !== null && _form$email2 !== void 0 ? _form$email2 : '').trim();
+  var phone = ((_form$phone2 = form.phone) !== null && _form$phone2 !== void 0 ? _form$phone2 : '').trim();
+  var location = ((_form$location2 = form.location) !== null && _form$location2 !== void 0 ? _form$location2 : '').trim();
+  var nationality = ((_form$nationality2 = form.nationality) !== null && _form$nationality2 !== void 0 ? _form$nationality2 : '').trim();
+  var jobTitle = ((_form$jobTitle2 = form.jobTitle) !== null && _form$jobTitle2 !== void 0 ? _form$jobTitle2 : '').trim();
+  var linkedin = ((_form$linkedin2 = form.linkedin) !== null && _form$linkedin2 !== void 0 ? _form$linkedin2 : '').trim();
+  var github = ((_form$github2 = form.github) !== null && _form$github2 !== void 0 ? _form$github2 : '').trim();
+  var portfolio = ((_form$portfolio2 = form.portfolio) !== null && _form$portfolio2 !== void 0 ? _form$portfolio2 : '').trim();
+  var desiredRole = ((_form$desiredRole2 = form.desiredRole) !== null && _form$desiredRole2 !== void 0 ? _form$desiredRole2 : '').trim();
+  var about = ((_form$about2 = form.about) !== null && _form$about2 !== void 0 ? _form$about2 : '').trim();
+  var dateOfBirth = (_form$dateOfBirth = form.dateOfBirth) !== null && _form$dateOfBirth !== void 0 ? _form$dateOfBirth : '';
+  var expectedSalary = (_form$expectedSalary = form.expectedSalary) !== null && _form$expectedSalary !== void 0 ? _form$expectedSalary : '';
+  if (!firstName) {
+    errors.firstName = 'First name is required.';
+  } else if (firstName.length < 2) {
+    errors.firstName = 'First name must be at least 2 characters.';
+  } else if (!NAME_RE.test(firstName)) {
+    errors.firstName = 'First name may only contain letters, spaces, hyphens, and apostrophes.';
+  }
+  if (!lastName) {
+    errors.lastName = 'Last name is required.';
+  } else if (lastName.length < 2) {
+    errors.lastName = 'Last name must be at least 2 characters.';
+  } else if (!NAME_RE.test(lastName)) {
+    errors.lastName = 'Last name may only contain letters, spaces, hyphens, and apostrophes.';
+  }
+  if (!email) {
+    errors.email = 'Email is required.';
+  } else if (!EMAIL_RE.test(email)) {
+    errors.email = 'Enter a valid email address.';
+  }
+  if (!phone) {
+    errors.phone = 'Phone number is required.';
+  } else if (!PHONE_RE.test(phone)) {
+    errors.phone = 'Enter a valid phone number.';
+  }
+  if (!location) {
+    errors.location = 'Location is required.';
+  } else if (location.length < 2) {
+    errors.location = 'Location must be at least 2 characters.';
+  }
+  if (dateOfBirth) {
+    var dob = new Date(dateOfBirth);
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (Number.isNaN(dob.getTime())) {
+      errors.dateOfBirth = 'Enter a valid date of birth.';
+    } else if (dob >= today) {
+      errors.dateOfBirth = 'Date of birth must be in the past.';
+    } else if (dob < new Date('1900-01-01')) {
+      errors.dateOfBirth = 'Enter a valid date of birth.';
+    }
+  }
+  if (nationality && !NAME_RE.test(nationality)) {
+    errors.nationality = 'Nationality may only contain letters, spaces, hyphens, and apostrophes.';
+  }
+  if (!jobTitle) {
+    errors.jobTitle = 'Professional title is required.';
+  } else if (jobTitle.length < 2) {
+    errors.jobTitle = 'Professional title must be at least 2 characters.';
+  }
+  if (linkedin && !LINKEDIN_RE.test(linkedin)) {
+    errors.linkedin = 'Enter a valid LinkedIn URL (e.g. linkedin.com/in/yourname).';
+  }
+  if (github && !GITHUB_RE.test(github)) {
+    errors.github = 'Enter a valid GitHub URL (e.g. github.com/yourname).';
+  }
+  if (portfolio && !PORTFOLIO_RE.test(portfolio)) {
+    errors.portfolio = 'Enter a valid portfolio URL (e.g. yoursite.com).';
+  }
+  if (!desiredRole) {
+    errors.desiredRole = 'Desired role is required.';
+  } else if (desiredRole.length < 2) {
+    errors.desiredRole = 'Desired role must be at least 2 characters.';
+  }
+  if (!form.jobType) {
+    errors.jobType = 'Select a job type.';
+  } else if (!PROFILE_JOB_TYPES.includes(form.jobType)) {
+    errors.jobType = 'Select a valid job type.';
+  }
+  if (expectedSalary !== '' && expectedSalary !== null && expectedSalary !== undefined) {
+    var salary = Number(expectedSalary);
+    if (!Number.isInteger(salary) || salary < 0 || salary > 99999999) {
+      errors.expectedSalary = 'Expected salary must be a whole number up to 99,999,999.';
+    }
+  }
+  if (!form.availability) {
+    errors.availability = 'Select your availability.';
+  } else if (!PROFILE_AVAILABILITY_OPTIONS.includes(form.availability)) {
+    errors.availability = 'Select a valid availability option.';
+  }
+  if (!about) {
+    errors.about = 'About me is required.';
+  } else if (about.length < 20) {
+    errors.about = 'About me must be at least 20 characters.';
+  } else if (about.length > PROFILE_ABOUT_MAX) {
+    errors.about = "About me cannot exceed ".concat(PROFILE_ABOUT_MAX, " characters.");
+  }
+  return errors;
+}
+function mapApiErrorsToForm(apiErrors) {
+  if (!apiErrors || _typeof(apiErrors) !== 'object') {
+    return {};
+  }
+  var mapped = {};
+  Object.entries(apiErrors).forEach(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2),
+      key = _ref2[0],
+      messages = _ref2[1];
+    var message = Array.isArray(messages) ? messages[0] : messages;
+    if (message) {
+      mapped[key] = message;
+    }
+  });
+  return mapped;
+}
+function hasProfileErrors(errors) {
+  return Object.keys(errors).length > 0;
+}
 
 /***/ },
 
@@ -14902,7 +15399,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _HireDashboardListings_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./HireDashboardListings.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardListings/HireDashboardListings.scss");
 /* harmony import */ var _api_jobsApi__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../api/jobsApi */ "./resources/js/api/jobsApi.js");
 /* harmony import */ var _HireDashboardContext__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../HireDashboardContext */ "./resources/js/views/HR-View/HireDashboardContext.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _PostJobModal_PostJobModal__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../PostJobModal/PostJobModal */ "./resources/js/views/HR-View/components/pages/PostJobModal/PostJobModal.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
@@ -14925,6 +15423,7 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
+
 var tabs = ['All', 'Active', 'Paused', 'Closed'];
 var expiryClass = function expiryClass(days, status) {
   if (status !== 'active') return '';
@@ -14934,7 +15433,8 @@ var expiryClass = function expiryClass(days, status) {
 };
 var HireDashboardListings = function HireDashboardListings() {
   var _useHireDashboard = (0,_HireDashboardContext__WEBPACK_IMPORTED_MODULE_4__.useHireDashboard)(),
-    listingsVersion = _useHireDashboard.listingsVersion;
+    listingsVersion = _useHireDashboard.listingsVersion,
+    refreshListings = _useHireDashboard.refreshListings;
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState2 = _slicedToArray(_useState, 2),
     listings = _useState2[0],
@@ -14955,6 +15455,14 @@ var HireDashboardListings = function HireDashboardListings() {
     _useState0 = _slicedToArray(_useState9, 2),
     openMenu = _useState0[0],
     setOpenMenu = _useState0[1];
+  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    _useState10 = _slicedToArray(_useState1, 2),
+    editingJob = _useState10[0],
+    setEditingJob = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    _useState12 = _slicedToArray(_useState11, 2),
+    deletingId = _useState12[0],
+    setDeletingId = _useState12[1];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     var cancelled = false;
     var load = /*#__PURE__*/function () {
@@ -15041,6 +15549,51 @@ var HireDashboardListings = function HireDashboardListings() {
       return _ref2.apply(this, arguments);
     };
   }();
+  var handleDelete = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(id, title) {
+      var previous, _t3;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.p = _context3.n) {
+          case 0:
+            if (window.confirm("Delete \"".concat(title, "\"? This cannot be undone."))) {
+              _context3.n = 1;
+              break;
+            }
+            return _context3.a(2);
+          case 1:
+            setDeletingId(id);
+            setOpenMenu(null);
+            previous = listings;
+            _context3.p = 2;
+            _context3.n = 3;
+            return (0,_api_jobsApi__WEBPACK_IMPORTED_MODULE_3__.deleteJobListing)(id);
+          case 3:
+            setListings(function (prev) {
+              return prev.filter(function (l) {
+                return l.id !== id;
+              });
+            });
+            refreshListings();
+            _context3.n = 5;
+            break;
+          case 4:
+            _context3.p = 4;
+            _t3 = _context3.v;
+            setListings(previous);
+            setError('Could not delete job. Please try again.');
+          case 5:
+            _context3.p = 5;
+            setDeletingId(null);
+            return _context3.f(5);
+          case 6:
+            return _context3.a(2);
+        }
+      }, _callee3, null, [[2, 4, 5, 6]]);
+    }));
+    return function handleDelete(_x3, _x4) {
+      return _ref3.apply(this, arguments);
+    };
+  }();
   var counts = tabs.reduce(function (acc, t) {
     acc[t] = t === 'All' ? listings.length : listings.filter(function (l) {
       return l.status === t.toLowerCase();
@@ -15050,173 +15603,191 @@ var HireDashboardListings = function HireDashboardListings() {
   var filtered = activeTab === 'All' ? listings : listings.filter(function (l) {
     return l.status === activeTab.toLowerCase();
   });
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("section", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("section", {
     className: "hire-dashboard-listings-section",
     id: "hire-listings-anchor",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
       className: "hire-listings-wrapper",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
         className: "hire-listings-header",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h2", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("h2", {
             children: "Active Listings"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
             children: [listings.filter(function (l) {
               return l.status === 'active';
             }).length, " active \xB7 ", listings.length, " total"]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
           className: "hire-listings-tabs",
           children: tabs.map(function (tab) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
               className: activeTab === tab ? 'hire-tab active' : 'hire-tab',
               onClick: function onClick() {
                 return setActiveTab(tab);
               },
-              children: [tab, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+              children: [tab, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
                 className: "hire-tab-count",
                 children: counts[tab]
               })]
             }, tab);
           })
         })]
-      }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+      }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
         className: "hire-listings-empty",
         children: "Loading listings\u2026"
-      }), error && !loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+      }), error && !loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
         className: "hire-listings-empty",
         children: error
-      }), !loading && !error && filtered.length === 0 ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+      }), !loading && !error && filtered.length === 0 ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
         className: "hire-listings-empty",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
           children: ["No ", activeTab.toLowerCase(), " listings."]
         })
-      }) : !loading && !error ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+      }) : !loading && !error ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
         className: "hire-listings-grid",
         children: filtered.map(function (job) {
+          var _job$types;
           var pct = job.applications > 0 ? Math.round(job.shortlisted / job.applications * 100) : 0;
           var ec = expiryClass(job.daysLeft, job.status);
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
             className: ['hire-listing-card', job.featured ? 'featured' : '', job.status === 'paused' ? 'is-paused' : '', job.status === 'closed' ? 'is-closed' : ''].filter(Boolean).join(' '),
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
               className: "hire-listing-banner",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
                 className: "hire-listing-avatar",
                 children: job.initials
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
                 className: "hire-listing-menu-wrap",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
                   className: "hire-listing-kebab",
                   type: "button",
                   onClick: function onClick(e) {
                     e.stopPropagation();
                     setOpenMenu(openMenu === job.id ? null : job.id);
                   },
-                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaEllipsisV, {})
-                }), openMenu === job.id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaEllipsisV, {})
+                }), openMenu === job.id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
                   className: "hire-listing-dropdown",
-                  children: [job.status === 'active' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
+                    type: "button",
+                    onClick: function onClick() {
+                      setEditingJob(job);
+                      setOpenMenu(null);
+                    },
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaEdit, {}), " Edit job"]
+                  }), job.status === 'active' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
                     type: "button",
                     onClick: function onClick() {
                       setStatus(job.id, 'paused');
                       setOpenMenu(null);
                     },
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaPause, {}), " Pause listing"]
-                  }), job.status === 'paused' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaPause, {}), " Pause listing"]
+                  }), job.status === 'paused' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
                     type: "button",
                     className: "menu-resume",
                     onClick: function onClick() {
                       setStatus(job.id, 'active');
                       setOpenMenu(null);
                     },
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaPlay, {}), " Resume listing"]
-                  }), job.status !== 'closed' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaPlay, {}), " Resume listing"]
+                  }), job.status !== 'closed' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
                     type: "button",
                     className: "menu-danger",
                     onClick: function onClick() {
                       setStatus(job.id, 'closed');
                       setOpenMenu(null);
                     },
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaTimes, {}), " Close listing"]
-                  }), job.status === 'closed' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaTimes, {}), " Close listing"]
+                  }), job.status === 'closed' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
                     type: "button",
                     className: "menu-resume",
                     onClick: function onClick() {
                       setStatus(job.id, 'active');
                       setOpenMenu(null);
                     },
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaPlay, {}), " Reopen listing"]
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaPlay, {}), " Reopen listing"]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
+                    type: "button",
+                    className: "menu-danger",
+                    disabled: deletingId === job.id,
+                    onClick: function onClick() {
+                      return handleDelete(job.id, job.title);
+                    },
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaTrash, {}), " ", deletingId === job.id ? 'Deleting…' : 'Delete job']
                   })]
                 })]
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
               className: "hire-listing-body",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
                 className: "hire-listing-identity",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
                   className: "hire-listing-title",
                   children: job.title
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
                   className: "hire-listing-tags",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-                    className: "hire-listing-type-tag",
-                    children: job.type
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+                  children: [((_job$types = job.types) !== null && _job$types !== void 0 && _job$types.length ? job.types : [job.type]).map(function (type) {
+                    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                      className: "hire-listing-type-tag",
+                      children: type
+                    }, type);
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
                     className: "hire-listing-status-pill pill-".concat(job.status),
                     children: job.status.charAt(0).toUpperCase() + job.status.slice(1)
                   })]
                 })]
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
                 className: "hire-listing-meta",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaMapMarkerAlt, {}), " ", job.location]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaBriefcase, {}), " ", job.company]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaUsers, {}), " ", job.applications, " applicants"]
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaMapMarkerAlt, {}), " ", job.location]
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaBriefcase, {}), " ", job.company]
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaUsers, {}), " ", job.applications, " applicants"]
                 })]
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
                 className: "hire-listing-divider"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
                 className: "hire-listing-pipeline",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
                   className: "hire-listing-pipe-track",
-                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
                     className: "hire-listing-pipe-fill",
                     style: {
                       width: "".concat(pct, "%")
                     }
                   })
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
                   className: "hire-listing-pipe-stats",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
                     className: "pipe-total",
                     children: [job.applications, " total"]
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
                     className: "pipe-breakdown",
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
                       className: "pipe-dot blue",
                       children: [job.reviewing, " reviewing"]
-                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
                       className: "pipe-dot green",
                       children: [job.shortlisted, " shortlisted"]
                     })]
                   })]
                 })]
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
                 className: "hire-listing-divider"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
                 className: "hire-listing-footer",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
                   className: "hire-listing-posted",
                   children: ["Posted ", job.postedDays === 0 ? 'today' : "".concat(job.postedDays, "d ago")]
-                }), job.status === 'active' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
+                }), job.status === 'active' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
                   className: "hire-listing-expiry ".concat(ec),
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaClock, {}), job.daysLeft === 0 ? 'Expires today' : "".concat(job.daysLeft, "d left")]
-                }), job.status === 'paused' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaClock, {}), job.daysLeft === 0 ? 'Expires today' : "".concat(job.daysLeft, "d left")]
+                }), job.status === 'paused' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
                   className: "hire-listing-expiry",
                   children: "Paused"
-                }), job.status === 'closed' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+                }), job.status === 'closed' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
                   className: "hire-listing-expiry",
                   children: "Closed"
                 })]
@@ -15225,7 +15796,16 @@ var HireDashboardListings = function HireDashboardListings() {
           }, job.id);
         })
       }) : null]
-    })
+    }), editingJob && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_PostJobModal_PostJobModal__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      job: editingJob,
+      onClose: function onClose() {
+        return setEditingJob(null);
+      },
+      onPosted: function onPosted() {
+        setEditingJob(null);
+        refreshListings();
+      }
+    })]
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (HireDashboardListings);
@@ -15245,18 +15825,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _HireDashboardMessages_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HireDashboardMessages.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardMessages/HireDashboardMessages.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _api_messagesApi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../api/messagesApi */ "./resources/js/api/messagesApi.js");
+/* harmony import */ var _HireDashboardMessages_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./HireDashboardMessages.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardMessages/HireDashboardMessages.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -15266,125 +15851,185 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-var conversations = [{
-  id: 1,
-  initials: 'NF',
-  name: 'Norbert Frrokaj',
-  role: 'Senior Frontend Dev',
-  time: '10:42',
-  unread: 2,
-  active: true,
-  messages: [{
-    id: 1,
-    from: 'them',
-    text: 'Hi, I wanted to follow up on my application.',
-    time: '10:30'
-  }, {
-    id: 2,
-    from: 'them',
-    text: 'Is there any update on the interview schedule?',
-    time: '10:31'
-  }, {
-    id: 3,
-    from: 'me',
-    text: 'Hi Norbert! Yes, we\'d love to move forward. Are you available this week?',
-    time: '10:40'
-  }, {
-    id: 4,
-    from: 'them',
-    text: 'Absolutely, Thursday or Friday works great for me.',
-    time: '10:42'
-  }]
-}, {
-  id: 2,
-  initials: 'EK',
-  name: 'Edmond Krasniqi',
-  role: 'Data Scientist',
-  time: '09:15',
-  unread: 0,
-  active: false,
-  messages: [{
-    id: 1,
-    from: 'me',
-    text: 'Hi Edmond, thank you for applying to the Data Scientist role.',
-    time: '09:00'
-  }, {
-    id: 2,
-    from: 'them',
-    text: 'Thank you! I\'m very excited about the opportunity.',
-    time: '09:15'
-  }]
-}, {
-  id: 3,
-  initials: 'EM',
-  name: 'Eltijona Mataj',
-  role: 'Mobile App Developer',
-  time: 'Yesterday',
-  unread: 1,
-  active: false,
-  messages: [{
-    id: 1,
-    from: 'them',
-    text: 'Hello, I completed the technical assessment you sent.',
-    time: 'Yesterday'
-  }, {
-    id: 2,
-    from: 'me',
-    text: 'Great work Eltijona, we\'ll review it and get back to you soon.',
-    time: 'Yesterday'
-  }, {
-    id: 3,
-    from: 'them',
-    text: 'Thank you, looking forward to hearing from you!',
-    time: 'Yesterday'
-  }]
-}, {
-  id: 4,
-  initials: 'MH',
-  name: 'Muhsin Hoxha',
-  role: 'UX/UI Designer',
-  time: 'Yesterday',
-  unread: 0,
-  active: false,
-  messages: [{
-    id: 1,
-    from: 'me',
-    text: 'Hi Muhsin, your portfolio is impressive. We\'d love to schedule a call.',
-    time: 'Yesterday'
-  }, {
-    id: 2,
-    from: 'them',
-    text: 'That sounds wonderful, I\'m available anytime next week.',
-    time: 'Yesterday'
-  }]
-}];
+
 var HireDashboardMessages = function HireDashboardMessages() {
-  var _active$messages;
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState2 = _slicedToArray(_useState, 2),
     search = _useState2[0],
     setSearch = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1),
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState4 = _slicedToArray(_useState3, 2),
     activeId = _useState4[0],
     setActiveId = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(conversations),
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState6 = _slicedToArray(_useState5, 2),
     allConvos = _useState6[0],
     setAllConvos = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState8 = _slicedToArray(_useState7, 2),
-    input = _useState8[0],
-    setInput = _useState8[1];
+    messages = _useState8[0],
+    setMessages = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState0 = _slicedToArray(_useState9, 2),
+    input = _useState0[0],
+    setInput = _useState0[1];
+  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+    _useState10 = _slicedToArray(_useState1, 2),
+    loadingList = _useState10[0],
+    setLoadingList = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState12 = _slicedToArray(_useState11, 2),
+    loadingThread = _useState12[0],
+    setLoadingThread = _useState12[1];
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState14 = _slicedToArray(_useState13, 2),
+    sending = _useState14[0],
+    setSending = _useState14[1];
+  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState16 = _slicedToArray(_useState15, 2),
+    error = _useState16[0],
+    setError = _useState16[1];
+  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState18 = _slicedToArray(_useState17, 2),
+    showNewChat = _useState18[0],
+    setShowNewChat = _useState18[1];
+  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState20 = _slicedToArray(_useState19, 2),
+    candidates = _useState20[0],
+    setCandidates = _useState20[1];
   var bottomRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var threadRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var prevIdRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(activeId);
-  var active = allConvos.find(function (c) {
-    return c.id === activeId;
-  });
-  var filtered = allConvos.filter(function (c) {
-    return c.name.toLowerCase().includes(search.toLowerCase()) || c.role.toLowerCase().includes(search.toLowerCase());
-  });
+  var loadConversations = /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+      var silent,
+        data,
+        convos,
+        _args = arguments,
+        _t;
+      return _regenerator().w(function (_context) {
+        while (1) switch (_context.p = _context.n) {
+          case 0:
+            silent = _args.length > 0 && _args[0] !== undefined ? _args[0] : false;
+            if (!silent) {
+              setLoadingList(true);
+            }
+            setError('');
+            _context.p = 1;
+            _context.n = 2;
+            return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_1__.listConversations)();
+          case 2:
+            data = _context.v;
+            convos = (data.conversations || []).map(function (c) {
+              return _objectSpread(_objectSpread({}, c), {}, {
+                messages: []
+              });
+            });
+            setAllConvos(convos);
+            if (convos.length && !activeId) {
+              setActiveId(convos[0].id);
+            }
+            _context.n = 4;
+            break;
+          case 3:
+            _context.p = 3;
+            _t = _context.v;
+            if (!silent) {
+              setError('Could not load conversations. Log in as HR.');
+            }
+          case 4:
+            _context.p = 4;
+            if (!silent) {
+              setLoadingList(false);
+            }
+            return _context.f(4);
+          case 5:
+            return _context.a(2);
+        }
+      }, _callee, null, [[1, 3, 4, 5]]);
+    }));
+    return function loadConversations() {
+      return _ref.apply(this, arguments);
+    };
+  }();
+  var loadThread = /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(conversationId) {
+      var silent,
+        data,
+        _args2 = arguments,
+        _t2;
+      return _regenerator().w(function (_context2) {
+        while (1) switch (_context2.p = _context2.n) {
+          case 0:
+            silent = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : false;
+            if (conversationId) {
+              _context2.n = 1;
+              break;
+            }
+            setMessages([]);
+            return _context2.a(2);
+          case 1:
+            if (!silent) {
+              setLoadingThread(true);
+            }
+            _context2.p = 2;
+            _context2.n = 3;
+            return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_1__.listMessages)(conversationId);
+          case 3:
+            data = _context2.v;
+            setMessages(data.messages || []);
+            setAllConvos(function (prev) {
+              return prev.map(function (c) {
+                return c.id === conversationId ? _objectSpread(_objectSpread({}, c), {}, {
+                  unread: 0
+                }) : c;
+              });
+            });
+            _context2.n = 5;
+            break;
+          case 4:
+            _context2.p = 4;
+            _t2 = _context2.v;
+            if (!silent) {
+              setError('Could not load messages for this conversation.');
+            }
+          case 5:
+            _context2.p = 5;
+            if (!silent) {
+              setLoadingThread(false);
+            }
+            return _context2.f(5);
+          case 6:
+            return _context2.a(2);
+        }
+      }, _callee2, null, [[2, 4, 5, 6]]);
+    }));
+    return function loadThread(_x) {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    loadConversations(false);
+    var listPollId = window.setInterval(function () {
+      return loadConversations(true);
+    }, _api_messagesApi__WEBPACK_IMPORTED_MODULE_1__.MESSAGES_POLL_MS);
+    return function () {
+      return window.clearInterval(listPollId);
+    };
+  }, []);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (!activeId) {
+      setMessages([]);
+      return undefined;
+    }
+    loadThread(activeId, false);
+    var threadPollId = window.setInterval(function () {
+      return loadThread(activeId, true);
+    }, _api_messagesApi__WEBPACK_IMPORTED_MODULE_1__.MESSAGES_POLL_MS);
+    return function () {
+      return window.clearInterval(threadPollId);
+    };
+  }, [activeId]);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     var switching = prevIdRef.current !== activeId;
     prevIdRef.current = activeId;
@@ -15396,66 +16041,181 @@ var HireDashboardMessages = function HireDashboardMessages() {
         behavior: 'smooth'
       });
     }
-  }, [activeId, active === null || active === void 0 || (_active$messages = active.messages) === null || _active$messages === void 0 ? void 0 : _active$messages.length]);
+  }, [activeId, messages.length]);
+  var active = allConvos.find(function (c) {
+    return c.id === activeId;
+  });
+  var filtered = allConvos.filter(function (c) {
+    return c.name.toLowerCase().includes(search.toLowerCase()) || (c.role || '').toLowerCase().includes(search.toLowerCase());
+  });
   var openConvo = function openConvo(id) {
     setActiveId(id);
-    setAllConvos(function (prev) {
-      return prev.map(function (c) {
-        return c.id === id ? _objectSpread(_objectSpread({}, c), {}, {
-          unread: 0
-        }) : c;
-      });
-    });
   };
-  var send = function send() {
-    var text = input.trim();
-    if (!text) return;
-    var newMsg = {
-      id: Date.now(),
-      from: 'me',
-      text: text,
-      time: new Date().toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+  var send = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      var text, data, newMsg, _t3;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.p = _context3.n) {
+          case 0:
+            text = input.trim();
+            if (!(!text || !activeId || sending)) {
+              _context3.n = 1;
+              break;
+            }
+            return _context3.a(2);
+          case 1:
+            setSending(true);
+            _context3.p = 2;
+            _context3.n = 3;
+            return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_1__.sendMessage)(activeId, text);
+          case 3:
+            data = _context3.v;
+            newMsg = data.message;
+            setMessages(function (prev) {
+              return [].concat(_toConsumableArray(prev), [newMsg]);
+            });
+            setAllConvos(function (prev) {
+              return prev.map(function (c) {
+                return c.id === activeId ? _objectSpread(_objectSpread({}, c), {}, {
+                  lastMessage: newMsg.text,
+                  time: newMsg.time
+                }) : c;
+              });
+            });
+            setInput('');
+            _context3.n = 5;
+            break;
+          case 4:
+            _context3.p = 4;
+            _t3 = _context3.v;
+            setError('Could not send message.');
+          case 5:
+            _context3.p = 5;
+            setSending(false);
+            return _context3.f(5);
+          case 6:
+            return _context3.a(2);
+        }
+      }, _callee3, null, [[2, 4, 5, 6]]);
+    }));
+    return function send() {
+      return _ref3.apply(this, arguments);
     };
-    setAllConvos(function (prev) {
-      return prev.map(function (c) {
-        return c.id === activeId ? _objectSpread(_objectSpread({}, c), {}, {
-          messages: [].concat(_toConsumableArray(c.messages), [newMsg]),
-          time: newMsg.time
-        }) : c;
-      });
-    });
-    setInput('');
-  };
+  }();
   var handleKey = function handleKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       send();
     }
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("section", {
+  var openNewChatPicker = /*#__PURE__*/function () {
+    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+      var data, _t4;
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.p = _context4.n) {
+          case 0:
+            setShowNewChat(true);
+            _context4.p = 1;
+            _context4.n = 2;
+            return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_1__.listMessageableCandidates)();
+          case 2:
+            data = _context4.v;
+            setCandidates(data.candidates || []);
+            _context4.n = 4;
+            break;
+          case 3:
+            _context4.p = 3;
+            _t4 = _context4.v;
+            setCandidates([]);
+          case 4:
+            return _context4.a(2);
+        }
+      }, _callee4, null, [[1, 3]]);
+    }));
+    return function openNewChatPicker() {
+      return _ref4.apply(this, arguments);
+    };
+  }();
+  var beginChatWithCandidate = /*#__PURE__*/function () {
+    var _ref5 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(candidateUserId) {
+      var data, _t5;
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.p = _context5.n) {
+          case 0:
+            _context5.p = 0;
+            _context5.n = 1;
+            return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_1__.startConversation)({
+              candidate_user_id: candidateUserId
+            });
+          case 1:
+            data = _context5.v;
+            _context5.n = 2;
+            return loadConversations();
+          case 2:
+            setActiveId(data.conversation.id);
+            setShowNewChat(false);
+            _context5.n = 4;
+            break;
+          case 3:
+            _context5.p = 3;
+            _t5 = _context5.v;
+            setError('Could not start conversation.');
+          case 4:
+            return _context5.a(2);
+        }
+      }, _callee5, null, [[0, 3]]);
+    }));
+    return function beginChatWithCandidate(_x2) {
+      return _ref5.apply(this, arguments);
+    };
+  }();
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
     className: "hire-messages-section",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
       className: "hire-messages-wrapper",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
         className: "hire-messages-left",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
           className: "hire-messages-left-header",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h2", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h2", {
             children: "Messages"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+            type: "button",
+            className: "hire-messages-new-btn",
+            onClick: openNewChatPicker,
+            children: "New"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
             className: "hire-messages-total",
             children: allConvos.reduce(function (a, c) {
-              return a + c.unread;
-            }, 0) > 0 && allConvos.reduce(function (a, c) {
-              return a + c.unread;
-            }, 0)
+              return a + (c.unread || 0);
+            }, 0) || ''
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        }), showNewChat && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          className: "hire-messages-new-panel",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+            children: "Start chat with an applicant:"
+          }), candidates.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+            className: "hire-messages-new-empty",
+            children: "No new applicants to message. Candidates appear here after they apply to your job listings."
+          }), candidates.map(function (c) {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+              type: "button",
+              className: "hire-messages-new-item",
+              onClick: function onClick() {
+                return beginChatWithCandidate(c.id);
+              },
+              children: c.name
+            }, c.id);
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+            type: "button",
+            onClick: function onClick() {
+              return setShowNewChat(false);
+            },
+            children: "Cancel"
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
           className: "hire-messages-search",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
             width: "14",
             height: "14",
             viewBox: "0 0 24 24",
@@ -15464,17 +16224,17 @@ var HireDashboardMessages = function HireDashboardMessages() {
             strokeWidth: "2",
             strokeLinecap: "round",
             strokeLinejoin: "round",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("circle", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
               cx: "11",
               cy: "11",
               r: "8"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("line", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
               x1: "21",
               y1: "21",
               x2: "16.65",
               y2: "16.65"
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
             type: "text",
             placeholder: "Search conversations...",
             value: search,
@@ -15482,35 +16242,40 @@ var HireDashboardMessages = function HireDashboardMessages() {
               return setSearch(e.target.value);
             }
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+        }), loadingList && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          className: "hire-messages-status",
+          children: "Loading\u2026"
+        }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          className: "hire-messages-status hire-messages-status--error",
+          children: error
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
           className: "hire-messages-list",
           children: filtered.map(function (c) {
-            var _c$messages;
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
               className: "hire-messages-item".concat(c.id === activeId ? ' active' : ''),
               onClick: function onClick() {
                 return openConvo(c.id);
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
                 className: "hire-msg-avatar",
                 children: c.initials
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
                 className: "hire-msg-info",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
                   className: "hire-msg-top",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
                     className: "hire-msg-name",
                     children: c.name
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
                     className: "hire-msg-time",
                     children: c.time
                   })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
                   className: "hire-msg-bottom",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
                     className: "hire-msg-preview",
-                    children: (_c$messages = c.messages[c.messages.length - 1]) === null || _c$messages === void 0 ? void 0 : _c$messages.text
-                  }), c.unread > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+                    children: c.lastMessage
+                  }), c.unread > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
                     className: "hire-msg-badge",
                     children: c.unread
                   })]
@@ -15519,55 +16284,59 @@ var HireDashboardMessages = function HireDashboardMessages() {
             }, c.id);
           })
         })]
-      }), active ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+      }), active ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
         className: "hire-messages-right",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
           className: "hire-messages-thread-header",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
             className: "hire-msg-avatar",
             children: active.initials
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
               className: "hire-thread-name",
               children: active.name
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
               className: "hire-thread-role",
-              children: active.role
+              children: active.role || 'Candidate'
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
           className: "hire-messages-thread",
           ref: threadRef,
-          children: [active.messages.map(function (msg) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+          children: [loadingThread && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+            className: "hire-messages-status",
+            children: "Loading messages\u2026"
+          }), messages.map(function (msg) {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
               className: "hire-bubble-wrap ".concat(msg.from === 'me' ? 'me' : 'them'),
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
                 className: "hire-bubble",
                 children: msg.text
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
                 className: "hire-bubble-time",
                 children: msg.time
               })]
             }, msg.id);
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
             ref: bottomRef
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
           className: "hire-messages-input-bar",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
             type: "text",
             placeholder: "Type a message...",
             value: input,
             onChange: function onChange(e) {
               return setInput(e.target.value);
             },
-            onKeyDown: handleKey
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
+            onKeyDown: handleKey,
+            disabled: sending
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
             type: "button",
             className: "hire-send-btn",
             onClick: send,
-            disabled: !input.trim(),
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
+            disabled: !input.trim() || sending,
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
               width: "16",
               height: "16",
               viewBox: "0 0 24 24",
@@ -15576,21 +16345,21 @@ var HireDashboardMessages = function HireDashboardMessages() {
               strokeWidth: "2.5",
               strokeLinecap: "round",
               strokeLinejoin: "round",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("line", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
                 x1: "22",
                 y1: "2",
                 x2: "11",
                 y2: "13"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("polygon", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("polygon", {
                 points: "22 2 15 22 11 13 2 9 22 2"
               })]
             })
           })]
         })]
-      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
         className: "hire-messages-right hire-messages-empty-state",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
-          children: "Select a conversation to start messaging"
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          children: loadingList ? 'Loading…' : 'Select or start a conversation'
         })
       })]
     })
@@ -18048,13 +18817,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _context_AuthContext__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../context/AuthContext */ "./resources/js/context/AuthContext.js");
 /* harmony import */ var _api_jobsApi__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../api/jobsApi */ "./resources/js/api/jobsApi.js");
-/* harmony import */ var _PostJobModal_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./PostJobModal.scss */ "./resources/js/views/HR-View/components/pages/PostJobModal/PostJobModal.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../utils/jobFormUtils */ "./resources/js/utils/jobFormUtils.js");
+/* harmony import */ var _PostJobModal_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./PostJobModal.scss */ "./resources/js/views/HR-View/components/pages/PostJobModal/PostJobModal.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
@@ -18071,15 +18845,30 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
+
+var emptyForm = {
+  title: '',
+  company: '',
+  location: '',
+  types: ['Full-time'],
+  salary: '',
+  tags: '',
+  description: ''
+};
+function tagsToString(tags) {
+  if (Array.isArray(tags)) {
+    return tags.join(', ');
+  }
+  return '';
+}
 var PostJobModal = function PostJobModal(_ref) {
-  var onClose = _ref.onClose,
+  var job = _ref.job,
+    onClose = _ref.onClose,
     onPosted = _ref.onPosted;
   var _useAuth = (0,_context_AuthContext__WEBPACK_IMPORTED_MODULE_1__.useAuth)(),
     user = _useAuth.user;
-  var company = localStorage.getItem('user_company') || (user === null || user === void 0 ? void 0 : user.name) || 'Your Company';
-  var initials = company.split(' ').map(function (w) {
-    return w[0];
-  }).join('').slice(0, 2).toUpperCase();
+  var isEdit = Boolean(job === null || job === void 0 ? void 0 : job.id);
+  var defaultCompany = localStorage.getItem('user_company') || (user === null || user === void 0 ? void 0 : user.name) || 'Your Company';
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState2 = _slicedToArray(_useState, 2),
     submitting = _useState2[0],
@@ -18088,66 +18877,130 @@ var PostJobModal = function PostJobModal(_ref) {
     _useState4 = _slicedToArray(_useState3, 2),
     error = _useState4[0],
     setError = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
-      title: '',
-      location: '',
-      type: 'Full-time',
-      salary: '',
-      tags: ''
-    }),
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({}),
     _useState6 = _slicedToArray(_useState5, 2),
-    form = _useState6[0],
-    setForm = _useState6[1];
+    fieldErrors = _useState6[0],
+    setFieldErrors = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(emptyForm),
+    _useState8 = _slicedToArray(_useState7, 2),
+    form = _useState8[0],
+    setForm = _useState8[1];
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (isEdit) {
+      setForm({
+        title: job.title || '',
+        company: job.company || defaultCompany,
+        location: job.location || '',
+        types: (0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.normalizeJobTypes)(job.types, job.type),
+        salary: job.salary === '—' ? '' : job.salary || '',
+        tags: tagsToString(job.tags),
+        description: job.description || ''
+      });
+      setFieldErrors({});
+      return;
+    }
+    setForm(_objectSpread(_objectSpread({}, emptyForm), {}, {
+      company: defaultCompany
+    }));
+    setFieldErrors({});
+  }, [job, isEdit, defaultCompany]);
+  var company = form.company || defaultCompany;
+  var initials = company.split(' ').map(function (w) {
+    return w[0];
+  }).join('').slice(0, 2).toUpperCase();
+  var typesLabel = (0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.jobTypesLabel)(form.types);
   var handleChange = function handleChange(e) {
-    return setForm(_objectSpread(_objectSpread({}, form), {}, _defineProperty({}, e.target.name, e.target.value)));
+    var next = _objectSpread(_objectSpread({}, form), {}, _defineProperty({}, e.target.name, e.target.value));
+    setForm(next);
+    setFieldErrors((0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.validateJobForm)(next));
+    setError('');
+  };
+  var toggleType = function toggleType(type) {
+    var hasType = form.types.includes(type);
+    var types = hasType ? form.types.filter(function (t) {
+      return t !== type;
+    }) : [].concat(_toConsumableArray(form.types), [type]);
+    var next = _objectSpread(_objectSpread({}, form), {}, {
+      types: types
+    });
+    setForm(next);
+    setFieldErrors((0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.validateJobForm)(next));
+    setError('');
   };
   var handleSubmit = /*#__PURE__*/function () {
     var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(e) {
-      var tags, _err$response, _err$response2, message, _t;
+      var validationErrors, tags, types, payload, _err$response, apiErrors, _err$response2, message, _t;
       return _regenerator().w(function (_context) {
         while (1) switch (_context.p = _context.n) {
           case 0:
             e.preventDefault();
+            validationErrors = (0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.validateJobForm)(form);
+            if (!(0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.hasJobFormErrors)(validationErrors)) {
+              _context.n = 1;
+              break;
+            }
+            setFieldErrors(validationErrors);
+            setError('Please fix the highlighted fields before saving.');
+            return _context.a(2);
+          case 1:
             setSubmitting(true);
             setError('');
+            setFieldErrors({});
             tags = form.tags.split(',').map(function (t) {
               return t.trim();
             }).filter(Boolean);
-            _context.p = 1;
-            _context.n = 2;
-            return (0,_api_jobsApi__WEBPACK_IMPORTED_MODULE_2__.createJobListing)({
-              title: form.title,
-              company: company,
-              location: form.location,
-              type: form.type,
-              salary: form.salary,
-              tags: tags
-            });
-          case 2:
+            types = (0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.normalizeJobTypes)(form.types);
+            payload = {
+              title: form.title.trim(),
+              company: form.company.trim() || defaultCompany,
+              location: form.location.trim(),
+              types: types,
+              salary: form.salary.trim(),
+              tags: tags,
+              description: form.description.trim() || undefined
+            };
+            _context.p = 2;
+            if (!isEdit) {
+              _context.n = 4;
+              break;
+            }
+            _context.n = 3;
+            return (0,_api_jobsApi__WEBPACK_IMPORTED_MODULE_2__.updateJobListing)(job.id, payload);
+          case 3:
+            _context.n = 5;
+            break;
+          case 4:
+            _context.n = 5;
+            return (0,_api_jobsApi__WEBPACK_IMPORTED_MODULE_2__.createJobListing)(payload);
+          case 5:
             onPosted === null || onPosted === void 0 || onPosted();
             onClose();
-            setForm({
-              title: '',
-              location: '',
-              type: 'Full-time',
-              salary: '',
-              tags: ''
-            });
-            _context.n = 4;
+            if (!isEdit) {
+              setForm(_objectSpread(_objectSpread({}, emptyForm), {}, {
+                company: defaultCompany
+              }));
+            }
+            _context.n = 7;
             break;
-          case 3:
-            _context.p = 3;
+          case 6:
+            _context.p = 6;
             _t = _context.v;
-            message = ((_err$response = _t.response) === null || _err$response === void 0 || (_err$response = _err$response.data) === null || _err$response === void 0 ? void 0 : _err$response.message) || ((_err$response2 = _t.response) === null || _err$response2 === void 0 || (_err$response2 = _err$response2.data) === null || _err$response2 === void 0 ? void 0 : _err$response2.errors) || 'Could not post job. Make sure you are logged in as HR.';
-            setError(typeof message === 'string' ? message : 'Could not post job. Please try again.');
-          case 4:
-            _context.p = 4;
+            apiErrors = (0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.mapApiErrorsToJobForm)(_t === null || _t === void 0 || (_err$response = _t.response) === null || _err$response === void 0 || (_err$response = _err$response.data) === null || _err$response === void 0 ? void 0 : _err$response.errors);
+            if ((0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.hasJobFormErrors)(apiErrors)) {
+              setFieldErrors(apiErrors);
+              setError('Please fix the highlighted fields before saving.');
+            } else {
+              message = (_t === null || _t === void 0 || (_err$response2 = _t.response) === null || _err$response2 === void 0 || (_err$response2 = _err$response2.data) === null || _err$response2 === void 0 ? void 0 : _err$response2.message) || "Could not ".concat(isEdit ? 'update' : 'post', " job. Make sure you are logged in as HR.");
+              setError(message);
+            }
+          case 7:
+            _context.p = 7;
             setSubmitting(false);
-            return _context.f(4);
-          case 5:
+            return _context.f(7);
+          case 8:
             return _context.a(2);
         }
-      }, _callee, null, [[1, 3, 4, 5]]);
+      }, _callee, null, [[2, 6, 7, 8]]);
     }));
     return function handleSubmit(_x) {
       return _ref2.apply(this, arguments);
@@ -18156,158 +19009,210 @@ var PostJobModal = function PostJobModal(_ref) {
   var tagList = form.tags.split(',').map(function (t) {
     return t.trim();
   }).filter(Boolean);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
     className: "pjm-overlay",
     onClick: onClose,
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "pjm-modal",
       onClick: function onClick(e) {
         return e.stopPropagation();
       },
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
         className: "pjm-form-panel",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
           className: "pjm-header",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h2", {
-            children: "Post a New Job"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h2", {
+            children: isEdit ? 'Edit Job' : 'Post a New Job'
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
             className: "pjm-close",
             type: "button",
             onClick: onClose,
             children: "\u2715"
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("form", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("form", {
           className: "pjm-form",
           onSubmit: handleSubmit,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          noValidate: true,
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "pjm-field",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("label", {
               children: "Job Title"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
               name: "title",
               value: form.title,
               onChange: handleChange,
               placeholder: "e.g. Senior Frontend Developer",
-              required: true
+              "aria-invalid": Boolean(fieldErrors.title)
+            }), fieldErrors.title && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+              className: "pjm-field-error",
+              children: fieldErrors.title
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "pjm-field",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("label", {
+              children: "Company"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
+              name: "company",
+              value: form.company,
+              onChange: handleChange,
+              placeholder: "Company name",
+              "aria-invalid": Boolean(fieldErrors.company)
+            }), fieldErrors.company && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+              className: "pjm-field-error",
+              children: fieldErrors.company
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            className: "pjm-field",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("label", {
               children: "Location"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
               name: "location",
               value: form.location,
               onChange: handleChange,
               placeholder: "e.g. Remote, New York, NY",
-              required: true
+              "aria-invalid": Boolean(fieldErrors.location)
+            }), fieldErrors.location && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+              className: "pjm-field-error",
+              children: fieldErrors.location
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "pjm-field",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
-              children: "Job Type"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("select", {
-              name: "type",
-              value: form.type,
-              onChange: handleChange,
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
-                children: "Full-time"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
-                children: "Part-time"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
-                children: "Contract"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
-                children: "Internship"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
-                children: "Remote"
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("label", {
+              children: ["Job types ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+                className: "pjm-hint",
+                children: "(select all that apply)"
               })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+              className: "pjm-type-options",
+              children: _utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.JOB_LISTING_TYPES.map(function (type) {
+                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("label", {
+                  className: "pjm-type-option".concat(form.types.includes(type) ? ' is-selected' : ''),
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
+                    type: "checkbox",
+                    checked: form.types.includes(type),
+                    onChange: function onChange() {
+                      return toggleType(type);
+                    }
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+                    children: type
+                  })]
+                }, type);
+              })
+            }), fieldErrors.types && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+              className: "pjm-field-error",
+              children: fieldErrors.types
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "pjm-field",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("label", {
               children: "Salary Range"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
               name: "salary",
               value: form.salary,
               onChange: handleChange,
               placeholder: "e.g. $80k \u2013 $100k",
-              required: true
+              "aria-invalid": Boolean(fieldErrors.salary)
+            }), fieldErrors.salary && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+              className: "pjm-field-error",
+              children: fieldErrors.salary
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "pjm-field",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("label", {
-              children: ["Skills / Tags ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("label", {
+              children: ["Skills / Tags ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
                 className: "pjm-hint",
                 children: "(comma separated)"
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
               name: "tags",
               value: form.tags,
               onChange: handleChange,
               placeholder: "e.g. React, TypeScript, Node.js"
             })]
-          }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            className: "pjm-field",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("label", {
+              children: ["Description ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+                className: "pjm-hint",
+                children: "(optional)"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("textarea", {
+              name: "description",
+              value: form.description,
+              onChange: handleChange,
+              rows: 4,
+              placeholder: "Describe the role, requirements, and benefits\u2026"
+            })]
+          }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
             className: "pjm-error",
             children: error
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
             type: "submit",
             className: "pjm-submit",
             disabled: submitting,
-            children: submitting ? 'Posting…' : 'Post Job'
+            children: submitting ? isEdit ? 'Saving…' : 'Posting…' : isEdit ? 'Save changes' : 'Post Job'
           })]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
         className: "pjm-preview-panel",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
           className: "pjm-preview-label",
           children: "Live Preview"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
           className: "pjm-preview-card",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "pjm-preview-head",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
               className: "pjm-preview-initials",
               children: initials || 'CO'
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
               className: "pjm-preview-title-block",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
                 children: form.title || 'Job Title'
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
                 children: company
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
-              className: "pjm-preview-type",
-              children: form.type
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+              className: "pjm-preview-types",
+              children: (form.types.length > 0 ? form.types : ['Full-time']).map(function (type) {
+                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+                  className: "pjm-preview-type",
+                  children: type
+                }, type);
+              })
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "pjm-preview-meta",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("span", {
-              children: ["\uD83D\uDCCD ", form.location || 'Location']
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("span", {
-              children: ["\uD83D\uDCB0 ", form.salary || 'Salary']
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-              children: "\uD83D\uDD50 Just now"
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
+              children: [" ", form.location || 'Location']
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
+              children: [" ", form.salary || 'Salary']
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+              children: " Just now"
             })]
-          }), tagList.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+          }), tagList.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
             className: "pjm-preview-tags",
             children: tagList.map(function (tag) {
-              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
                 className: "pjm-preview-tag",
                 children: tag
               }, tag);
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "pjm-preview-section",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
               children: "About the Role"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
-              children: ["We're looking for a talented ", form.title || '...', " to join ", company, ". This is a ", form.type, " position based in ", form.location || '...', "."]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+              children: form.description || /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
+                children: ["We're looking for a talented ", form.title || '...', " to join ", company, ". This is a ", typesLabel, " position based in ", form.location || '...', "."]
+              })
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "pjm-preview-actions",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
               className: "pjm-preview-apply",
               children: "\u2197 Apply Now"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
               className: "pjm-preview-save",
               children: "Save Job"
             })]
@@ -18901,48 +19806,58 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
-/* harmony import */ var _AboutMe_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./AboutMe.scss */ "./resources/js/views/User-View/components/dashboard/pages/about-me/AboutMe.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../shared/ProfileFormField */ "./resources/js/views/User-View/components/dashboard/pages/shared/ProfileFormField.js");
+/* harmony import */ var _utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../../utils/profileFormUtils */ "./resources/js/utils/profileFormUtils.js");
+/* harmony import */ var _AboutMe_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./AboutMe.scss */ "./resources/js/views/User-View/components/dashboard/pages/about-me/AboutMe.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 
 
 
 
-var MAX = 500;
+
+
 function AboutMe(_ref) {
+  var _value$length;
   var value = _ref.value,
+    error = _ref.error,
     _onChange = _ref.onChange;
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+  var length = (_value$length = value === null || value === void 0 ? void 0 : value.length) !== null && _value$length !== void 0 ? _value$length : 0;
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
     className: "about-me",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "about-me__header",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
         className: "about-me__icon",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiStar, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiStar, {
           size: 18
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
           className: "about-me__title",
           children: "About me"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
           className: "about-me__subtitle",
-          children: "A short intro for recruiters"
+          children: "A short intro for recruiters (min. 20 characters)"
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "about-me__body",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("textarea", {
-        className: "about-me__textarea",
-        rows: 5,
-        maxLength: MAX,
-        value: value,
-        onChange: function onChange(e) {
-          return _onChange(e.target.value);
-        },
-        placeholder: "Write a short bio..."
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
-        className: "about-me__count",
-        children: [value.length, "/", MAX]
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+        error: error,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("textarea", {
+          className: "about-me__textarea",
+          rows: 5,
+          maxLength: _utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_3__.PROFILE_ABOUT_MAX,
+          value: value,
+          onChange: function onChange(e) {
+            return _onChange(e.target.value);
+          },
+          placeholder: "Write a short bio...",
+          "aria-invalid": Boolean(error)
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
+        className: "about-me__count".concat(error ? ' about-me__count--error' : ''),
+        children: [length, "/", _utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_3__.PROFILE_ABOUT_MAX]
       })]
     })]
   });
@@ -19240,18 +20155,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
-/* harmony import */ var _ChatWindow_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ChatWindow.scss */ "./resources/js/views/User-View/components/dashboard/pages/chat-window/ChatWindow.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+/* harmony import */ var _api_messagesApi__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../../api/messagesApi */ "./resources/js/api/messagesApi.js");
+/* harmony import */ var _ChatWindow_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ChatWindow.scss */ "./resources/js/views/User-View/components/dashboard/pages/chat-window/ChatWindow.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -19262,129 +20176,198 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-var staticMessages = {
-  1: [{
-    id: 1,
-    from: 'them',
-    text: 'Hi Vesa! We reviewed your application and we are impressed.',
-    time: '10:20'
-  }, {
-    id: 2,
-    from: 'me',
-    text: 'Thank you! I am very excited about this opportunity.',
-    time: '10:22'
-  }, {
-    id: 3,
-    from: 'them',
-    text: 'We would love to schedule an interview with you. Are you available this week?',
-    time: '10:30'
-  }],
-  2: [{
-    id: 1,
-    from: 'them',
-    text: 'Thank you for applying to StartupXYZ!',
-    time: '09:10'
-  }, {
-    id: 2,
-    from: 'them',
-    text: 'We will get back to you shortly.',
-    time: '09:15'
-  }],
-  3: [{
-    id: 1,
-    from: 'them',
-    text: 'Hello! Please complete the technical assessment sent to your email.',
-    time: 'Yesterday'
-  }],
-  4: [{
-    id: 1,
-    from: 'them',
-    text: 'Your application is currently under review.',
-    time: 'Yesterday'
-  }],
-  5: [{
-    id: 1,
-    from: 'them',
-    text: 'Hi! We reviewed your profile and think you could be a great fit.',
-    time: 'Mon'
-  }]
-};
+
 function ChatWindow(_ref) {
-  var conversation = _ref.conversation;
+  var conversation = _ref.conversation,
+    onMessageSent = _ref.onMessageSent,
+    _ref$inboxEmpty = _ref.inboxEmpty,
+    inboxEmpty = _ref$inboxEmpty === void 0 ? false : _ref$inboxEmpty;
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState2 = _slicedToArray(_useState, 2),
     input = _useState2[0],
     setInput = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(staticMessages),
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState4 = _slicedToArray(_useState3, 2),
     messages = _useState4[0],
     setMessages = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState6 = _slicedToArray(_useState5, 2),
+    loading = _useState6[0],
+    setLoading = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    sending = _useState8[0],
+    setSending = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState0 = _slicedToArray(_useState9, 2),
+    error = _useState0[0],
+    setError = _useState0[1];
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (!(conversation !== null && conversation !== void 0 && conversation.id)) {
+      setMessages([]);
+      return undefined;
+    }
+    var cancelled = false;
+    var load = /*#__PURE__*/function () {
+      var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+        var silent,
+          data,
+          _args = arguments,
+          _t;
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.p = _context.n) {
+            case 0:
+              silent = _args.length > 0 && _args[0] !== undefined ? _args[0] : false;
+              if (!silent) {
+                setLoading(true);
+              }
+              setError('');
+              _context.p = 1;
+              _context.n = 2;
+              return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.listMessages)(conversation.id);
+            case 2:
+              data = _context.v;
+              if (!cancelled) {
+                setMessages(data.messages || []);
+              }
+              _context.n = 4;
+              break;
+            case 3:
+              _context.p = 3;
+              _t = _context.v;
+              if (!cancelled && !silent) {
+                setError('Could not load messages.');
+                setMessages([]);
+              }
+            case 4:
+              _context.p = 4;
+              if (!cancelled && !silent) {
+                setLoading(false);
+              }
+              return _context.f(4);
+            case 5:
+              return _context.a(2);
+          }
+        }, _callee, null, [[1, 3, 4, 5]]);
+      }));
+      return function load() {
+        return _ref2.apply(this, arguments);
+      };
+    }();
+    load(false);
+    var pollId = window.setInterval(function () {
+      return load(true);
+    }, _api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.MESSAGES_POLL_MS);
+    return function () {
+      cancelled = true;
+      window.clearInterval(pollId);
+    };
+  }, [conversation === null || conversation === void 0 ? void 0 : conversation.id]);
   if (!conversation) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "chat-window chat-window--empty",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiMessageSquare, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiMessageSquare, {
         size: 48
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
-        children: "Select a conversation to start messaging"
+      }), inboxEmpty ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.Fragment, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+          children: "No HR has messaged you yet."
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+          className: "chat-window__empty-hint",
+          children: "When a recruiter contacts you, you can reply here."
+        })]
+      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+        children: "Select a conversation to view messages"
       })]
     });
   }
-  var currentMessages = messages[conversation.id] || [];
-  var handleSend = function handleSend() {
-    if (!input.trim()) return;
-    var newMessage = {
-      id: currentMessages.length + 1,
-      from: 'me',
-      text: input.trim(),
-      time: new Date().toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+  var handleSend = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+      var data, _t2;
+      return _regenerator().w(function (_context2) {
+        while (1) switch (_context2.p = _context2.n) {
+          case 0:
+            if (!(!input.trim() || sending)) {
+              _context2.n = 1;
+              break;
+            }
+            return _context2.a(2);
+          case 1:
+            setSending(true);
+            setError('');
+            _context2.p = 2;
+            _context2.n = 3;
+            return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.sendMessage)(conversation.id, input.trim());
+          case 3:
+            data = _context2.v;
+            setMessages(function (prev) {
+              return [].concat(_toConsumableArray(prev), [data.message]);
+            });
+            setInput('');
+            onMessageSent === null || onMessageSent === void 0 || onMessageSent();
+            _context2.n = 5;
+            break;
+          case 4:
+            _context2.p = 4;
+            _t2 = _context2.v;
+            setError('Could not send message.');
+          case 5:
+            _context2.p = 5;
+            setSending(false);
+            return _context2.f(5);
+          case 6:
+            return _context2.a(2);
+        }
+      }, _callee2, null, [[2, 4, 5, 6]]);
+    }));
+    return function handleSend() {
+      return _ref3.apply(this, arguments);
     };
-    setMessages(function (prev) {
-      return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, conversation.id, [].concat(_toConsumableArray(prev[conversation.id] || []), [newMessage])));
-    });
-    setInput('');
-  };
+  }();
   var handleKeyDown = function handleKeyDown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
     className: "chat-window",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "chat-window__header",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         className: "chat-window__avatar",
         children: conversation.initials
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
           className: "chat-window__name",
           children: conversation.name
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
           className: "chat-window__status",
-          children: "Active now"
+          children: "Messages with HR"
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "chat-window__messages",
-      children: currentMessages.map(function (msg) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      children: [loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+        className: "chat-window__status-line",
+        children: "Loading messages\u2026"
+      }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+        className: "chat-window__status-line chat-window__status-line--error",
+        children: error
+      }), messages.map(function (msg) {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "chat-window__message chat-window__message--".concat(msg.from),
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             className: "chat-window__bubble",
             children: msg.text
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
             className: "chat-window__time",
             children: msg.time
           })]
         }, msg.id);
-      })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "chat-window__input-wrap",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
         type: "text",
         className: "chat-window__input",
         placeholder: "Type a message...",
@@ -19392,11 +20375,13 @@ function ChatWindow(_ref) {
         onChange: function onChange(e) {
           return setInput(e.target.value);
         },
-        onKeyDown: handleKeyDown
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+        onKeyDown: handleKeyDown,
+        disabled: sending
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
         className: "chat-window__send",
         onClick: handleSend,
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiSend, {
+        disabled: sending || !input.trim(),
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiSend, {
           size: 18
         })
       })]
@@ -19420,8 +20405,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
-/* harmony import */ var _ConversationList_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ConversationList.scss */ "./resources/js/views/User-View/components/dashboard/pages/conversation-list/ConversationList.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _api_messagesApi__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../../api/messagesApi */ "./resources/js/api/messagesApi.js");
+/* harmony import */ var _ConversationList_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ConversationList.scss */ "./resources/js/views/User-View/components/dashboard/pages/conversation-list/ConversationList.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -19432,66 +20422,105 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-var conversations = [{
-  id: 1,
-  name: 'TechCorp HR',
-  lastMessage: 'We would love to schedule an interview...',
-  time: '10:30',
-  unread: 2,
-  initials: 'TC'
-}, {
-  id: 2,
-  name: 'StartupXYZ',
-  lastMessage: 'Thank you for applying!',
-  time: '09:15',
-  unread: 0,
-  initials: 'SX'
-}, {
-  id: 3,
-  name: 'Google Recruiting',
-  lastMessage: 'Please complete the assessment.',
-  time: 'Yesterday',
-  unread: 1,
-  initials: 'GR'
-}, {
-  id: 4,
-  name: 'Meta Careers',
-  lastMessage: 'Your application is under review.',
-  time: 'Yesterday',
-  unread: 0,
-  initials: 'MC'
-}, {
-  id: 5,
-  name: 'Amazon Jobs',
-  lastMessage: 'Hi! We reviewed your profile...',
-  time: 'Mon',
-  unread: 0,
-  initials: 'AJ'
-}];
+
 function ConversationList(_ref) {
   var selected = _ref.selected,
-    onSelect = _ref.onSelect;
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    onSelect = _ref.onSelect,
+    _ref$refreshKey = _ref.refreshKey,
+    refreshKey = _ref$refreshKey === void 0 ? 0 : _ref$refreshKey,
+    onInboxEmpty = _ref.onInboxEmpty;
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState2 = _slicedToArray(_useState, 2),
-    search = _useState2[0],
-    setSearch = _useState2[1];
+    conversations = _useState2[0],
+    setConversations = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState4 = _slicedToArray(_useState3, 2),
+    search = _useState4[0],
+    setSearch = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+    _useState6 = _slicedToArray(_useState5, 2),
+    loading = _useState6[0],
+    setLoading = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState8 = _slicedToArray(_useState7, 2),
+    error = _useState8[0],
+    setError = _useState8[1];
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    var cancelled = false;
+    var load = /*#__PURE__*/function () {
+      var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+        var silent,
+          data,
+          list,
+          _args = arguments,
+          _t;
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.p = _context.n) {
+            case 0:
+              silent = _args.length > 0 && _args[0] !== undefined ? _args[0] : false;
+              if (!silent) {
+                setLoading(true);
+              }
+              setError('');
+              _context.p = 1;
+              _context.n = 2;
+              return (0,_api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.listConversations)();
+            case 2:
+              data = _context.v;
+              if (!cancelled) {
+                list = data.conversations || [];
+                setConversations(list);
+                onInboxEmpty === null || onInboxEmpty === void 0 || onInboxEmpty(list.length === 0);
+              }
+              _context.n = 4;
+              break;
+            case 3:
+              _context.p = 3;
+              _t = _context.v;
+              if (!cancelled && !silent) {
+                setError('Could not load messages. Please log in.');
+              }
+            case 4:
+              _context.p = 4;
+              if (!cancelled && !silent) {
+                setLoading(false);
+              }
+              return _context.f(4);
+            case 5:
+              return _context.a(2);
+          }
+        }, _callee, null, [[1, 3, 4, 5]]);
+      }));
+      return function load() {
+        return _ref2.apply(this, arguments);
+      };
+    }();
+    load(false);
+    var pollId = window.setInterval(function () {
+      return load(true);
+    }, _api_messagesApi__WEBPACK_IMPORTED_MODULE_2__.MESSAGES_POLL_MS);
+    return function () {
+      cancelled = true;
+      window.clearInterval(pollId);
+    };
+  }, [refreshKey]);
   var filtered = conversations.filter(function (c) {
     return c.name.toLowerCase().includes(search.toLowerCase());
   });
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
     className: "conversation-list",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
       className: "conversation-list__header",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h2", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h2", {
         className: "conversation-list__title",
         children: "Messages"
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "conversation-list__search",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiSearch, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiSearch, {
         size: 16,
         className: "conversation-list__search-icon"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
         type: "text",
         placeholder: "Search conversations...",
         value: search,
@@ -19499,34 +20528,46 @@ function ConversationList(_ref) {
           return setSearch(e.target.value);
         }
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("ul", {
+    }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+      className: "conversation-list__status",
+      children: "Loading\u2026"
+    }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+      className: "conversation-list__status conversation-list__status--error",
+      children: error
+    }), !loading && !error && conversations.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+      className: "conversation-list__empty",
+      children: "No HR has messaged you yet."
+    }), !loading && !error && conversations.length > 0 && filtered.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+      className: "conversation-list__status",
+      children: "No matching conversations."
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("ul", {
       className: "conversation-list__items",
       children: filtered.map(function (c) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("li", {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
           className: "conversation-list__item ".concat((selected === null || selected === void 0 ? void 0 : selected.id) === c.id ? 'conversation-list__item--active' : ''),
           onClick: function onClick() {
             return onSelect(c);
           },
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             className: "conversation-list__avatar",
             children: c.initials
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "conversation-list__info",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "conversation-list__top",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "conversation-list__name",
                 children: c.name
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "conversation-list__time",
                 children: c.time
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "conversation-list__bottom",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "conversation-list__preview",
                 children: c.lastMessage
-              }), c.unread > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              }), c.unread > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "conversation-list__badge",
                 children: c.unread
               })]
@@ -19978,114 +21019,129 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
-/* harmony import */ var _JobPreferences_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./JobPreferences.scss */ "./resources/js/views/User-View/components/dashboard/pages/job-preferences/JobPreferences.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../shared/ProfileFormField */ "./resources/js/views/User-View/components/dashboard/pages/shared/ProfileFormField.js");
+/* harmony import */ var _utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../../utils/profileFormUtils */ "./resources/js/utils/profileFormUtils.js");
+/* harmony import */ var _JobPreferences_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./JobPreferences.scss */ "./resources/js/views/User-View/components/dashboard/pages/job-preferences/JobPreferences.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 
 
 
 
-var JOB_TYPES = ['Remote', 'On-site', 'Hybrid'];
-var AVAILABILITY = ['Immediately', '1 week notice', '2 weeks notice', '1 month notice'];
+
+
 function JobPreferences(_ref) {
   var _form$desiredRole, _form$jobType, _form$expectedSalary, _form$availability;
   var form = _ref.form,
+    _ref$errors = _ref.errors,
+    errors = _ref$errors === void 0 ? {} : _ref$errors,
     _onChange = _ref.onChange;
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
     className: "job-preferences",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "job-preferences__header",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
         className: "job-preferences__icon",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiBriefcase, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiBriefcase, {
           size: 18
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
           className: "job-preferences__title",
           children: "Job preferences"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
           className: "job-preferences__subtitle",
           children: "What you're looking for"
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "job-preferences__body",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
         className: "job-preferences__badges",
-        children: [form.jobType && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+        children: [form.jobType && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
           className: "job-preferences__badge",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiMonitor, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiMonitor, {
             size: 12
           }), " ", form.jobType]
-        }), form.expectedSalary && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+        }), form.expectedSalary && !errors.expectedSalary && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
           className: "job-preferences__badge",
           children: ["$", Number(form.expectedSalary).toLocaleString(), "+ / yr"]
-        }), form.availability && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+        }), form.availability && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
           className: "job-preferences__badge job-preferences__badge--outline",
           children: form.availability
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
         className: "job-preferences__grid",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          label: "Desired role",
+          icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiBriefcase, {
+            size: 13
+          }),
+          error: errors.desiredRole,
           className: "job-preferences__field",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiBriefcase, {
-              size: 13
-            }), " Desired role"]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
             type: "text",
             value: (_form$desiredRole = form.desiredRole) !== null && _form$desiredRole !== void 0 ? _form$desiredRole : '',
             onChange: function onChange(e) {
               return _onChange('desiredRole', e.target.value);
             },
-            placeholder: "e.g. Senior Frontend Developer"
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            placeholder: "e.g. Senior Frontend Developer",
+            "aria-invalid": Boolean(errors.desiredRole)
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          label: "Job type",
+          error: errors.jobType,
           className: "job-preferences__field",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
-            children: "Job type"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("select", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("select", {
             value: (_form$jobType = form.jobType) !== null && _form$jobType !== void 0 ? _form$jobType : '',
             onChange: function onChange(e) {
               return _onChange('jobType', e.target.value);
             },
-            children: JOB_TYPES.map(function (t) {
-              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+            "aria-invalid": Boolean(errors.jobType),
+            children: _utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_3__.PROFILE_JOB_TYPES.map(function (t) {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("option", {
+                value: t,
                 children: t
               }, t);
             })
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          label: "Expected salary (USD/yr)",
+          icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiDollarSign, {
+            size: 13
+          }),
+          error: errors.expectedSalary,
           className: "job-preferences__field",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiDollarSign, {
-              size: 13
-            }), " Expected salary (USD/yr)"]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
             type: "number",
+            min: "0",
+            step: "1",
             value: (_form$expectedSalary = form.expectedSalary) !== null && _form$expectedSalary !== void 0 ? _form$expectedSalary : '',
             onChange: function onChange(e) {
               return _onChange('expectedSalary', e.target.value);
             },
-            placeholder: "45000"
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            placeholder: "45000",
+            "aria-invalid": Boolean(errors.expectedSalary)
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          label: "Availability",
+          icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiClock, {
+            size: 13
+          }),
+          error: errors.availability,
           className: "job-preferences__field",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiClock, {
-              size: 13
-            }), " Availability"]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("select", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("select", {
             value: (_form$availability = form.availability) !== null && _form$availability !== void 0 ? _form$availability : '',
             onChange: function onChange(e) {
               return _onChange('availability', e.target.value);
             },
-            children: AVAILABILITY.map(function (a) {
-              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+            "aria-invalid": Boolean(errors.availability),
+            children: _utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_3__.PROFILE_AVAILABILITY_OPTIONS.map(function (a) {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("option", {
+                value: a,
                 children: a
               }, a);
             })
-          })]
+          })
         })]
       })]
     })]
@@ -20259,8 +21315,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
-/* harmony import */ var _PersonalInfo_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./PersonalInfo.scss */ "./resources/js/views/User-View/components/dashboard/pages/personal-info/PersonalInfo.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../shared/ProfileFormField */ "./resources/js/views/User-View/components/dashboard/pages/shared/ProfileFormField.js");
+/* harmony import */ var _PersonalInfo_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./PersonalInfo.scss */ "./resources/js/views/User-View/components/dashboard/pages/personal-info/PersonalInfo.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
@@ -20271,8 +21328,11 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 
 
 
+
 function PersonalInfo(_ref) {
   var form = _ref.form,
+    _ref$errors = _ref.errors,
+    errors = _ref$errors === void 0 ? {} : _ref$errors,
     _onChange = _ref.onChange;
   var field = function field(key) {
     var _form$key;
@@ -20283,87 +21343,108 @@ function PersonalInfo(_ref) {
       }
     };
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
     className: "personal-info",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "personal-info__header",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         className: "personal-info__icon",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiEdit2, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiEdit2, {
           size: 18
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
           className: "personal-info__title",
           children: "Personal information"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
           className: "personal-info__subtitle",
           children: "Basic details about you"
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
       className: "personal-info__body",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
         className: "personal-info__grid",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          label: "First name",
+          error: errors.firstName,
           className: "personal-info__field",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
-            children: "First name"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", _objectSpread({
-            type: "text"
-          }, field('firstName')))]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", _objectSpread({
+            type: "text",
+            "aria-invalid": Boolean(errors.firstName)
+          }, field('firstName')))
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          label: "Last name",
+          error: errors.lastName,
           className: "personal-info__field",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
-            children: "Last name"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", _objectSpread({
-            type: "text"
-          }, field('lastName')))]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", _objectSpread({
+            type: "text",
+            "aria-invalid": Boolean(errors.lastName)
+          }, field('lastName')))
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          label: "Email",
+          icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiMail, {
+            size: 13
+          }),
+          error: errors.email,
           className: "personal-info__field",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiMail, {
-              size: 13
-            }), " Email"]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", _objectSpread({
-            type: "email"
-          }, field('email')))]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", _objectSpread({
+            type: "email",
+            "aria-invalid": Boolean(errors.email)
+          }, field('email')))
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          label: "Phone",
+          icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiPhone, {
+            size: 13
+          }),
+          error: errors.phone,
           className: "personal-info__field",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiPhone, {
-              size: 13
-            }), " Phone"]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", _objectSpread({
-            type: "tel"
-          }, field('phone')))]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", _objectSpread({
+            type: "tel",
+            "aria-invalid": Boolean(errors.phone)
+          }, field('phone')))
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          label: "Location",
+          icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiMapPin, {
+            size: 13
+          }),
+          error: errors.location,
           className: "personal-info__field",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiMapPin, {
-              size: 13
-            }), " Location"]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", _objectSpread({
-            type: "text"
-          }, field('location')))]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", _objectSpread({
+            type: "text",
+            "aria-invalid": Boolean(errors.location)
+          }, field('location')))
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          label: "Date of birth",
+          icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiCalendar, {
+            size: 13
+          }),
+          error: errors.dateOfBirth,
           className: "personal-info__field",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiCalendar, {
-              size: 13
-            }), " Date of birth"]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", _objectSpread({
-            type: "date"
-          }, field('dateOfBirth')))]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", _objectSpread({
+            type: "date",
+            "aria-invalid": Boolean(errors.dateOfBirth)
+          }, field('dateOfBirth')))
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          label: "Nationality",
+          icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiFlag, {
+            size: 13
+          }),
+          error: errors.nationality,
           className: "personal-info__field",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiFlag, {
-              size: 13
-            }), " Nationality"]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", _objectSpread({
-            type: "text"
-          }, field('nationality')))]
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", _objectSpread({
+            type: "text",
+            "aria-invalid": Boolean(errors.nationality)
+          }, field('nationality')))
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          label: "Professional title",
+          error: errors.jobTitle,
+          className: "personal-info__field personal-info__field--full",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", _objectSpread({
+            type: "text",
+            placeholder: "e.g. Senior Frontend Developer",
+            "aria-invalid": Boolean(errors.jobTitle)
+          }, field('jobTitle')))
         })]
       })
     })]
@@ -21353,6 +22434,47 @@ var jobs = [{
 
 /***/ },
 
+/***/ "./resources/js/views/User-View/components/dashboard/pages/shared/ProfileFormField.js"
+/*!********************************************************************************************!*\
+  !*** ./resources/js/views/User-View/components/dashboard/pages/shared/ProfileFormField.js ***!
+  \********************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ProfileFormField)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _ProfileFormField_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ProfileFormField.scss */ "./resources/js/views/User-View/components/dashboard/pages/shared/ProfileFormField.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+
+function ProfileFormField(_ref) {
+  var label = _ref.label,
+    _ref$icon = _ref.icon,
+    icon = _ref$icon === void 0 ? null : _ref$icon,
+    error = _ref.error,
+    _ref$className = _ref.className,
+    className = _ref$className === void 0 ? '' : _ref$className,
+    children = _ref.children;
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+    className: "profile-form-field".concat(error ? ' profile-form-field--error' : '').concat(className ? " ".concat(className) : ''),
+    children: [label && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("label", {
+      className: "profile-form-field__label",
+      children: [icon, label]
+    }), children, error ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+      className: "profile-form-field__error",
+      role: "alert",
+      children: error
+    }) : null]
+  });
+}
+
+/***/ },
+
 /***/ "./resources/js/views/User-View/components/dashboard/pages/skills/Skills.js"
 /*!**********************************************************************************!*\
   !*** ./resources/js/views/User-View/components/dashboard/pages/skills/Skills.js ***!
@@ -21496,8 +22618,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
-/* harmony import */ var _SocialLinks_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./SocialLinks.scss */ "./resources/js/views/User-View/components/dashboard/pages/social-links/SocialLinks.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../shared/ProfileFormField */ "./resources/js/views/User-View/components/dashboard/pages/shared/ProfileFormField.js");
+/* harmony import */ var _SocialLinks_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./SocialLinks.scss */ "./resources/js/views/User-View/components/dashboard/pages/social-links/SocialLinks.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
@@ -21508,8 +22631,11 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 
 
 
+
 function SocialLinks(_ref) {
   var form = _ref.form,
+    _ref$errors = _ref.errors,
+    errors = _ref$errors === void 0 ? {} : _ref$errors,
     _onChange = _ref.onChange;
   var field = function field(key) {
     var _form$key;
@@ -21520,56 +22646,62 @@ function SocialLinks(_ref) {
       }
     };
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
     className: "social-links",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "social-links__header",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         className: "social-links__icon",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiGlobe, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiGlobe, {
           size: 18
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
           className: "social-links__title",
           children: "Social links"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
           className: "social-links__subtitle",
           children: "Where can people find you online"
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "social-links__body",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+        label: "LinkedIn",
+        icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiLinkedin, {
+          size: 13
+        }),
+        error: errors.linkedin,
         className: "social-links__field",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiLinkedin, {
-            size: 13
-          }), " LinkedIn"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", _objectSpread({
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", _objectSpread({
           type: "text",
-          placeholder: "linkedin.com/in/yourname"
-        }, field('linkedin')))]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          placeholder: "linkedin.com/in/yourname",
+          "aria-invalid": Boolean(errors.linkedin)
+        }, field('linkedin')))
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+        label: "GitHub",
+        icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiGithub, {
+          size: 13
+        }),
+        error: errors.github,
         className: "social-links__field",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiGithub, {
-            size: 13
-          }), " GitHub"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", _objectSpread({
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", _objectSpread({
           type: "text",
-          placeholder: "github.com/yourname"
-        }, field('github')))]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          placeholder: "github.com/yourname",
+          "aria-invalid": Boolean(errors.github)
+        }, field('github')))
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_shared_ProfileFormField__WEBPACK_IMPORTED_MODULE_2__["default"], {
+        label: "Portfolio",
+        icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiGlobe, {
+          size: 13
+        }),
+        error: errors.portfolio,
         className: "social-links__field",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiGlobe, {
-            size: 13
-          }), " Portfolio"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", _objectSpread({
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", _objectSpread({
           type: "text",
-          placeholder: "yoursite.com"
-        }, field('portfolio')))]
+          placeholder: "yoursite.com",
+          "aria-invalid": Boolean(errors.portfolio)
+        }, field('portfolio')))
       })]
     })]
   });
@@ -22590,6 +23722,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var JobDetail = function JobDetail(_ref) {
+  var _job$types, _job$types2;
   var job = _ref.job,
     onBack = _ref.onBack,
     relatedJobs = _ref.relatedJobs,
@@ -22624,7 +23757,7 @@ var JobDetail = function JobDetail(_ref) {
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
         children: ["Location: ", job.location]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
-        children: ["Type: ", job.type]
+        children: ["Type: ", ((_job$types = job.types) !== null && _job$types !== void 0 && _job$types.length ? job.types : [job.type]).join(', ')]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
         children: ["Salary: ", job.salary]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
@@ -22645,7 +23778,7 @@ var JobDetail = function JobDetail(_ref) {
       children: "About the Role"
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("p", {
       "data-aos": "fade-up",
-      children: ["We're looking for a talented ", job.title, " to join ", job.company, ". This is a ", job.type, " position based in ", job.location, ". You'll work alongside a passionate team building products that make a real impact."]
+      children: ["We're looking for a talented ", job.title, " to join ", job.company, ". This is a ", ((_job$types2 = job.types) !== null && _job$types2 !== void 0 && _job$types2.length ? job.types : [job.type]).join(', '), " position based in ", job.location, ". You'll work alongside a passionate team building products that make a real impact."]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h2", {
       "data-aos": "fade-up",
       children: "Requirements"
@@ -22752,115 +23885,62 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _JobsCards_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./JobsCards.scss */ "./resources/js/views/User-View/components/pages/JobsCards/JobsCards.scss");
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/development/chunk-UVKPFVEO.mjs");
-/* harmony import */ var _api_jobsApi__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../api/jobsApi */ "./resources/js/api/jobsApi.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
-function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 
 
 
 
-
-var JobsCards = function JobsCards() {
-  var jobsPerPage = 6;
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1),
-    _useState2 = _slicedToArray(_useState, 2),
-    page = _useState2[0],
-    setPage = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
-    _useState4 = _slicedToArray(_useState3, 2),
-    jobs = _useState4[0],
-    setJobs = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
-    _useState6 = _slicedToArray(_useState5, 2),
-    loading = _useState6[0],
-    setLoading = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState8 = _slicedToArray(_useState7, 2),
-    error = _useState8[0],
-    setError = _useState8[1];
+var JobsCards = function JobsCards(_ref) {
+  var jobs = _ref.jobs,
+    loading = _ref.loading,
+    error = _ref.error,
+    page = _ref.page,
+    onPageChange = _ref.onPageChange,
+    jobsPerPage = _ref.jobsPerPage;
   var navigate = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_2__.useNavigate)();
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    var cancelled = false;
-    var load = /*#__PURE__*/function () {
-      var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-        var data, _t;
-        return _regenerator().w(function (_context) {
-          while (1) switch (_context.p = _context.n) {
-            case 0:
-              setLoading(true);
-              setError('');
-              _context.p = 1;
-              _context.n = 2;
-              return (0,_api_jobsApi__WEBPACK_IMPORTED_MODULE_3__.listJobListings)();
-            case 2:
-              data = _context.v;
-              if (!cancelled) {
-                setJobs((data.jobs || []).map(_api_jobsApi__WEBPACK_IMPORTED_MODULE_3__.mapJobListing));
-              }
-              _context.n = 4;
-              break;
-            case 3:
-              _context.p = 3;
-              _t = _context.v;
-              if (!cancelled) setError('Could not load jobs. Please try again later.');
-            case 4:
-              _context.p = 4;
-              if (!cancelled) setLoading(false);
-              return _context.f(4);
-            case 5:
-              return _context.a(2);
-          }
-        }, _callee, null, [[1, 3, 4, 5]]);
-      }));
-      return function load() {
-        return _ref.apply(this, arguments);
-      };
-    }();
-    load();
-    return function () {
-      cancelled = true;
-    };
-  }, []);
   var start = (page - 1) * jobsPerPage;
   var visibleJobs = jobs.slice(start, start + jobsPerPage);
   var totalPages = Math.ceil(jobs.length / jobsPerPage) || 1;
   if (loading) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("section", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
       className: "jobs-cards-section",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
         className: "jobs-cards-wrapper",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
           children: "Loading jobs\u2026"
         })
       })
     });
   }
   if (error) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("section", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
       className: "jobs-cards-section",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
         className: "jobs-cards-wrapper",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
           children: error
         })
       })
     });
   }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
+  if (jobs.length === 0) {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
+      className: "jobs-cards-section",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+        className: "jobs-cards-wrapper",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          children: "No jobs match your filters. Selected types must all appear on a job (a job can have other types too). Try fewer filters or a different search."
+        })
+      })
+    });
+  }
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("section", {
     className: "jobs-cards-section",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
       className: "jobs-cards-wrapper",
       children: visibleJobs.map(function (job, index) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        var _job$types;
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
           className: job.featured ? 'job-card featured' : 'job-card',
           onClick: function onClick() {
             return navigate("/jobs/".concat(job.id));
@@ -22870,56 +23950,67 @@ var JobsCards = function JobsCards() {
           },
           "data-aos": "fade-up",
           "data-aos-delay": index * 80,
-          children: [job.featured && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+          children: [job.featured && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
             className: "featured-badge",
             children: "Featured"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-            className: "job-card-top",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            className: "job-card-header",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
               className: "job-initials",
               children: job.initials
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-              className: "job-card-content",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-                className: "job-title-row",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-                  className: "job-title-text",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
-                    children: job.title
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
-                    children: job.company
-                  })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
-                  className: "job-type",
-                  children: job.type
-                })]
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-                className: "job-details",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-                  children: job.location
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-                  children: job.salary
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-                  children: job.time
-                })]
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
-                className: "job-tags",
-                children: job.tags.map(function (tag) {
-                  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
-                    className: "job-tag",
-                    children: tag
-                  }, tag);
-                })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              className: "job-title-block",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
+                className: "job-title",
+                children: job.title
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+                className: "job-company",
+                children: job.company
               })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+              className: "job-types",
+              children: ((_job$types = job.types) !== null && _job$types !== void 0 && _job$types.length ? job.types : [job.type]).map(function (type) {
+                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                  className: "job-type",
+                  children: type
+                }, type);
+              })
             })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            className: "job-card-meta",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "job-meta-item",
+              children: job.location
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "job-meta-divider",
+              "aria-hidden": "true"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "job-meta-item",
+              children: job.salary
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "job-meta-divider",
+              "aria-hidden": "true"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "job-meta-item",
+              children: job.time
+            })]
+          }), job.tags.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+            className: "job-tags",
+            children: job.tags.map(function (tag) {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                className: "job-tag",
+                children: tag
+              }, tag);
+            })
           })]
         }, job.id);
       })
-    }), jobs.length > jobsPerPage && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+    }), jobs.length > jobsPerPage && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
       className: "jobs-pagination",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+        type: "button",
         onClick: function onClick() {
-          return setPage(page - 1);
+          return onPageChange(page - 1);
         },
         disabled: page === 1,
         children: '<'
@@ -22928,16 +24019,18 @@ var JobsCards = function JobsCards() {
       }, function (_, i) {
         return i + 1;
       }).map(function (pageNum) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+          type: "button",
           className: page === pageNum ? 'active-page' : '',
           onClick: function onClick() {
-            return setPage(pageNum);
+            return onPageChange(pageNum);
           },
           children: pageNum
         }, pageNum);
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+        type: "button",
         onClick: function onClick() {
-          return setPage(page + 1);
+          return onPageChange(page + 1);
         },
         disabled: page === totalPages,
         children: '>'
@@ -22962,56 +24055,79 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _JobsFilters_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./JobsFilters.scss */ "./resources/js/views/User-View/components/pages/JobsFilters/JobsFilters.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+/* harmony import */ var _api_jobsApi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../api/jobsApi */ "./resources/js/api/jobsApi.js");
+/* harmony import */ var _JobsFilters_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./JobsFilters.scss */ "./resources/js/views/User-View/components/pages/JobsFilters/JobsFilters.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-var JobsFilters = function JobsFilters() {
-  var filterButtons = ['All Types', 'Full-time', 'Part-time', 'Contract', 'Internship', 'Remote'];
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('All Types'),
-    _useState2 = _slicedToArray(_useState, 2),
-    activeFilter = _useState2[0],
-    setActiveFilter = _useState2[1];
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("section", {
+
+var JobsFilters = function JobsFilters(_ref) {
+  var activeFilters = _ref.activeFilters,
+    onFilterToggle = _ref.onFilterToggle,
+    onFilterSelect = _ref.onFilterSelect,
+    totalJobs = _ref.totalJobs,
+    filteredCount = _ref.filteredCount,
+    page = _ref.page,
+    totalPages = _ref.totalPages,
+    jobsPerPage = _ref.jobsPerPage;
+  var filterButtons = ['All Types'].concat(_toConsumableArray(_api_jobsApi__WEBPACK_IMPORTED_MODULE_1__.JOB_LISTING_TYPES));
+  var start = filteredCount === 0 ? 0 : (page - 1) * jobsPerPage + 1;
+  var end = Math.min(page * jobsPerPage, filteredCount);
+  var activeLabel = activeFilters.length === 0 ? 'All Types' : activeFilters.join(', ');
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("section", {
     className: "jobs-filters",
     "data-aos": "fade-up",
     "data-aos-delay": "100",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
       className: "jobs-filters-top",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("select", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("select", {
         className: "jobs-select",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
-          children: "All (20)"
-        })
+        value: activeLabel,
+        onChange: function onChange(e) {
+          return onFilterSelect(e.target.value);
+        },
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("option", {
+          value: "All Types",
+          children: ["All Types (", totalJobs, ")"]
+        }), _api_jobsApi__WEBPACK_IMPORTED_MODULE_1__.JOB_LISTING_TYPES.map(function (button) {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+            value: button,
+            children: button
+          }, button);
+        })]
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
       className: "jobs-filter-buttons",
       children: filterButtons.map(function (button) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
-          className: activeFilter === button ? 'filter-btn active' : 'filter-btn',
+        var isActive = button === 'All Types' ? activeFilters.length === 0 : activeFilters.includes(button);
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+          type: "button",
+          className: isActive ? 'filter-btn active' : 'filter-btn',
           onClick: function onClick() {
-            return setActiveFilter(button);
+            return onFilterToggle(button);
           },
           children: button
         }, button);
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
       className: "jobs-filters-info",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("p", {
-        children: ["Showing ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("strong", {
-          children: "15"
-        }), " of ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("strong", {
-          children: "20"
-        }), " jobs"]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
-        children: "Page 1 of 2"
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("p", {
+        children: ["Showing ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+          children: filteredCount === 0 ? 0 : "".concat(start, "\u2013").concat(end)
+        }), " of ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+          children: filteredCount
+        }), " jobs", filteredCount !== totalJobs && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.Fragment, {
+          children: [" (from ", totalJobs, " total)"]
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("p", {
+        children: [activeFilters.length > 0 ? "Matching all: ".concat(activeFilters.join(', '), " \xB7 ") : '', "Page ", filteredCount === 0 ? 0 : page, " of ", totalPages]
       })]
     })]
   });
@@ -23038,7 +24154,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var JobsHero = function JobsHero() {
+var JobsHero = function JobsHero(_ref) {
+  var searchQuery = _ref.searchQuery,
+    onSearchChange = _ref.onSearchChange,
+    totalJobs = _ref.totalJobs,
+    filteredCount = _ref.filteredCount;
+  var countLabel = filteredCount === totalJobs ? "".concat(totalJobs, " job").concat(totalJobs === 1 ? '' : 's') : "".concat(filteredCount, " of ").concat(totalJobs);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("section", {
     className: "jobs-hero",
     "data-aos": "fade-up",
@@ -23052,20 +24173,24 @@ var JobsHero = function JobsHero() {
         children: ["Find Your Next", ' ', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
           children: "Opportunity"
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
-        children: "Browse 20+ open positions across top companies. Your dream job is one search away."
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("p", {
+        children: ["Browse ", totalJobs > 0 ? "".concat(totalJobs, "+") : '', " open positions across top companies. Your dream job is one search away."]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
         className: "jobs-hero-search-row",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
           className: "jobs-search-box",
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
             type: "text",
-            placeholder: "Search jobs, companies, or skills..."
+            placeholder: "Search jobs, companies, or skills...",
+            value: searchQuery,
+            onChange: function onChange(e) {
+              return onSearchChange(e.target.value);
+            }
           })
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
           className: "jobs-count-box",
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
-            children: "20+ jobs"
+            children: countLabel
           })
         })]
       })]
@@ -25076,12 +26201,12 @@ function LoginContent() {
         className: "li-head",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
           className: "li-tag",
-          children: "Member Access"
+          children: "Welcome back"
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("h1", {
           children: "Log in"
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
           className: "li-sub",
-          children: "Access your saved jobs, application activity, and account details."
+          children: "Sign in with your account. You will be redirected to your dashboard based on your role (job seeker, HR, or admin)."
         })]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("form", {
         className: "li-form",
@@ -25606,12 +26731,12 @@ function SignupContent() {
         className: "su-head",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
           className: "su-tag",
-          children: "Create Account"
+          children: "Job seeker registration"
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("h1", {
           children: "Sign up"
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
           className: "su-sub",
-          children: "Create your account and keep your applications, saved jobs, and updates in one place."
+          children: "Create a candidate account to apply for jobs and manage your profile. HR accounts are created by an administrator."
         })]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("form", {
         className: "su-form",
@@ -25725,7 +26850,7 @@ function SignupContent() {
         children: ["Already have an account? ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("a", {
           href: "/login",
           children: "Log in"
-        })]
+        }), ' ', "\xB7 HR or admin? Use the same login page with your credentials."]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
         className: "su-line",
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
@@ -26814,7 +27939,11 @@ var JobDetailPage = function JobDetailPage() {
               allJobs = (listRes.jobs || []).map(_api_jobsApi__WEBPACK_IMPORTED_MODULE_5__.mapJobListing);
               setJob(mapped);
               setRelatedJobs(allJobs.filter(function (j) {
-                return j.id !== mapped.id && j.type === mapped.type;
+                if (j.id === mapped.id) return false;
+                var sharedType = (mapped.types || []).some(function (type) {
+                  return (j.types || []).includes(type);
+                });
+                return sharedType || j.type === mapped.type;
               }).slice(0, 3));
               _context.n = 5;
               break;
@@ -26895,7 +28024,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_pages_JobsFilters_JobsFilters__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../components/pages/JobsFilters/JobsFilters */ "./resources/js/views/User-View/components/pages/JobsFilters/JobsFilters.js");
 /* harmony import */ var _components_pages_JobsCards_JobsCards__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../components/pages/JobsCards/JobsCards */ "./resources/js/views/User-View/components/pages/JobsCards/JobsCards.js");
 /* harmony import */ var _components_shared_footer_Footer__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../components/shared/footer/Footer */ "./resources/js/views/User-View/components/shared/footer/Footer.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _api_jobsApi__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../api/jobsApi */ "./resources/js/api/jobsApi.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
@@ -26903,10 +28047,135 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+var JOBS_PER_PAGE = 6;
 var Jobs = function Jobs() {
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState2 = _slicedToArray(_useState, 2),
+    jobs = _useState2[0],
+    setJobs = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+    _useState4 = _slicedToArray(_useState3, 2),
+    loading = _useState4[0],
+    setLoading = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState6 = _slicedToArray(_useState5, 2),
+    error = _useState6[0],
+    setError = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState8 = _slicedToArray(_useState7, 2),
+    typeFilters = _useState8[0],
+    setTypeFilters = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState0 = _slicedToArray(_useState9, 2),
+    searchQuery = _useState0[0],
+    setSearchQuery = _useState0[1];
+  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1),
+    _useState10 = _slicedToArray(_useState1, 2),
+    page = _useState10[0],
+    setPage = _useState10[1];
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    var cancelled = false;
+    var load = /*#__PURE__*/function () {
+      var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+        var data, _t;
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.p = _context.n) {
+            case 0:
+              setLoading(true);
+              setError('');
+              _context.p = 1;
+              _context.n = 2;
+              return (0,_api_jobsApi__WEBPACK_IMPORTED_MODULE_6__.listJobListings)();
+            case 2:
+              data = _context.v;
+              if (!cancelled) {
+                setJobs((data.jobs || []).map(_api_jobsApi__WEBPACK_IMPORTED_MODULE_6__.mapJobListing));
+              }
+              _context.n = 4;
+              break;
+            case 3:
+              _context.p = 3;
+              _t = _context.v;
+              if (!cancelled) setError('Could not load jobs. Please try again later.');
+            case 4:
+              _context.p = 4;
+              if (!cancelled) setLoading(false);
+              return _context.f(4);
+            case 5:
+              return _context.a(2);
+          }
+        }, _callee, null, [[1, 3, 4, 5]]);
+      }));
+      return function load() {
+        return _ref.apply(this, arguments);
+      };
+    }();
+    load();
+    return function () {
+      cancelled = true;
+    };
+  }, []);
+  var filteredJobs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
+    return (0,_api_jobsApi__WEBPACK_IMPORTED_MODULE_6__.filterJobListings)(jobs, {
+      typeFilters: typeFilters,
+      searchQuery: searchQuery
+    });
+  }, [jobs, typeFilters, searchQuery]);
+  var totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE) || 1;
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    setPage(1);
+  }, [typeFilters, searchQuery]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+  var handleTypeFilterToggle = function handleTypeFilterToggle(filter) {
+    if (filter === 'All Types') {
+      setTypeFilters([]);
+      return;
+    }
+    setTypeFilters(function (prev) {
+      return prev.includes(filter) ? prev.filter(function (item) {
+        return item !== filter;
+      }) : [].concat(_toConsumableArray(prev), [filter]);
+    });
+  };
+  var handleTypeFilterSelect = function handleTypeFilterSelect(filter) {
+    if (filter === 'All Types') {
+      setTypeFilters([]);
+      return;
+    }
+    setTypeFilters([filter]);
+  };
+  var handleSearchChange = function handleSearchChange(value) {
+    setSearchQuery(value);
+  };
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
     className: "jobs-page",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_shared_navbar_Navbar__WEBPACK_IMPORTED_MODULE_1__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_pages_JobsHero_JobsHero__WEBPACK_IMPORTED_MODULE_2__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_pages_JobsFilters_JobsFilters__WEBPACK_IMPORTED_MODULE_3__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_pages_JobsCards_JobsCards__WEBPACK_IMPORTED_MODULE_4__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_shared_footer_Footer__WEBPACK_IMPORTED_MODULE_5__["default"], {})]
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_shared_navbar_Navbar__WEBPACK_IMPORTED_MODULE_1__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_pages_JobsHero_JobsHero__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      searchQuery: searchQuery,
+      onSearchChange: handleSearchChange,
+      totalJobs: jobs.length,
+      filteredCount: filteredJobs.length
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_pages_JobsFilters_JobsFilters__WEBPACK_IMPORTED_MODULE_3__["default"], {
+      activeFilters: typeFilters,
+      onFilterToggle: handleTypeFilterToggle,
+      onFilterSelect: handleTypeFilterSelect,
+      totalJobs: jobs.length,
+      filteredCount: filteredJobs.length,
+      page: page,
+      totalPages: totalPages,
+      jobsPerPage: JOBS_PER_PAGE
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_pages_JobsCards_JobsCards__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      jobs: filteredJobs,
+      loading: loading,
+      error: error,
+      page: page,
+      onPageChange: setPage,
+      jobsPerPage: JOBS_PER_PAGE
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_shared_footer_Footer__WEBPACK_IMPORTED_MODULE_5__["default"], {})]
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Jobs);
@@ -27119,6 +28388,19 @@ var MessagesPage = function MessagesPage() {
     _useState2 = _slicedToArray(_useState, 2),
     selected = _useState2[0],
     setSelected = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
+    _useState4 = _slicedToArray(_useState3, 2),
+    refreshKey = _useState4[0],
+    setRefreshKey = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    _useState6 = _slicedToArray(_useState5, 2),
+    inboxEmpty = _useState6[0],
+    setInboxEmpty = _useState6[1];
+  var handleMessageSent = function handleMessageSent() {
+    setRefreshKey(function (k) {
+      return k + 1;
+    });
+  };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_dashboard_shared_UserDashboardLayout_UserDashboardLayout__WEBPACK_IMPORTED_MODULE_1__["default"], {
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
       className: "messages-page",
@@ -27128,12 +28410,16 @@ var MessagesPage = function MessagesPage() {
           className: "messages-page__left",
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_dashboard_pages_conversation_list_ConversationList__WEBPACK_IMPORTED_MODULE_2__["default"], {
             selected: selected,
-            onSelect: setSelected
+            onSelect: setSelected,
+            refreshKey: refreshKey,
+            onInboxEmpty: setInboxEmpty
           })
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
           className: "messages-page__right",
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_dashboard_pages_chat_window_ChatWindow__WEBPACK_IMPORTED_MODULE_3__["default"], {
-            conversation: selected
+            conversation: selected,
+            onMessageSent: handleMessageSent,
+            inboxEmpty: inboxEmpty === true
           })
         })]
       })
@@ -27163,13 +28449,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_dashboard_pages_about_me_AboutMe__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../components/dashboard/pages/about-me/AboutMe */ "./resources/js/views/User-View/components/dashboard/pages/about-me/AboutMe.js");
 /* harmony import */ var _components_dashboard_pages_social_links_SocialLinks__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../components/dashboard/pages/social-links/SocialLinks */ "./resources/js/views/User-View/components/dashboard/pages/social-links/SocialLinks.js");
 /* harmony import */ var _components_dashboard_pages_job_preferences_JobPreferences__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../components/dashboard/pages/job-preferences/JobPreferences */ "./resources/js/views/User-View/components/dashboard/pages/job-preferences/JobPreferences.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _api_profileApi__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../../api/profileApi */ "./resources/js/api/profileApi.js");
+/* harmony import */ var _utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../../utils/profileFormUtils */ "./resources/js/utils/profileFormUtils.js");
+/* harmony import */ var _ProfilePage_scss__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./ProfilePage.scss */ "./resources/js/views/User-View/pages/User-Dashboard/ProfilePage/ProfilePage.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -27184,67 +28477,258 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
+
+
+
 var ProfilePage = function ProfilePage() {
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
-      firstName: 'Vesa',
-      lastName: 'Susuri',
-      email: 'vesa.susuri@beehired.com',
-      phone: '+383 44 123 456',
-      location: 'Prishtina, Kosovo',
-      dateOfBirth: '1998-12-06',
-      nationality: 'Kosovar',
-      jobTitle: 'Senior Frontend Developer',
-      linkedin: 'linkedin.com/in/vesasusuri',
-      github: 'github.com/vesasusuri',
-      portfolio: 'vesasusuri.dev',
-      desiredRole: 'Senior Frontend Developer',
-      jobType: 'Remote',
-      expectedSalary: '45000',
-      availability: '2 weeks notice',
-      about: 'Passionate frontend developer with 5+ years of experience crafting delightful user experiences.'
-    }),
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(_utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_8__.emptyProfileForm),
     _useState2 = _slicedToArray(_useState, 2),
     form = _useState2[0],
     setForm = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(_utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_8__.emptyProfileForm),
+    _useState4 = _slicedToArray(_useState3, 2),
+    savedForm = _useState4[0],
+    setSavedForm = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({}),
+    _useState6 = _slicedToArray(_useState5, 2),
+    errors = _useState6[0],
+    setErrors = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+    _useState8 = _slicedToArray(_useState7, 2),
+    loading = _useState8[0],
+    setLoading = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState0 = _slicedToArray(_useState9, 2),
+    saving = _useState0[0],
+    setSaving = _useState0[1];
+  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState10 = _slicedToArray(_useState1, 2),
+    clearing = _useState10[0],
+    setClearing = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState12 = _slicedToArray(_useState11, 2),
+    message = _useState12[0],
+    setMessage = _useState12[1];
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState14 = _slicedToArray(_useState13, 2),
+    error = _useState14[0],
+    setError = _useState14[1];
+  var applyProfile = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (profile) {
+    var next = (0,_utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_8__.profileToForm)(profile);
+    setForm(next);
+    setSavedForm(next);
+    setErrors({});
+  }, []);
+  var loadProfile = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+    var data, _err$response, _t;
+    return _regenerator().w(function (_context) {
+      while (1) switch (_context.p = _context.n) {
+        case 0:
+          setLoading(true);
+          setError('');
+          _context.p = 1;
+          _context.n = 2;
+          return (0,_api_profileApi__WEBPACK_IMPORTED_MODULE_7__.getCandidateProfile)();
+        case 2:
+          data = _context.v;
+          applyProfile(data === null || data === void 0 ? void 0 : data.profile);
+          _context.n = 4;
+          break;
+        case 3:
+          _context.p = 3;
+          _t = _context.v;
+          setError((_t === null || _t === void 0 || (_err$response = _t.response) === null || _err$response === void 0 || (_err$response = _err$response.data) === null || _err$response === void 0 ? void 0 : _err$response.message) || 'Failed to load profile.');
+          setForm(_objectSpread({}, _utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_8__.emptyProfileForm));
+          setSavedForm(_objectSpread({}, _utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_8__.emptyProfileForm));
+          setErrors({});
+        case 4:
+          _context.p = 4;
+          setLoading(false);
+          return _context.f(4);
+        case 5:
+          return _context.a(2);
+      }
+    }, _callee, null, [[1, 3, 4, 5]]);
+  })), [applyProfile]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    loadProfile();
+  }, [loadProfile]);
   var handleChange = function handleChange(field, value) {
-    setForm(function (prev) {
-      return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, field, value));
-    });
+    var next = _objectSpread(_objectSpread({}, form), {}, _defineProperty({}, field, value));
+    setForm(next);
+    setErrors((0,_utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_8__.validateProfileForm)(next));
+    setMessage('');
+    setError('');
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_dashboard_shared_UserDashboardLayout_UserDashboardLayout__WEBPACK_IMPORTED_MODULE_1__["default"], {
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+  var handleSave = /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(e) {
+      var _e$preventDefault;
+      var validationErrors, data, _err$response2, apiErrors, _err$response3, _t2;
+      return _regenerator().w(function (_context2) {
+        while (1) switch (_context2.p = _context2.n) {
+          case 0:
+            e === null || e === void 0 || (_e$preventDefault = e.preventDefault) === null || _e$preventDefault === void 0 || _e$preventDefault.call(e);
+            validationErrors = (0,_utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_8__.validateProfileForm)(form);
+            if (!(0,_utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_8__.hasProfileErrors)(validationErrors)) {
+              _context2.n = 1;
+              break;
+            }
+            setErrors(validationErrors);
+            setError('Please fix the highlighted fields before saving.');
+            setMessage('');
+            return _context2.a(2);
+          case 1:
+            setSaving(true);
+            setMessage('');
+            setError('');
+            setErrors({});
+            _context2.p = 2;
+            _context2.n = 3;
+            return (0,_api_profileApi__WEBPACK_IMPORTED_MODULE_7__.saveCandidateProfile)((0,_utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_8__.formToProfilePayload)(form));
+          case 3:
+            data = _context2.v;
+            applyProfile(data === null || data === void 0 ? void 0 : data.profile);
+            setMessage((data === null || data === void 0 ? void 0 : data.message) || 'Profile saved successfully.');
+            _context2.n = 5;
+            break;
+          case 4:
+            _context2.p = 4;
+            _t2 = _context2.v;
+            apiErrors = (0,_utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_8__.mapApiErrorsToForm)(_t2 === null || _t2 === void 0 || (_err$response2 = _t2.response) === null || _err$response2 === void 0 || (_err$response2 = _err$response2.data) === null || _err$response2 === void 0 ? void 0 : _err$response2.errors);
+            if ((0,_utils_profileFormUtils__WEBPACK_IMPORTED_MODULE_8__.hasProfileErrors)(apiErrors)) {
+              setErrors(apiErrors);
+              setError('Please fix the highlighted fields before saving.');
+            } else {
+              setError((_t2 === null || _t2 === void 0 || (_err$response3 = _t2.response) === null || _err$response3 === void 0 || (_err$response3 = _err$response3.data) === null || _err$response3 === void 0 ? void 0 : _err$response3.message) || 'Failed to save profile.');
+            }
+          case 5:
+            _context2.p = 5;
+            setSaving(false);
+            return _context2.f(5);
+          case 6:
+            return _context2.a(2);
+        }
+      }, _callee2, null, [[2, 4, 5, 6]]);
+    }));
+    return function handleSave(_x) {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  var handleCancel = function handleCancel() {
+    setForm(_objectSpread({}, savedForm));
+    setErrors({});
+    setMessage('');
+    setError('');
+  };
+  var handleClear = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      var data, _err$response4, _t3;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.p = _context3.n) {
+          case 0:
+            if (window.confirm('Clear all profile information? Your resume sections will not be deleted.')) {
+              _context3.n = 1;
+              break;
+            }
+            return _context3.a(2);
+          case 1:
+            setClearing(true);
+            setMessage('');
+            setError('');
+            setErrors({});
+            _context3.p = 2;
+            _context3.n = 3;
+            return (0,_api_profileApi__WEBPACK_IMPORTED_MODULE_7__.clearCandidateProfile)();
+          case 3:
+            data = _context3.v;
+            applyProfile(data === null || data === void 0 ? void 0 : data.profile);
+            setMessage((data === null || data === void 0 ? void 0 : data.message) || 'Profile information cleared.');
+            _context3.n = 5;
+            break;
+          case 4:
+            _context3.p = 4;
+            _t3 = _context3.v;
+            setError((_t3 === null || _t3 === void 0 || (_err$response4 = _t3.response) === null || _err$response4 === void 0 || (_err$response4 = _err$response4.data) === null || _err$response4 === void 0 ? void 0 : _err$response4.message) || 'Failed to clear profile.');
+          case 5:
+            _context3.p = 5;
+            setClearing(false);
+            return _context3.f(5);
+          case 6:
+            return _context3.a(2);
+        }
+      }, _callee3, null, [[2, 4, 5, 6]]);
+    }));
+    return function handleClear() {
+      return _ref3.apply(this, arguments);
+    };
+  }();
+  if (loading) {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_components_dashboard_shared_UserDashboardLayout_UserDashboardLayout__WEBPACK_IMPORTED_MODULE_1__["default"], {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
+        className: "profile-page profile-page--loading",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
+          children: "Loading profile\u2026"
+        })
+      })
+    });
+  }
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_components_dashboard_shared_UserDashboardLayout_UserDashboardLayout__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("form", {
       className: "profile-page",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_dashboard_pages_profile_hero_ProfileHero__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      onSubmit: handleSave,
+      noValidate: true,
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_components_dashboard_pages_profile_hero_ProfileHero__WEBPACK_IMPORTED_MODULE_2__["default"], {
         form: form
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
         className: "profile-page__body",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
           className: "profile-page__left",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_dashboard_pages_social_links_SocialLinks__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_components_dashboard_pages_social_links_SocialLinks__WEBPACK_IMPORTED_MODULE_5__["default"], {
             form: form,
+            errors: errors,
             onChange: handleChange
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
           className: "profile-page__right",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_dashboard_pages_personal_info_PersonalInfo__WEBPACK_IMPORTED_MODULE_3__["default"], {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_components_dashboard_pages_personal_info_PersonalInfo__WEBPACK_IMPORTED_MODULE_3__["default"], {
             form: form,
+            errors: errors,
             onChange: handleChange
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_dashboard_pages_about_me_AboutMe__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_components_dashboard_pages_about_me_AboutMe__WEBPACK_IMPORTED_MODULE_4__["default"], {
             value: form.about,
+            error: errors.about,
             onChange: function onChange(val) {
               return handleChange('about', val);
             }
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_dashboard_pages_job_preferences_JobPreferences__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_components_dashboard_pages_job_preferences_JobPreferences__WEBPACK_IMPORTED_MODULE_6__["default"], {
             form: form,
+            errors: errors,
             onChange: handleChange
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+          }), (message || error) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
+            className: "profile-page__feedback".concat(error ? ' profile-page__feedback--error' : ''),
+            children: error || message
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
             className: "profile-page__actions",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
-              className: "profile-page__cancel",
-              children: "Cancel"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
-              className: "profile-page__save",
-              children: "\uD83D\uDCBE Save changes"
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("button", {
+              type: "button",
+              className: "profile-page__clear",
+              onClick: handleClear,
+              disabled: saving || clearing,
+              children: clearing ? 'Clearing…' : 'Clear profile'
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
+              className: "profile-page__actions-main",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("button", {
+                type: "button",
+                className: "profile-page__cancel",
+                onClick: handleCancel,
+                disabled: saving || clearing,
+                children: "Cancel"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("button", {
+                type: "submit",
+                className: "profile-page__save",
+                disabled: saving || clearing,
+                children: saving ? 'Saving…' : '💾 Save changes'
+              })]
             })]
           })]
         })]
@@ -30171,7 +31655,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".hire-messages-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 8px 24px 24px;\n}\n@media (max-width: 768px) {\n  .hire-messages-section {\n    padding: 24px 16px 40px;\n  }\n}\n\n.hire-messages-wrapper {\n  display: grid;\n  grid-template-columns: 320px 1fr;\n  height: calc(100vh - 100px);\n  min-height: 560px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  overflow: hidden;\n}\n@media (max-width: 768px) {\n  .hire-messages-wrapper {\n    grid-template-columns: 1fr;\n    height: auto;\n  }\n}\n\n.hire-messages-left {\n  display: flex;\n  flex-direction: column;\n  border-right: 1px solid #e7dfd4;\n  background: #fafaf8;\n  overflow: hidden;\n}\n\n.hire-messages-left-header {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 24px 20px 16px;\n}\n.hire-messages-left-header h2 {\n  margin: 0;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-messages-total {\n  background: #fdd535;\n  color: #111111;\n  font-size: 11px;\n  font-weight: 800;\n  border-radius: 999px;\n  padding: 2px 7px;\n  line-height: 1.4;\n}\n\n.hire-messages-search {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  margin: 0 16px 12px;\n  padding: 0 14px;\n  height: 38px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  transition: border-color 0.2s;\n}\n.hire-messages-search:focus-within {\n  border-color: #c8c2bb;\n}\n.hire-messages-search svg {\n  color: #b0a89e;\n  flex-shrink: 0;\n}\n.hire-messages-search input {\n  flex: 1;\n  border: none;\n  background: none;\n  outline: none;\n  font-size: 13px;\n  font-family: inherit;\n  color: #111111;\n}\n.hire-messages-search input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-messages-search input::placeholder {\n  color: #b0a89e;\n}\n\n.hire-messages-list {\n  flex: 1;\n  overflow-y: auto;\n  padding: 4px 0 12px;\n}\n.hire-messages-list::-webkit-scrollbar {\n  width: 4px;\n}\n.hire-messages-list::-webkit-scrollbar-track {\n  background: transparent;\n}\n.hire-messages-list::-webkit-scrollbar-thumb {\n  background: #e7dfd4;\n  border-radius: 4px;\n}\n\n.hire-messages-item {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 16px;\n  cursor: pointer;\n  transition: background 0.15s;\n}\n.hire-messages-item:hover {\n  background: #f2efea;\n}\n.hire-messages-item.active {\n  background: #fdf9e6;\n  border-left: 3px solid #fdd535;\n  padding-left: 13px;\n}\n\n.hire-msg-avatar {\n  width: 44px;\n  height: 44px;\n  border-radius: 50%;\n  background: #1b1f3b;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 800;\n  color: #fdd535;\n  flex-shrink: 0;\n  letter-spacing: 0.03em;\n}\n\n.hire-msg-info {\n  flex: 1;\n  min-width: 0;\n}\n\n.hire-msg-top {\n  display: flex;\n  justify-content: space-between;\n  align-items: baseline;\n  gap: 6px;\n  margin-bottom: 3px;\n}\n\n.hire-msg-name {\n  font-size: 13.5px;\n  font-weight: 600;\n  color: #111111;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.hire-msg-time {\n  font-size: 11.5px;\n  color: #b0a89e;\n  flex-shrink: 0;\n}\n\n.hire-msg-bottom {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 6px;\n}\n\n.hire-msg-preview {\n  font-size: 12.5px;\n  color: #7a746d;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  flex: 1;\n  min-width: 0;\n}\n\n.hire-msg-badge {\n  background: #fdd535;\n  color: #111111;\n  font-size: 10.5px;\n  font-weight: 800;\n  border-radius: 999px;\n  padding: 1px 6px;\n  flex-shrink: 0;\n  line-height: 1.5;\n}\n\n.hire-messages-right {\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n  background: #ffffff;\n}\n\n.hire-messages-thread-header {\n  display: flex;\n  align-items: center;\n  gap: 14px;\n  padding: 20px 24px;\n  border-bottom: 1px solid #f2efea;\n  flex-shrink: 0;\n}\n\n.hire-thread-name {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-thread-role {\n  font-size: 12px;\n  color: #7a746d;\n  margin-top: 1px;\n}\n\n.hire-messages-thread {\n  flex: 1;\n  overflow-y: auto;\n  padding: 24px 24px 16px;\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.hire-messages-thread::-webkit-scrollbar {\n  width: 4px;\n}\n.hire-messages-thread::-webkit-scrollbar-track {\n  background: transparent;\n}\n.hire-messages-thread::-webkit-scrollbar-thumb {\n  background: #e7dfd4;\n  border-radius: 4px;\n}\n\n.hire-bubble-wrap {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n  max-width: 68%;\n}\n.hire-bubble-wrap.me {\n  align-self: flex-end;\n  align-items: flex-end;\n}\n.hire-bubble-wrap.them {\n  align-self: flex-start;\n  align-items: flex-start;\n}\n.hire-bubble-wrap + .hire-bubble-wrap {\n  margin-top: 8px;\n}\n\n.hire-bubble {\n  padding: 10px 14px;\n  border-radius: 16px;\n  font-size: 13.5px;\n  line-height: 1.5;\n}\n.them .hire-bubble {\n  background: #f2efea;\n  color: #111111;\n  border-bottom-left-radius: 4px;\n}\n.me .hire-bubble {\n  background: #111111;\n  color: #ffffff;\n  border-bottom-right-radius: 4px;\n}\n\n.hire-bubble-time {\n  font-size: 11px;\n  color: #b0a89e;\n  padding: 0 4px;\n}\n\n.hire-messages-input-bar {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 16px 20px;\n  border-top: 1px solid #f2efea;\n  flex-shrink: 0;\n}\n.hire-messages-input-bar input {\n  flex: 1;\n  height: 44px;\n  padding: 0 16px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  font-size: 13.5px;\n  font-family: inherit;\n  color: #111111;\n  background: #fafaf8;\n  outline: none;\n  transition: border-color 0.2s;\n}\n.hire-messages-input-bar input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-messages-input-bar input::placeholder {\n  color: #b0a89e;\n}\n.hire-messages-input-bar input:focus {\n  border-color: #c8c2bb;\n  background: #ffffff;\n}\n\n.hire-send-btn {\n  width: 44px;\n  height: 44px;\n  border-radius: 12px;\n  background: #111111;\n  border: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #ffffff;\n  cursor: pointer;\n  flex-shrink: 0;\n  transition: opacity 0.15s;\n}\n.hire-send-btn:hover:not(:disabled) {\n  opacity: 0.82;\n}\n.hire-send-btn:disabled {\n  opacity: 0.35;\n  cursor: default;\n}\n\n.hire-messages-empty-state {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.hire-messages-empty-state p {\n  font-size: 14px;\n  color: #b0a89e;\n  margin: 0;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".hire-messages-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 8px 24px 24px;\n}\n@media (max-width: 768px) {\n  .hire-messages-section {\n    padding: 24px 16px 40px;\n  }\n}\n\n.hire-messages-wrapper {\n  display: grid;\n  grid-template-columns: 320px 1fr;\n  height: calc(100vh - 100px);\n  min-height: 560px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  overflow: hidden;\n}\n@media (max-width: 768px) {\n  .hire-messages-wrapper {\n    grid-template-columns: 1fr;\n    height: auto;\n  }\n}\n\n.hire-messages-left {\n  display: flex;\n  flex-direction: column;\n  border-right: 1px solid #e7dfd4;\n  background: #fafaf8;\n  overflow: hidden;\n}\n\n.hire-messages-new-btn {\n  margin-left: auto;\n  padding: 4px 10px;\n  font-size: 12px;\n  font-weight: 600;\n  border: 1px solid #e7dfd4;\n  border-radius: 8px;\n  background: #fff;\n  cursor: pointer;\n}\n\n.hire-messages-new-panel {\n  padding: 12px 16px;\n  border-bottom: 1px solid #e7dfd4;\n  font-size: 13px;\n}\n.hire-messages-new-panel .hire-messages-new-item {\n  display: block;\n  width: 100%;\n  text-align: left;\n  margin: 4px 0;\n  padding: 6px 8px;\n  border: none;\n  background: #fff;\n  border-radius: 6px;\n  cursor: pointer;\n}\n\n.hire-messages-status {\n  padding: 8px 16px;\n  font-size: 13px;\n  color: #6b7280;\n}\n.hire-messages-status--error {\n  color: #b91c1c;\n}\n\n.hire-messages-left-header {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 24px 20px 16px;\n}\n.hire-messages-left-header h2 {\n  margin: 0;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-messages-total {\n  background: #fdd535;\n  color: #111111;\n  font-size: 11px;\n  font-weight: 800;\n  border-radius: 999px;\n  padding: 2px 7px;\n  line-height: 1.4;\n}\n\n.hire-messages-search {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  margin: 0 16px 12px;\n  padding: 0 14px;\n  height: 38px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  transition: border-color 0.2s;\n}\n.hire-messages-search:focus-within {\n  border-color: #c8c2bb;\n}\n.hire-messages-search svg {\n  color: #b0a89e;\n  flex-shrink: 0;\n}\n.hire-messages-search input {\n  flex: 1;\n  border: none;\n  background: none;\n  outline: none;\n  font-size: 13px;\n  font-family: inherit;\n  color: #111111;\n}\n.hire-messages-search input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-messages-search input::placeholder {\n  color: #b0a89e;\n}\n\n.hire-messages-list {\n  flex: 1;\n  overflow-y: auto;\n  padding: 4px 0 12px;\n}\n.hire-messages-list::-webkit-scrollbar {\n  width: 4px;\n}\n.hire-messages-list::-webkit-scrollbar-track {\n  background: transparent;\n}\n.hire-messages-list::-webkit-scrollbar-thumb {\n  background: #e7dfd4;\n  border-radius: 4px;\n}\n\n.hire-messages-item {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 16px;\n  cursor: pointer;\n  transition: background 0.15s;\n}\n.hire-messages-item:hover {\n  background: #f2efea;\n}\n.hire-messages-item.active {\n  background: #fdf9e6;\n  border-left: 3px solid #fdd535;\n  padding-left: 13px;\n}\n\n.hire-msg-avatar {\n  width: 44px;\n  height: 44px;\n  border-radius: 50%;\n  background: #1b1f3b;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 800;\n  color: #fdd535;\n  flex-shrink: 0;\n  letter-spacing: 0.03em;\n}\n\n.hire-msg-info {\n  flex: 1;\n  min-width: 0;\n}\n\n.hire-msg-top {\n  display: flex;\n  justify-content: space-between;\n  align-items: baseline;\n  gap: 6px;\n  margin-bottom: 3px;\n}\n\n.hire-msg-name {\n  font-size: 13.5px;\n  font-weight: 600;\n  color: #111111;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.hire-msg-time {\n  font-size: 11.5px;\n  color: #b0a89e;\n  flex-shrink: 0;\n}\n\n.hire-msg-bottom {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 6px;\n}\n\n.hire-msg-preview {\n  font-size: 12.5px;\n  color: #7a746d;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  flex: 1;\n  min-width: 0;\n}\n\n.hire-msg-badge {\n  background: #fdd535;\n  color: #111111;\n  font-size: 10.5px;\n  font-weight: 800;\n  border-radius: 999px;\n  padding: 1px 6px;\n  flex-shrink: 0;\n  line-height: 1.5;\n}\n\n.hire-messages-right {\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n  background: #ffffff;\n}\n\n.hire-messages-thread-header {\n  display: flex;\n  align-items: center;\n  gap: 14px;\n  padding: 20px 24px;\n  border-bottom: 1px solid #f2efea;\n  flex-shrink: 0;\n}\n\n.hire-thread-name {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-thread-role {\n  font-size: 12px;\n  color: #7a746d;\n  margin-top: 1px;\n}\n\n.hire-messages-thread {\n  flex: 1;\n  overflow-y: auto;\n  padding: 24px 24px 16px;\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.hire-messages-thread::-webkit-scrollbar {\n  width: 4px;\n}\n.hire-messages-thread::-webkit-scrollbar-track {\n  background: transparent;\n}\n.hire-messages-thread::-webkit-scrollbar-thumb {\n  background: #e7dfd4;\n  border-radius: 4px;\n}\n\n.hire-bubble-wrap {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n  max-width: 68%;\n}\n.hire-bubble-wrap.me {\n  align-self: flex-end;\n  align-items: flex-end;\n}\n.hire-bubble-wrap.them {\n  align-self: flex-start;\n  align-items: flex-start;\n}\n.hire-bubble-wrap + .hire-bubble-wrap {\n  margin-top: 8px;\n}\n\n.hire-bubble {\n  padding: 10px 14px;\n  border-radius: 16px;\n  font-size: 13.5px;\n  line-height: 1.5;\n}\n.them .hire-bubble {\n  background: #f2efea;\n  color: #111111;\n  border-bottom-left-radius: 4px;\n}\n.me .hire-bubble {\n  background: #111111;\n  color: #ffffff;\n  border-bottom-right-radius: 4px;\n}\n\n.hire-bubble-time {\n  font-size: 11px;\n  color: #b0a89e;\n  padding: 0 4px;\n}\n\n.hire-messages-input-bar {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 16px 20px;\n  border-top: 1px solid #f2efea;\n  flex-shrink: 0;\n}\n.hire-messages-input-bar input {\n  flex: 1;\n  height: 44px;\n  padding: 0 16px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  font-size: 13.5px;\n  font-family: inherit;\n  color: #111111;\n  background: #fafaf8;\n  outline: none;\n  transition: border-color 0.2s;\n}\n.hire-messages-input-bar input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-messages-input-bar input::placeholder {\n  color: #b0a89e;\n}\n.hire-messages-input-bar input:focus {\n  border-color: #c8c2bb;\n  background: #ffffff;\n}\n\n.hire-send-btn {\n  width: 44px;\n  height: 44px;\n  border-radius: 12px;\n  background: #111111;\n  border: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #ffffff;\n  cursor: pointer;\n  flex-shrink: 0;\n  transition: opacity 0.15s;\n}\n.hire-send-btn:hover:not(:disabled) {\n  opacity: 0.82;\n}\n.hire-send-btn:disabled {\n  opacity: 0.35;\n  cursor: default;\n}\n\n.hire-messages-empty-state {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.hire-messages-empty-state p {\n  font-size: 14px;\n  color: #b0a89e;\n  margin: 0;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -30387,7 +31871,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".pjm-overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.45);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 9999;\n  padding: 24px;\n}\n\n.pjm-modal {\n  background: #ffffff;\n  border-radius: 24px;\n  width: 100%;\n  max-width: 900px;\n  max-height: 90vh;\n  overflow-y: auto;\n  display: flex;\n  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);\n}\n@media (max-width: 700px) {\n  .pjm-modal {\n    flex-direction: column;\n  }\n}\n\n.pjm-form-panel {\n  flex: 1;\n  padding: 36px 32px;\n  border-right: 1px solid #e7dfd4;\n  min-width: 0;\n}\n@media (max-width: 700px) {\n  .pjm-form-panel {\n    border-right: none;\n    border-bottom: 1px solid #e7dfd4;\n    padding: 28px 20px;\n  }\n}\n\n.pjm-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 28px;\n}\n.pjm-header h2 {\n  margin: 0;\n  font-size: 20px;\n  font-weight: 700;\n  color: #111111;\n}\n.pjm-header .pjm-close {\n  background: #f2efea;\n  border: none;\n  border-radius: 999px;\n  width: 36px;\n  height: 36px;\n  font-size: 14px;\n  cursor: pointer;\n  color: #7a746d;\n  transition: 0.2s ease;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.pjm-header .pjm-close:hover {\n  background: #e7dfd4;\n  color: #111111;\n}\n\n.pjm-form {\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n}\n\n.pjm-field {\n  display: flex;\n  flex-direction: column;\n  gap: 7px;\n}\n.pjm-field label {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111111;\n}\n.pjm-field .pjm-hint {\n  font-weight: 400;\n  color: #7a746d;\n  font-size: 13px;\n}\n.pjm-field input, .pjm-field select {\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  padding: 12px 16px;\n  font-size: 15px;\n  color: #111111;\n  outline: none;\n  transition: 0.2s ease;\n  background: #fafaf8;\n  font-family: inherit;\n}\n.pjm-field input:focus, .pjm-field select:focus {\n  border-color: #c8c2bb;\n  background: #ffffff;\n}\n.pjm-field input::-moz-placeholder, .pjm-field select::-moz-placeholder {\n  color: #b0a89e;\n}\n.pjm-field input::placeholder, .pjm-field select::placeholder {\n  color: #b0a89e;\n}\n\n.pjm-submit {\n  background: #111111;\n  color: #ffffff;\n  border: none;\n  border-radius: 999px;\n  padding: 14px;\n  font-size: 15px;\n  font-weight: 600;\n  cursor: pointer;\n  transition: 0.2s ease;\n  margin-top: 4px;\n  font-family: inherit;\n}\n.pjm-submit:hover {\n  background: #333333;\n  transform: translateY(-1px);\n}\n\n.pjm-preview-panel {\n  flex: 1;\n  padding: 36px 28px;\n  background: #fafaf8;\n  border-radius: 0 24px 24px 0;\n  min-width: 0;\n}\n@media (max-width: 700px) {\n  .pjm-preview-panel {\n    border-radius: 0 0 24px 24px;\n    padding: 28px 20px;\n  }\n}\n\n.pjm-preview-label {\n  font-size: 12px;\n  font-weight: 600;\n  color: #b0a89e;\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n  margin: 0 0 16px;\n}\n\n.pjm-preview-card {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 24px 20px 20px;\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n}\n\n.pjm-preview-head {\n  display: flex;\n  align-items: flex-start;\n  gap: 14px;\n}\n\n.pjm-preview-initials {\n  width: 52px;\n  height: 52px;\n  background: #f2efea;\n  border-radius: 14px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n  flex-shrink: 0;\n}\n\n.pjm-preview-title-block {\n  flex: 1;\n  min-width: 0;\n}\n.pjm-preview-title-block h3 {\n  margin: 0 0 4px;\n  font-size: 16px;\n  font-weight: 700;\n  color: #111111;\n  line-height: 1.3;\n}\n.pjm-preview-title-block p {\n  margin: 0;\n  font-size: 14px;\n  color: #7a746d;\n}\n\n.pjm-preview-type {\n  background: #f2efea;\n  color: #7a746d;\n  border-radius: 999px;\n  padding: 6px 12px;\n  font-size: 12px;\n  font-weight: 600;\n  white-space: nowrap;\n  flex-shrink: 0;\n}\n\n.pjm-preview-meta {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 10px;\n  background: #fafaf8;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  padding: 12px 14px;\n}\n.pjm-preview-meta span {\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.pjm-preview-tags {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n.pjm-preview-tags .pjm-preview-tag {\n  background: #f2efea;\n  color: #7a746d;\n  border-radius: 999px;\n  padding: 6px 12px;\n  font-size: 13px;\n}\n\n.pjm-preview-section h4 {\n  margin: 0 0 6px;\n  font-size: 14px;\n  font-weight: 700;\n  color: #111111;\n}\n.pjm-preview-section p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n  line-height: 1.6;\n}\n\n.pjm-preview-actions {\n  display: flex;\n  gap: 10px;\n  margin-top: 4px;\n}\n.pjm-preview-actions .pjm-preview-apply {\n  background: #111111;\n  color: #ffffff;\n  border-radius: 999px;\n  padding: 10px 18px;\n  font-size: 13px;\n  font-weight: 600;\n}\n.pjm-preview-actions .pjm-preview-save {\n  background: #ffffff;\n  color: #111111;\n  border: 1px solid #e7dfd4;\n  border-radius: 999px;\n  padding: 10px 18px;\n  font-size: 13px;\n  font-weight: 600;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".pjm-overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.45);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 9999;\n  padding: 24px;\n}\n\n.pjm-modal {\n  background: #ffffff;\n  border-radius: 24px;\n  width: 100%;\n  max-width: 900px;\n  max-height: 90vh;\n  overflow-y: auto;\n  display: flex;\n  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);\n}\n@media (max-width: 700px) {\n  .pjm-modal {\n    flex-direction: column;\n  }\n}\n\n.pjm-form-panel {\n  flex: 1;\n  padding: 36px 32px;\n  border-right: 1px solid #e7dfd4;\n  min-width: 0;\n}\n@media (max-width: 700px) {\n  .pjm-form-panel {\n    border-right: none;\n    border-bottom: 1px solid #e7dfd4;\n    padding: 28px 20px;\n  }\n}\n\n.pjm-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 28px;\n}\n.pjm-header h2 {\n  margin: 0;\n  font-size: 20px;\n  font-weight: 700;\n  color: #111111;\n}\n.pjm-header .pjm-close {\n  background: #f2efea;\n  border: none;\n  border-radius: 999px;\n  width: 36px;\n  height: 36px;\n  font-size: 14px;\n  cursor: pointer;\n  color: #7a746d;\n  transition: 0.2s ease;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.pjm-header .pjm-close:hover {\n  background: #e7dfd4;\n  color: #111111;\n}\n\n.pjm-form {\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n}\n\n.pjm-field {\n  display: flex;\n  flex-direction: column;\n  gap: 7px;\n}\n.pjm-field label {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111111;\n}\n.pjm-field .pjm-hint {\n  font-weight: 400;\n  color: #7a746d;\n  font-size: 13px;\n}\n.pjm-field input, .pjm-field select, .pjm-field textarea {\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  padding: 12px 16px;\n  font-size: 15px;\n  color: #111111;\n  outline: none;\n  transition: 0.2s ease;\n  background: #fafaf8;\n  font-family: inherit;\n}\n.pjm-field input:focus, .pjm-field select:focus, .pjm-field textarea:focus {\n  border-color: #c8c2bb;\n  background: #ffffff;\n}\n.pjm-field input::-moz-placeholder, .pjm-field select::-moz-placeholder, .pjm-field textarea::-moz-placeholder {\n  color: #b0a89e;\n}\n.pjm-field input::placeholder, .pjm-field select::placeholder, .pjm-field textarea::placeholder {\n  color: #b0a89e;\n}\n\n.pjm-field-error {\n  margin: 0;\n  font-size: 12px;\n  color: #dc2626;\n}\n\n.pjm-type-options {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.pjm-type-option {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 8px 12px;\n  border: 1px solid #e7dfd4;\n  border-radius: 999px;\n  font-size: 13px;\n  cursor: pointer;\n  background: #fff;\n}\n.pjm-type-option input {\n  accent-color: #111;\n}\n.pjm-type-option.is-selected {\n  border-color: #111;\n  background: #fff8e6;\n}\n\n.pjm-submit {\n  background: #111111;\n  color: #ffffff;\n  border: none;\n  border-radius: 999px;\n  padding: 14px;\n  font-size: 15px;\n  font-weight: 600;\n  cursor: pointer;\n  transition: 0.2s ease;\n  margin-top: 4px;\n  font-family: inherit;\n}\n.pjm-submit:hover {\n  background: #333333;\n  transform: translateY(-1px);\n}\n\n.pjm-preview-panel {\n  flex: 1;\n  padding: 36px 28px;\n  background: #fafaf8;\n  border-radius: 0 24px 24px 0;\n  min-width: 0;\n}\n@media (max-width: 700px) {\n  .pjm-preview-panel {\n    border-radius: 0 0 24px 24px;\n    padding: 28px 20px;\n  }\n}\n\n.pjm-preview-label {\n  font-size: 12px;\n  font-weight: 600;\n  color: #b0a89e;\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n  margin: 0 0 16px;\n}\n\n.pjm-preview-card {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 24px 20px 20px;\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n}\n\n.pjm-preview-head {\n  display: flex;\n  align-items: flex-start;\n  gap: 14px;\n}\n\n.pjm-preview-initials {\n  width: 52px;\n  height: 52px;\n  background: #f2efea;\n  border-radius: 14px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n  flex-shrink: 0;\n}\n\n.pjm-preview-title-block {\n  flex: 1;\n  min-width: 0;\n}\n.pjm-preview-title-block h3 {\n  margin: 0 0 4px;\n  font-size: 16px;\n  font-weight: 700;\n  color: #111111;\n  line-height: 1.3;\n}\n.pjm-preview-title-block p {\n  margin: 0;\n  font-size: 14px;\n  color: #7a746d;\n}\n\n.pjm-preview-type {\n  background: #f2efea;\n  color: #7a746d;\n  border-radius: 999px;\n  padding: 6px 12px;\n  font-size: 12px;\n  font-weight: 600;\n  white-space: nowrap;\n  flex-shrink: 0;\n}\n\n.pjm-preview-meta {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 10px;\n  background: #fafaf8;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  padding: 12px 14px;\n}\n.pjm-preview-meta span {\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.pjm-preview-tags {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n.pjm-preview-tags .pjm-preview-tag {\n  background: #f2efea;\n  color: #7a746d;\n  border-radius: 999px;\n  padding: 6px 12px;\n  font-size: 13px;\n}\n\n.pjm-preview-section h4 {\n  margin: 0 0 6px;\n  font-size: 14px;\n  font-weight: 700;\n  color: #111111;\n}\n.pjm-preview-section p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n  line-height: 1.6;\n}\n\n.pjm-preview-actions {\n  display: flex;\n  gap: 10px;\n  margin-top: 4px;\n}\n.pjm-preview-actions .pjm-preview-apply {\n  background: #111111;\n  color: #ffffff;\n  border-radius: 999px;\n  padding: 10px 18px;\n  font-size: 13px;\n  font-weight: 600;\n}\n.pjm-preview-actions .pjm-preview-save {\n  background: #ffffff;\n  color: #111111;\n  border: 1px solid #e7dfd4;\n  border-radius: 999px;\n  padding: 10px 18px;\n  font-size: 13px;\n  font-weight: 600;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -30435,7 +31919,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".about-me {\n  background: #fff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  overflow: hidden;\n}\n.about-me__header {\n  display: flex;\n  align-items: center;\n  gap: 1rem;\n  padding: 1.25rem 2rem;\n  border-bottom: 1px solid #e7dfd4;\n}\n.about-me__icon {\n  width: 42px;\n  height: 42px;\n  background: #fff3cd;\n  border-radius: 12px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 18px;\n  flex-shrink: 0;\n}\n.about-me__title {\n  font-size: 17px;\n  font-weight: 700;\n  color: #111;\n  margin: 0 0 2px;\n}\n.about-me__subtitle {\n  font-size: 13px;\n  color: #777;\n  margin: 0;\n}\n.about-me__body {\n  padding: 2rem;\n  display: flex;\n  flex-direction: column;\n}\n.about-me__textarea {\n  width: 100%;\n  padding: 12px 16px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  font-size: 15px;\n  color: #111;\n  background: #fff;\n  outline: none;\n  font-family: inherit;\n  resize: vertical;\n  min-height: 130px;\n  line-height: 1.7;\n  transition: border-color 0.15s;\n}\n.about-me__textarea:focus {\n  border-color: #f5c040;\n}\n.about-me__count {\n  font-size: 13px;\n  color: #aaa;\n  text-align: right;\n  margin-top: 6px;\n}\n\n@media (max-width: 768px) {\n  .about-me__header {\n    padding: 1rem 1.25rem;\n  }\n  .about-me__body {\n    padding: 1.25rem;\n  }\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".about-me {\n  background: #fff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  overflow: hidden;\n}\n.about-me__header {\n  display: flex;\n  align-items: center;\n  gap: 1rem;\n  padding: 1.25rem 2rem;\n  border-bottom: 1px solid #e7dfd4;\n}\n.about-me__icon {\n  width: 42px;\n  height: 42px;\n  background: #fff3cd;\n  border-radius: 12px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 18px;\n  flex-shrink: 0;\n}\n.about-me__title {\n  font-size: 17px;\n  font-weight: 700;\n  color: #111;\n  margin: 0 0 2px;\n}\n.about-me__subtitle {\n  font-size: 13px;\n  color: #777;\n  margin: 0;\n}\n.about-me__body {\n  padding: 2rem;\n  display: flex;\n  flex-direction: column;\n}\n.about-me__textarea {\n  width: 100%;\n  padding: 12px 16px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  font-size: 15px;\n  color: #111;\n  background: #fff;\n  outline: none;\n  font-family: inherit;\n  resize: vertical;\n  min-height: 130px;\n  line-height: 1.7;\n  transition: border-color 0.15s;\n}\n.about-me__textarea:focus {\n  border-color: #f5c040;\n}\n.about-me__count {\n  font-size: 13px;\n  color: #aaa;\n  text-align: right;\n  margin-top: 6px;\n}\n.about-me__count--error {\n  color: #b42318;\n}\n\n@media (max-width: 768px) {\n  .about-me__header {\n    padding: 1rem 1.25rem;\n  }\n  .about-me__body {\n    padding: 1.25rem;\n  }\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -30483,7 +31967,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".chat-window {\n  background: #fff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n}\n.chat-window--empty {\n  align-items: center;\n  justify-content: center;\n  gap: 1rem;\n  color: #aaa;\n}\n.chat-window--empty p {\n  font-size: 15px;\n  color: #aaa;\n  margin: 0;\n}\n.chat-window__header {\n  display: flex;\n  align-items: center;\n  gap: 1rem;\n  padding: 1.25rem 1.5rem;\n  border-bottom: 1px solid #e7dfd4;\n}\n.chat-window__avatar {\n  width: 46px;\n  height: 46px;\n  border-radius: 50%;\n  background: #1a1a2e;\n  color: #f5c040;\n  font-size: 14px;\n  font-weight: 700;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-shrink: 0;\n}\n.chat-window__name {\n  font-size: 16px;\n  font-weight: 700;\n  color: #111;\n  margin: 0 0 2px;\n}\n.chat-window__status {\n  font-size: 12px;\n  color: #aaa;\n  margin: 0;\n}\n.chat-window__messages {\n  flex: 1;\n  overflow-y: auto;\n  padding: 1.5rem;\n  display: flex;\n  flex-direction: column;\n  gap: 1rem;\n}\n.chat-window__message {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.chat-window__message--me {\n  align-items: flex-end;\n}\n.chat-window__message--me .chat-window__bubble {\n  background: #1a1a2e;\n  color: #fff;\n  border-radius: 18px 18px 4px 18px;\n}\n.chat-window__message--them {\n  align-items: flex-start;\n}\n.chat-window__message--them .chat-window__bubble {\n  background: #f7f7f5;\n  color: #111;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px 18px 18px 4px;\n}\n.chat-window__bubble {\n  max-width: 65%;\n  padding: 12px 16px;\n  font-size: 15px;\n  line-height: 1.5;\n}\n.chat-window__time {\n  font-size: 11px;\n  color: #aaa;\n  padding: 0 4px;\n}\n.chat-window__input-wrap {\n  display: flex;\n  align-items: center;\n  gap: 1rem;\n  padding: 1.25rem 1.5rem;\n  border-top: 1px solid #e7dfd4;\n}\n.chat-window__input {\n  flex: 1;\n  padding: 12px 16px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  font-size: 15px;\n  color: #111;\n  background: #f7f7f5;\n  outline: none;\n  font-family: inherit;\n  transition: border-color 0.15s;\n}\n.chat-window__input:focus {\n  border-color: #f5c040;\n}\n.chat-window__send {\n  width: 46px;\n  height: 46px;\n  border-radius: 12px;\n  background: #1a1a2e;\n  color: #fff;\n  border: none;\n  cursor: pointer;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-shrink: 0;\n  transition: opacity 0.15s;\n}\n.chat-window__send:hover {\n  opacity: 0.88;\n}\n\n@media (max-width: 768px) {\n  .chat-window {\n    border-radius: 16px;\n    min-height: 400px;\n  }\n  .chat-window__bubble {\n    max-width: 85%;\n  }\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".chat-window {\n  background: #fff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n}\n.chat-window--empty {\n  align-items: center;\n  justify-content: center;\n  gap: 0.5rem;\n  color: #aaa;\n  text-align: center;\n  padding: 2rem;\n}\n.chat-window--empty p {\n  font-size: 15px;\n  color: #555;\n  margin: 0;\n  font-weight: 600;\n}\n.chat-window__empty-hint {\n  font-size: 14px;\n  color: #888;\n  max-width: 280px;\n  line-height: 1.5;\n}\n.chat-window__header {\n  display: flex;\n  align-items: center;\n  gap: 1rem;\n  padding: 1.25rem 1.5rem;\n  border-bottom: 1px solid #e7dfd4;\n}\n.chat-window__avatar {\n  width: 46px;\n  height: 46px;\n  border-radius: 50%;\n  background: #1a1a2e;\n  color: #f5c040;\n  font-size: 14px;\n  font-weight: 700;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-shrink: 0;\n}\n.chat-window__name {\n  font-size: 16px;\n  font-weight: 700;\n  color: #111;\n  margin: 0 0 2px;\n}\n.chat-window__status {\n  font-size: 12px;\n  color: #aaa;\n  margin: 0;\n}\n.chat-window__messages {\n  flex: 1;\n  overflow-y: auto;\n  padding: 1.5rem;\n  display: flex;\n  flex-direction: column;\n  gap: 1rem;\n}\n.chat-window__message {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.chat-window__message--me {\n  align-items: flex-end;\n}\n.chat-window__message--me .chat-window__bubble {\n  background: #1a1a2e;\n  color: #fff;\n  border-radius: 18px 18px 4px 18px;\n}\n.chat-window__message--them {\n  align-items: flex-start;\n}\n.chat-window__message--them .chat-window__bubble {\n  background: #f7f7f5;\n  color: #111;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px 18px 18px 4px;\n}\n.chat-window__bubble {\n  max-width: 65%;\n  padding: 12px 16px;\n  font-size: 15px;\n  line-height: 1.5;\n}\n.chat-window__time {\n  font-size: 11px;\n  color: #aaa;\n  padding: 0 4px;\n}\n.chat-window__input-wrap {\n  display: flex;\n  align-items: center;\n  gap: 1rem;\n  padding: 1.25rem 1.5rem;\n  border-top: 1px solid #e7dfd4;\n}\n.chat-window__input {\n  flex: 1;\n  padding: 12px 16px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  font-size: 15px;\n  color: #111;\n  background: #f7f7f5;\n  outline: none;\n  font-family: inherit;\n  transition: border-color 0.15s;\n}\n.chat-window__input:focus {\n  border-color: #f5c040;\n}\n.chat-window__send {\n  width: 46px;\n  height: 46px;\n  border-radius: 12px;\n  background: #1a1a2e;\n  color: #fff;\n  border: none;\n  cursor: pointer;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-shrink: 0;\n  transition: opacity 0.15s;\n}\n.chat-window__send:hover {\n  opacity: 0.88;\n}\n\n@media (max-width: 768px) {\n  .chat-window {\n    border-radius: 16px;\n    min-height: 400px;\n  }\n  .chat-window__bubble {\n    max-width: 85%;\n  }\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -30507,7 +31991,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".messages-page {\n  background: #f7f7f5;\n  min-height: 100vh;\n  padding-top: 80px;\n}\n.messages-page__body {\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 2rem 2rem 5rem;\n  display: flex;\n  gap: 1.5rem;\n  align-items: stretch;\n  height: calc(100vh - 80px);\n}\n.messages-page__left {\n  flex: 0 0 320px;\n  display: flex;\n  flex-direction: column;\n}\n.messages-page__right {\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n  min-width: 0;\n}\n\n.conversation-list {\n  background: #fff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n}\n.conversation-list__header {\n  padding: 1.5rem 1.5rem 1rem;\n  border-bottom: 1px solid #e7dfd4;\n}\n.conversation-list__title {\n  font-size: 20px;\n  font-weight: 700;\n  color: #111;\n  margin: 0;\n}\n.conversation-list__search {\n  position: relative;\n  padding: 1rem 1.5rem;\n  border-bottom: 1px solid #e7dfd4;\n}\n.conversation-list__search input {\n  width: 100%;\n  padding: 10px 16px 10px 38px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  font-size: 14px;\n  color: #111;\n  background: #f7f7f5;\n  outline: none;\n  font-family: inherit;\n  transition: border-color 0.15s;\n}\n.conversation-list__search input:focus {\n  border-color: #f5c040;\n}\n.conversation-list__search-icon {\n  position: absolute;\n  left: 2.25rem;\n  top: 50%;\n  transform: translateY(-50%);\n  color: #aaa;\n}\n.conversation-list__items {\n  list-style: none;\n  padding: 0;\n  margin: 0;\n  overflow-y: auto;\n  flex: 1;\n}\n.conversation-list__item {\n  display: flex;\n  align-items: center;\n  gap: 1rem;\n  padding: 1rem 1.5rem;\n  cursor: pointer;\n  border-bottom: 1px solid #f0ebe4;\n  transition: background 0.15s;\n}\n.conversation-list__item:hover {\n  background: #f7f7f5;\n}\n.conversation-list__item--active {\n  background: #fff3cd;\n}\n.conversation-list__item--active:hover {\n  background: #fff3cd;\n}\n.conversation-list__item:last-child {\n  border-bottom: none;\n}\n.conversation-list__avatar {\n  width: 46px;\n  height: 46px;\n  border-radius: 50%;\n  background: #1a1a2e;\n  color: #f5c040;\n  font-size: 14px;\n  font-weight: 700;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-shrink: 0;\n}\n.conversation-list__info {\n  flex: 1;\n  min-width: 0;\n}\n.conversation-list__top {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 4px;\n}\n.conversation-list__name {\n  font-size: 15px;\n  font-weight: 600;\n  color: #111;\n}\n.conversation-list__time {\n  font-size: 12px;\n  color: #aaa;\n  flex-shrink: 0;\n}\n.conversation-list__bottom {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 8px;\n}\n.conversation-list__preview {\n  font-size: 13px;\n  color: #777;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.conversation-list__badge {\n  background: #f5c040;\n  color: #111;\n  font-size: 11px;\n  font-weight: 700;\n  width: 20px;\n  height: 20px;\n  border-radius: 50%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-shrink: 0;\n}\n\n@media (max-width: 900px) {\n  .messages-page__body {\n    flex-direction: column;\n    height: auto;\n    padding: 1.5rem 1.5rem 4rem;\n  }\n  .messages-page__left {\n    flex: unset;\n    width: 100%;\n  }\n  .conversation-list {\n    border-radius: 16px;\n    height: auto;\n  }\n}\n@media (max-width: 480px) {\n  .messages-page__body {\n    padding: 1rem 1rem 3rem;\n  }\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".messages-page {\n  background: #f7f7f5;\n  min-height: 100vh;\n  padding-top: 80px;\n}\n.messages-page__body {\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 2rem 2rem 5rem;\n  display: flex;\n  gap: 1.5rem;\n  align-items: stretch;\n  height: calc(100vh - 80px);\n}\n.messages-page__left {\n  flex: 0 0 320px;\n  display: flex;\n  flex-direction: column;\n}\n.messages-page__right {\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n  min-width: 0;\n}\n\n.conversation-list {\n  background: #fff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n}\n.conversation-list__header {\n  padding: 1.5rem 1.5rem 1rem;\n  border-bottom: 1px solid #e7dfd4;\n}\n.conversation-list__title {\n  font-size: 20px;\n  font-weight: 700;\n  color: #111;\n  margin: 0;\n}\n.conversation-list__search {\n  position: relative;\n  padding: 1rem 1.5rem;\n  border-bottom: 1px solid #e7dfd4;\n}\n.conversation-list__search input {\n  width: 100%;\n  padding: 10px 16px 10px 38px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  font-size: 14px;\n  color: #111;\n  background: #f7f7f5;\n  outline: none;\n  font-family: inherit;\n  transition: border-color 0.15s;\n}\n.conversation-list__search input:focus {\n  border-color: #f5c040;\n}\n.conversation-list__search-icon {\n  position: absolute;\n  left: 2.25rem;\n  top: 50%;\n  transform: translateY(-50%);\n  color: #aaa;\n}\n.conversation-list__empty {\n  padding: 1.5rem;\n  margin: 0;\n  font-size: 14px;\n  color: #555;\n  font-weight: 600;\n  text-align: center;\n  line-height: 1.5;\n}\n.conversation-list__status {\n  padding: 1rem 1.5rem;\n  margin: 0;\n  font-size: 13px;\n  color: #888;\n  text-align: center;\n}\n.conversation-list__status--error {\n  color: #dc2626;\n}\n.conversation-list__items {\n  list-style: none;\n  padding: 0;\n  margin: 0;\n  overflow-y: auto;\n  flex: 1;\n}\n.conversation-list__item {\n  display: flex;\n  align-items: center;\n  gap: 1rem;\n  padding: 1rem 1.5rem;\n  cursor: pointer;\n  border-bottom: 1px solid #f0ebe4;\n  transition: background 0.15s;\n}\n.conversation-list__item:hover {\n  background: #f7f7f5;\n}\n.conversation-list__item--active {\n  background: #fff3cd;\n}\n.conversation-list__item--active:hover {\n  background: #fff3cd;\n}\n.conversation-list__item:last-child {\n  border-bottom: none;\n}\n.conversation-list__avatar {\n  width: 46px;\n  height: 46px;\n  border-radius: 50%;\n  background: #1a1a2e;\n  color: #f5c040;\n  font-size: 14px;\n  font-weight: 700;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-shrink: 0;\n}\n.conversation-list__info {\n  flex: 1;\n  min-width: 0;\n}\n.conversation-list__top {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 4px;\n}\n.conversation-list__name {\n  font-size: 15px;\n  font-weight: 600;\n  color: #111;\n}\n.conversation-list__time {\n  font-size: 12px;\n  color: #aaa;\n  flex-shrink: 0;\n}\n.conversation-list__bottom {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 8px;\n}\n.conversation-list__preview {\n  font-size: 13px;\n  color: #777;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.conversation-list__badge {\n  background: #f5c040;\n  color: #111;\n  font-size: 11px;\n  font-weight: 700;\n  width: 20px;\n  height: 20px;\n  border-radius: 50%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-shrink: 0;\n}\n\n@media (max-width: 900px) {\n  .messages-page__body {\n    flex-direction: column;\n    height: auto;\n    padding: 1.5rem 1.5rem 4rem;\n  }\n  .messages-page__left {\n    flex: unset;\n    width: 100%;\n  }\n  .conversation-list {\n    border-radius: 16px;\n    height: auto;\n  }\n}\n@media (max-width: 480px) {\n  .messages-page__body {\n    padding: 1rem 1rem 3rem;\n  }\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -30754,6 +32238,30 @@ ___CSS_LOADER_EXPORT___.push([module.id, ".applied {\n  width: 100%;\n  max-widt
 
 /***/ },
 
+/***/ "./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./resources/js/views/User-View/components/dashboard/pages/shared/ProfileFormField.scss"
+/*!************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./resources/js/views/User-View/components/dashboard/pages/shared/ProfileFormField.scss ***!
+  \************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, ".profile-form-field {\n  display: flex;\n  flex-direction: column;\n  gap: 0.35rem;\n}\n.profile-form-field__label {\n  display: inline-flex;\n  align-items: center;\n  gap: 0.35rem;\n  font-size: 13px;\n  font-weight: 600;\n  color: #444;\n}\n.profile-form-field__error {\n  font-size: 12px;\n  line-height: 1.35;\n  color: #b42318;\n}\n.profile-form-field--error input,\n.profile-form-field--error select,\n.profile-form-field--error textarea {\n  border-color: #b42318 !important;\n  box-shadow: 0 0 0 1px rgba(180, 35, 24, 0.15);\n}", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ },
+
 /***/ "./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./resources/js/views/User-View/components/dashboard/pages/skills/Skills.scss"
 /*!**************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./resources/js/views/User-View/components/dashboard/pages/skills/Skills.scss ***!
@@ -30963,7 +32471,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "@charset \"UTF-8\";\n.jobs-cards-section {\n  width: 100%;\n  max-width: 1400px;\n  margin: 0 auto;\n  padding: 0 32px 60px;\n}\n.jobs-cards-section .jobs-cards-wrapper {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 20px;\n}\n.jobs-cards-section .job-card {\n  width: calc((100% - 40px) / 3);\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 28px 24px 24px;\n  position: relative;\n  transition: 0.25s ease;\n}\n.jobs-cards-section .job-card:hover {\n  border: 1px solid #000;\n  transform: translateY(-4px);\n}\n.jobs-cards-section .job-card.featured {\n  border: 1px solid #f2bc1b;\n  background: #fffdf6;\n}\n.jobs-cards-section .job-card .featured-badge {\n  position: absolute;\n  top: -18px;\n  right: 24px;\n  background: #fff3cd;\n  color: #c58a00;\n  border: 1px solid #f2d27a;\n  border-radius: 999px;\n  padding: 8px 18px;\n  font-size: 14px;\n  font-weight: 600;\n  line-height: 1;\n}\n.jobs-cards-section .job-card .job-card-top {\n  display: flex;\n  align-items: flex-start;\n  gap: 20px;\n}\n.jobs-cards-section .job-card .job-initials {\n  width: 76px;\n  height: 76px;\n  background: #f2efea;\n  border-radius: 18px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 26px;\n  font-weight: 600;\n  color: #111111;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card .job-card-content {\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n}\n.jobs-cards-section .job-card .job-title-row {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-start;\n  gap: 12px;\n}\n.jobs-cards-section .job-card .job-title-text {\n  min-height: 92px;\n}\n.jobs-cards-section .job-card .job-title-text h3 {\n  margin: 0 0 8px 0;\n  font-size: 18px;\n  font-weight: 700;\n  line-height: 1.35;\n  color: #111111;\n}\n.jobs-cards-section .job-card .job-title-text p {\n  margin: 0;\n  font-size: 16px;\n  color: #777777;\n  line-height: 1.4;\n}\n.jobs-cards-section .job-card .job-type {\n  background: #f2bc1b;\n  color: #111111;\n  border-radius: 999px;\n  padding: 10px 16px;\n  font-size: 14px;\n  white-space: nowrap;\n  line-height: 1;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card .job-details {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 14px;\n}\n.jobs-cards-section .job-card .job-details span {\n  font-size: 15px;\n  color: #7a746d;\n  line-height: 1.4;\n}\n.jobs-cards-section .job-card .job-tags {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 10px;\n}\n.jobs-cards-section .job-card .job-tags .job-tag {\n  background: #f2efea;\n  color: #7a746d;\n  border-radius: 999px;\n  padding: 7px 14px;\n  font-size: 14px;\n  line-height: 1;\n}\n.jobs-cards-section .jobs-pagination {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  gap: 10px;\n  margin-top: 40px;\n}\n.jobs-cards-section .jobs-pagination button {\n  width: 48px;\n  height: 48px;\n  border: 1px solid #dddddd;\n  background: #ffffff;\n  border-radius: 14px;\n  cursor: pointer;\n  font-size: 16px;\n}\n.jobs-cards-section .jobs-pagination .active-page {\n  background: #111111;\n  color: #ffffff;\n  border: 1px solid #111111;\n}\n.jobs-cards-section .jobs-pagination button:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n\n/* ── Responsive ── */\n@media (max-width: 1024px) {\n  .jobs-cards-section .job-card {\n    width: calc((100% - 20px) / 2);\n  }\n}\n@media (max-width: 768px) {\n  .jobs-cards-section {\n    padding: 0 20px 60px;\n  }\n  .jobs-cards-section .job-card {\n    width: 100%;\n  }\n}\n@media (max-width: 480px) {\n  .jobs-cards-section {\n    padding: 0 16px 40px;\n  }\n  .jobs-cards-section .job-card {\n    padding: 24px 16px 20px;\n  }\n  .jobs-cards-section .job-card .job-initials {\n    width: 56px;\n    height: 56px;\n    font-size: 20px;\n    border-radius: 14px;\n  }\n  .jobs-cards-section .job-card .job-title-text {\n    min-height: unset;\n  }\n  .jobs-cards-section .job-card .job-title-text h3 {\n    font-size: 16px;\n  }\n  .jobs-cards-section .job-card .job-title-text p {\n    font-size: 14px;\n  }\n  .jobs-cards-section .job-card .job-type {\n    font-size: 12px;\n    padding: 8px 12px;\n  }\n  .jobs-cards-section .job-card .job-details span {\n    font-size: 13px;\n  }\n  .jobs-cards-section .job-card .job-tags .job-tag {\n    font-size: 12px;\n    padding: 6px 12px;\n  }\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".jobs-cards-section {\n  width: 100%;\n  max-width: 1400px;\n  margin: 0 auto;\n  padding: 0 32px 60px;\n  text-align: left;\n}\n.jobs-cards-section .jobs-cards-wrapper {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 28px 20px;\n  padding-top: 12px;\n}\n.jobs-cards-section .job-card {\n  width: calc((100% - 40px) / 3);\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 28px 24px 24px;\n  position: relative;\n  transition: 0.25s ease;\n  display: flex;\n  flex-direction: column;\n  align-items: stretch;\n  gap: 16px;\n  text-align: left;\n}\n.jobs-cards-section .job-card:hover {\n  border: 1px solid #000;\n  transform: translateY(-4px);\n}\n.jobs-cards-section .job-card.featured {\n  border: 1px solid #f2bc1b;\n  background: #fffdf6;\n}\n.jobs-cards-section .job-card .featured-badge {\n  position: absolute;\n  top: -18px;\n  right: 24px;\n  background: #fff3cd;\n  color: #c58a00;\n  border: 1px solid #f2d27a;\n  border-radius: 999px;\n  padding: 8px 18px;\n  font-size: 14px;\n  font-weight: 600;\n  line-height: 1;\n  white-space: nowrap;\n  z-index: 2;\n}\n.jobs-cards-section .job-card .job-card-header {\n  display: flex;\n  align-items: flex-start;\n  gap: 16px;\n  width: 100%;\n}\n.jobs-cards-section .job-card .job-initials {\n  width: 76px;\n  height: 76px;\n  background: #f2efea;\n  border-radius: 18px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 26px;\n  font-weight: 600;\n  color: #111111;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card .job-title-block {\n  flex: 1;\n  min-width: 0;\n  padding-top: 4px;\n}\n.jobs-cards-section .job-card .job-title-block .job-title {\n  margin: 0 0 6px;\n  font-size: 18px;\n  font-weight: 700;\n  line-height: 1.35;\n  color: #111111;\n  word-break: break-word;\n}\n.jobs-cards-section .job-card .job-title-block .job-company {\n  margin: 0;\n  font-size: 16px;\n  color: #777777;\n  line-height: 1.4;\n}\n.jobs-cards-section .job-card .job-types {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n  justify-content: flex-end;\n  max-width: 48%;\n}\n.jobs-cards-section .job-card .job-type {\n  background: #f2bc1b;\n  color: #111111;\n  border-radius: 999px;\n  padding: 10px 16px;\n  font-size: 14px;\n  white-space: nowrap;\n  line-height: 1;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card.featured .job-type {\n  margin-top: 6px;\n}\n.jobs-cards-section .job-card .job-card-meta {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  justify-content: flex-start;\n  gap: 8px 12px;\n  width: 100%;\n  padding-left: 92px;\n}\n.jobs-cards-section .job-card .job-card-meta .job-meta-item {\n  font-size: 15px;\n  color: #7a746d;\n  line-height: 1.4;\n  white-space: nowrap;\n}\n.jobs-cards-section .job-card .job-card-meta .job-meta-divider {\n  width: 4px;\n  height: 4px;\n  border-radius: 50%;\n  background: #c8c0b5;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card .job-tags {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: flex-start;\n  justify-content: flex-start;\n  gap: 10px;\n  width: 100%;\n  padding-left: 92px;\n}\n.jobs-cards-section .job-card .job-tags .job-tag {\n  background: #f2efea;\n  color: #7a746d;\n  border-radius: 999px;\n  padding: 7px 14px;\n  font-size: 14px;\n  line-height: 1;\n}\n.jobs-cards-section .jobs-pagination {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  gap: 10px;\n  margin-top: 40px;\n}\n.jobs-cards-section .jobs-pagination button {\n  width: 48px;\n  height: 48px;\n  border: 1px solid #dddddd;\n  background: #ffffff;\n  border-radius: 14px;\n  cursor: pointer;\n  font-size: 16px;\n}\n.jobs-cards-section .jobs-pagination .active-page {\n  background: #111111;\n  color: #ffffff;\n  border: 1px solid #111111;\n}\n.jobs-cards-section .jobs-pagination button:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n\n@media (max-width: 1024px) {\n  .jobs-cards-section .job-card {\n    width: calc((100% - 20px) / 2);\n  }\n}\n@media (max-width: 768px) {\n  .jobs-cards-section {\n    padding: 0 20px 60px;\n  }\n  .jobs-cards-section .job-card {\n    width: 100%;\n  }\n  .jobs-cards-section .job-card .job-card-meta,\n  .jobs-cards-section .job-card .job-tags {\n    padding-left: 0;\n  }\n}\n@media (max-width: 480px) {\n  .jobs-cards-section {\n    padding: 0 16px 40px;\n  }\n  .jobs-cards-section .job-card {\n    padding: 24px 16px 20px;\n  }\n  .jobs-cards-section .job-card .job-initials {\n    width: 56px;\n    height: 56px;\n    font-size: 20px;\n    border-radius: 14px;\n  }\n  .jobs-cards-section .job-card .job-title-block .job-title {\n    font-size: 16px;\n  }\n  .jobs-cards-section .job-card .job-title-block .job-company {\n    font-size: 14px;\n  }\n  .jobs-cards-section .job-card .job-type {\n    font-size: 12px;\n    padding: 8px 12px;\n  }\n  .jobs-cards-section .job-card .job-card-meta .job-meta-item {\n    font-size: 13px;\n  }\n  .jobs-cards-section .job-card .job-tags .job-tag {\n    font-size: 12px;\n    padding: 6px 12px;\n  }\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -31618,6 +33126,30 @@ __webpack_require__.r(__webpack_exports__);
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
 ___CSS_LOADER_EXPORT___.push([module.id, ".embla {\n  overflow: hidden;\n}\n\n.embla__viewport {\n  overflow: hidden;\n}\n\n.embla__container {\n  display: flex;\n  align-items: stretch;\n}\n\n.embla__slide {\n  flex: 0 0 100%;\n  display: flex;\n}\n@media (min-width: 700px) {\n  .embla__slide {\n    flex: 0 0 50%;\n  }\n}\n\n.embla__button {\n  background: #fdd535;\n  color: #ffffff;\n  font-size: 20px;\n  border: none;\n  padding: 5px 15px;\n  margin: 0 5px;\n  border-radius: 5px;\n  cursor: pointer;\n  transition: all 0.3s ease;\n}\n.embla__button:hover {\n  background: #debb2d;\n}\n\n.shared-testimonials {\n  margin: max(5%, 50px) 0;\n  padding: 0 7.5%;\n  position: relative;\n  z-index: 2;\n}\n@media (max-width: 1250px) {\n  .shared-testimonials {\n    padding: 0 5%;\n  }\n}\n@media (max-width: 550px) {\n  .shared-testimonials {\n    padding: 0 2.5%;\n  }\n}\n.shared-testimonials h1 {\n  font-size: max(24px, 2vw);\n  text-align: center;\n  text-transform: uppercase;\n  line-height: 1.5;\n}\n@media (max-width: 550px) {\n  .shared-testimonials h1 {\n    padding: 0 2.5%;\n  }\n}\n.shared-testimonials .p {\n  line-height: 1.5;\n  font-size: max(15px, 1vw);\n  color: #535353;\n  text-align: center;\n  margin: max(10px, 1vw) auto;\n}\n@media (max-width: 550px) {\n  .shared-testimonials .p {\n    padding: 0 2.5%;\n  }\n}\n.shared-testimonials .link-container {\n  display: flex;\n  justify-content: center;\n  margin-top: max(25px, 2.5vw);\n}\n.shared-testimonials .rec-pagination {\n  display: none;\n}\n\n.shared-testimonials .slider-item {\n  width: 92%;\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  padding: 0 max(10px, 1.25vw) max(10px, 1.25vw) 0;\n  margin: max(35px, 3vw) 0 max(10px, 1vw);\n}\n@media (max-width: 1250px) {\n  .shared-testimonials .slider-item {\n    width: 94%;\n  }\n}\n@media (max-width: 550px) {\n  .shared-testimonials .slider-item {\n    width: 97.5%;\n  }\n}\n.shared-testimonials .slider-item:hover .bg {\n  clip-path: polygon(0 0, 100% 0, 100% 0, 100% 100%, 0 100%, 0 100%);\n  width: calc(100% - max(10px, 1.25vw));\n  height: calc(100% - max(10px, 1.25vw));\n  bottom: max(10px, 1.25vw);\n}\n.shared-testimonials .slider-item .bg {\n  transition: 0.35s ease-in-out;\n  -webkit-transition: 0.35s ease-in-out;\n  position: absolute;\n  left: 0;\n  bottom: 0;\n  width: 100%;\n  height: 100%;\n  background: rgba(253, 213, 53, 0.5960784314);\n  clip-path: polygon(0 0, calc(100% - max(10px, 1.25vw)) 0, 100% max(10px, 1.25vw), 100% 100%, max(10px, 1.25vw) 100%, 0 calc(100% - max(10px, 1.25vw)));\n}\n.shared-testimonials .slider-item .main {\n  border: 1px solid #fdd535;\n  position: relative;\n  z-index: 3;\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n  justify-content: space-between;\n  background: #fff;\n  padding: 0 max(20px, 2vw) max(20px, 2vw);\n}\n.shared-testimonials .slider-item .quote {\n  display: flex;\n  align-items: center;\n  justify-content: flex-start;\n  color: #fdd535;\n  opacity: 0.45;\n  font-size: max(50px, 4vw);\n  margin: min(-25px, -2vw) 0 max(15px, 1.5vw);\n}\n.shared-testimonials .slider-item p {\n  font-size: max(14px, 1vw);\n  color: #272727;\n  margin-bottom: max(15px, 1.5vw);\n  line-height: 1.6;\n}\n.shared-testimonials .slider-item .line2 {\n  width: 40%;\n  height: 1px;\n  background: #fdd535;\n}\n.shared-testimonials .slider-item h6 {\n  font-size: max(13px, 0.8vw);\n  margin: max(10px, 0.8vw) 0 max(5px, 0.5vw);\n}\n.shared-testimonials .slider-item small {\n  color: #545454;\n  font-size: max(12px, 0.75vw);\n}", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ },
+
+/***/ "./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./resources/js/views/User-View/pages/User-Dashboard/ProfilePage/ProfilePage.scss"
+/*!******************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./resources/js/views/User-View/pages/User-Dashboard/ProfilePage/ProfilePage.scss ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************************************************************/
+(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, ".profile-page--loading {\n  padding: 2rem;\n  text-align: center;\n}\n\n.profile-page__feedback {\n  margin: 0 0 1rem;\n  font-size: 0.9rem;\n  color: #0d6b3a;\n}\n\n.profile-page__feedback--error {\n  color: #b42318;\n}\n\n.profile-page__actions {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  justify-content: space-between;\n  gap: 1rem;\n  margin-top: 1rem;\n}\n\n.profile-page__actions-main {\n  display: flex;\n  gap: 0.75rem;\n}\n\n.profile-page__clear {\n  background: transparent;\n  border: none;\n  color: #b42318;\n  cursor: pointer;\n  font-size: 0.875rem;\n  padding: 0;\n}\n\n.profile-page__clear:disabled {\n  opacity: 0.6;\n  cursor: not-allowed;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -71441,6 +72973,36 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 
 /***/ },
 
+/***/ "./resources/js/views/User-View/components/dashboard/pages/shared/ProfileFormField.scss"
+/*!**********************************************************************************************!*\
+  !*** ./resources/js/views/User-View/components/dashboard/pages/shared/ProfileFormField.scss ***!
+  \**********************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../../../../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_2_node_modules_sass_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_3_ProfileFormField_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../../../../../../../node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!../../../../../../../../node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!../../../../../../../../node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./ProfileFormField.scss */ "./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./resources/js/views/User-View/components/dashboard/pages/shared/ProfileFormField.scss");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_2_node_modules_sass_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_3_ProfileFormField_scss__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_2_node_modules_sass_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_3_ProfileFormField_scss__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ },
+
 /***/ "./resources/js/views/User-View/components/dashboard/pages/skills/Skills.scss"
 /*!************************************************************************************!*\
   !*** ./resources/js/views/User-View/components/dashboard/pages/skills/Skills.scss ***!
@@ -72488,6 +74050,36 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_2_node_modules_sass_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_3_Testimonal_scss__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ },
+
+/***/ "./resources/js/views/User-View/pages/User-Dashboard/ProfilePage/ProfilePage.scss"
+/*!****************************************************************************************!*\
+  !*** ./resources/js/views/User-View/pages/User-Dashboard/ProfilePage/ProfilePage.scss ***!
+  \****************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../../../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_2_node_modules_sass_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_3_ProfilePage_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../../../../../../node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!../../../../../../../node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!../../../../../../../node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./ProfilePage.scss */ "./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./resources/js/views/User-View/pages/User-Dashboard/ProfilePage/ProfilePage.scss");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_2_node_modules_sass_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_3_ProfilePage_scss__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_2_node_modules_sass_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_3_ProfilePage_scss__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
 
 /***/ },
 

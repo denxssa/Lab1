@@ -7,6 +7,7 @@ use App\Http\Controllers\HomePageContentController;
 use App\Http\Controllers\HomePageSectionItemController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\JobListingController;
+use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\CvProfileController;
 use App\Http\Controllers\ResumeController;
 use App\Http\Controllers\PricingPlanController;
@@ -99,12 +100,17 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/api/job-listings/manage', [JobListingController::class, 'manage']);
     Route::post('/api/job-listings', [JobListingController::class, 'store']);
     Route::put('/api/job-listings/{jobListing}', [JobListingController::class, 'update']);
+    Route::delete('/api/job-listings/{jobListing}', [JobListingController::class, 'destroy']);
 
     Route::get('/api/resume', [ResumeController::class, 'show']);
     Route::post('/api/resume/upload', [ResumeController::class, 'upload']);
     Route::post('/api/resume/{resume}/analyze', [ResumeController::class, 'analyze']);
     Route::get('/api/resume/{resume}/ats', [ResumeController::class, 'atsScore']);
     Route::get('/api/resume/{resume}/job-match', [ResumeController::class, 'jobMatch']);
+
+    Route::get('/api/candidate/profile', [CandidateProfileController::class, 'show']);
+    Route::put('/api/candidate/profile', [CandidateProfileController::class, 'update']);
+    Route::delete('/api/candidate/profile', [CandidateProfileController::class, 'destroy']);
 
     Route::get('/api/cv/profile', [CvProfileController::class, 'show']);
     Route::put('/api/cv/profile', [CvProfileController::class, 'update']);
@@ -121,6 +127,7 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/api/interviews/{interview}', [InterviewController::class, 'destroy']);
 
     Route::get('/api/conversations', [ConversationController::class, 'index']);
+    Route::get('/api/conversations/messageable-candidates', [ConversationController::class, 'messageableCandidates']);
     Route::post('/api/conversations', [ConversationController::class, 'store']);
     Route::get('/api/conversations/{conversation}/messages', [ConversationController::class, 'messages']);
     Route::post('/api/conversations/{conversation}/messages', [ConversationController::class, 'storeMessage']);

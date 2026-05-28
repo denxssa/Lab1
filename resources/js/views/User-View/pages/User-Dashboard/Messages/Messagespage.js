@@ -6,6 +6,7 @@ import ChatWindow from '../../../components/dashboard/pages/chat-window/ChatWind
 const MessagesPage = () => {
     const [selected, setSelected] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [inboxEmpty, setInboxEmpty] = useState(null);
 
     const handleMessageSent = () => {
         setRefreshKey((k) => k + 1);
@@ -20,10 +21,15 @@ const MessagesPage = () => {
                             selected={selected}
                             onSelect={setSelected}
                             refreshKey={refreshKey}
+                            onInboxEmpty={setInboxEmpty}
                         />
                     </div>
                     <div className="messages-page__right">
-                        <ChatWindow conversation={selected} onMessageSent={handleMessageSent} />
+                        <ChatWindow
+                            conversation={selected}
+                            onMessageSent={handleMessageSent}
+                            inboxEmpty={inboxEmpty === true}
+                        />
                     </div>
                 </div>
             </div>

@@ -1,0 +1,42 @@
+.profile-page--loading {
+  padding: 2rem;
+  text-align: center;
+}
+
+.profile-page__feedback {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: #0d6b3a;
+}
+
+.profile-page__feedback--error {
+  color: #b42318;
+}
+
+.profile-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.profile-page__actions-main {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.profile-page__clear {
+  background: transparent;
+  border: none;
+  color: #b42318;
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 0;
+}
+
+.profile-page__clear:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

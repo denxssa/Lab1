@@ -68,15 +68,19 @@
       color: #aaa;
       text-align: right;
       margin-top: 6px;
+
+      &--error {
+        color: #b42318;
+      }
     }
   }
-  
+
   @media (max-width: 768px) {
     .about-me {
       &__header {
         padding: 1rem 1.25rem;
       }
-  
+
       &__body {
         padding: 1.25rem;
       }
