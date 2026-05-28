@@ -30,6 +30,8 @@ export function clearUserFromStorage() {
     'user_email',
     'user_role',
     'user_company',
+    'auth_token',
+    'auth_token_expires_at',
     'name',
     'role',
   ].forEach((key) => window.localStorage.removeItem(key));
