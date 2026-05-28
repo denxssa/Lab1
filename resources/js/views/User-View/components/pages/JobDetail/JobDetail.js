@@ -22,7 +22,7 @@ const JobDetail = ({ job, onBack, relatedJobs, onSelectJob }) => {
 
       <div className="job-detail-meta" data-aos="fade-up" data-aos-delay="100">
         <span>Location: {job.location}</span>
-        <span>Type: {job.type}</span>
+        <span>Type: {(job.types?.length ? job.types : [job.type]).join(', ')}</span>
         <span>Salary: {job.salary}</span>
         <span>Posted: {job.time}</span>
       </div>
@@ -36,7 +36,7 @@ const JobDetail = ({ job, onBack, relatedJobs, onSelectJob }) => {
       <h2 data-aos="fade-up">About the Role</h2>
       <p data-aos="fade-up">
         We're looking for a talented {job.title} to join {job.company}.
-        This is a {job.type} position based in {job.location}.
+        This is a {(job.types?.length ? job.types : [job.type]).join(', ')} position based in {job.location}.
         You'll work alongside a passionate team building products that make a real impact.
       </p>
 

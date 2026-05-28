@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Conversation;
+use App\Models\JobApplication;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -30,6 +31,35 @@ class ConversationController extends Controller
         ]);
     }
 
+    public function messageableCandidates(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user->isHr()) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        $existingIds = Conversation::query()
+            ->where('hr_user_id', $user->id)
+            ->pluck('candidate_user_id');
+
+        $candidates = User::query()
+            ->where('role', User::ROLE_CANDIDATE)
+            ->whereHas('candidateApplications.jobListing', fn ($query) => $query->where('user_id', $user->id))
+            ->when($existingIds->isNotEmpty(), fn ($query) => $query->whereNotIn('id', $existingIds))
+            ->orderBy('name')
+            ->get(['id', 'name', 'email'])
+            ->map(fn (User $candidate) => [
+                'id' => $candidate->id,
+                'name' => $candidate->name,
+                'email' => $candidate->email,
+                'initials' => $this->initials($candidate->name),
+            ])
+            ->values();
+
+        return response()->json(['candidates' => $candidates]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -46,32 +76,20 @@ class ConversationController extends Controller
                 ]);
             }
 
+            if (!$this->hrCanMessageCandidate($user, $candidate)) {
+                return response()->json([
+                    'message' => 'You can only message candidates who applied to your job listings.',
+                ], 403);
+            }
+
             $conversation = Conversation::query()->firstOrCreate([
                 'candidate_user_id' => $candidate->id,
                 'hr_user_id' => $user->id,
             ]);
         } elseif ($user->isCandidate()) {
-            $validated = $request->validate([
-                'hr_user_id' => ['required', 'integer', 'exists:users,id'],
-                'job_listing_id' => ['nullable', 'integer', 'exists:job_listings,id'],
-            ]);
-
-            $hr = User::query()->findOrFail($validated['hr_user_id']);
-            if (!$hr->isHr()) {
-                throw ValidationException::withMessages([
-                    'hr_user_id' => ['The selected user is not HR.'],
-                ]);
-            }
-
-            $conversation = Conversation::query()->firstOrCreate(
-                [
-                    'candidate_user_id' => $user->id,
-                    'hr_user_id' => $hr->id,
-                ],
-                [
-                    'job_listing_id' => $validated['job_listing_id'] ?? null,
-                ]
-            );
+            return response()->json([
+                'message' => 'Only HR can start a conversation. You can reply after a recruiter messages you.',
+            ], 403);
         } else {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
@@ -128,6 +146,14 @@ class ConversationController extends Controller
         return response()->json([
             'message' => $this->formatMessage($message, $user),
         ], 201);
+    }
+
+    private function hrCanMessageCandidate(User $hr, User $candidate): bool
+    {
+        return JobApplication::query()
+            ->where('candidate_user_id', $candidate->id)
+            ->whereHas('jobListing', fn ($query) => $query->where('user_id', $hr->id))
+            ->exists();
     }
 
     private function formatConversationSummary(Conversation $conversation, User $user): array

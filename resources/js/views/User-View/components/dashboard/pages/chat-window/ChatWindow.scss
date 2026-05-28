@@ -10,14 +10,24 @@
     &--empty {
       align-items: center;
       justify-content: center;
-      gap: 1rem;
+      gap: 0.5rem;
       color: #aaa;
+      text-align: center;
+      padding: 2rem;
   
       p {
         font-size: 15px;
-        color: #aaa;
+        color: #555;
         margin: 0;
+        font-weight: 600;
       }
+    }
+
+    &__empty-hint {
+      font-size: 14px;
+      color: #888;
+      max-width: 280px;
+      line-height: 1.5;
     }
   
     &__header {

@@ -3,7 +3,7 @@ import { FiSend, FiMessageSquare } from 'react-icons/fi';
 import { listMessages, sendMessage, MESSAGES_POLL_MS } from '../../../../../../api/messagesApi';
 import './ChatWindow.scss';
 
-export default function ChatWindow({ conversation, onMessageSent }) {
+export default function ChatWindow({ conversation, onMessageSent, inboxEmpty = false }) {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -53,7 +53,16 @@ export default function ChatWindow({ conversation, onMessageSent }) {
         return (
             <div className="chat-window chat-window--empty">
                 <FiMessageSquare size={48} />
-                <p>Select a conversation to start messaging</p>
+                {inboxEmpty ? (
+                    <>
+                        <p>No HR has messaged you yet.</p>
+                        <span className="chat-window__empty-hint">
+                            When a recruiter contacts you, you can reply here.
+                        </span>
+                    </>
+                ) : (
+                    <p>Select a conversation to view messages</p>
+                )}
             </div>
         );
     }

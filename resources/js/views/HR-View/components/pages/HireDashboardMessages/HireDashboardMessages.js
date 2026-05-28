@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
 import {
   listConversations,
+  listMessageableCandidates,
   listMessages,
   sendMessage,
   startConversation,
@@ -149,7 +149,7 @@ const HireDashboardMessages = () => {
   const openNewChatPicker = async () => {
     setShowNewChat(true);
     try {
-      const { data } = await axios.get('/api/interviews/candidates');
+      const data = await listMessageableCandidates();
       setCandidates(data.candidates || []);
     } catch {
       setCandidates([]);
@@ -184,8 +184,12 @@ const HireDashboardMessages = () => {
 
           {showNewChat && (
             <div className="hire-messages-new-panel">
-              <p>Start chat with candidate:</p>
-              {candidates.length === 0 && <p>No candidates found.</p>}
+              <p>Start chat with an applicant:</p>
+              {candidates.length === 0 && (
+                <p className="hire-messages-new-empty">
+                  No new applicants to message. Candidates appear here after they apply to your job listings.
+                </p>
+              )}
               {candidates.map((c) => (
                 <button
                   key={c.id}

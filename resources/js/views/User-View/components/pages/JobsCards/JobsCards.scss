@@ -96,6 +96,14 @@
       }
     }
 
+    .job-types {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+      max-width: 48%;
+    }
+
     .job-type {
       background: #f2bc1b;
       color: #111111;
@@ -105,10 +113,6 @@
       white-space: nowrap;
       line-height: 1;
       flex-shrink: 0;
-      align-self: flex-start;
-      max-width: 38%;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     &.featured .job-type {

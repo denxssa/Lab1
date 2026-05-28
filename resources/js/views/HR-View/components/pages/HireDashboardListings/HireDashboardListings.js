@@ -1,25 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { FaMapMarkerAlt, FaBriefcase, FaClock, FaUsers, FaPause, FaPlay, FaTimes, FaEllipsisV } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaBriefcase, FaClock, FaUsers, FaPause, FaPlay, FaTimes, FaEllipsisV, FaEdit, FaTrash } from 'react-icons/fa';
 import './HireDashboardListings.scss';
-import { listJobListingsForHr, mapJobListingForHr, updateJobListingStatus } from '../../../../../api/jobsApi';
+import {
+  deleteJobListing,
+  listJobListingsForHr,
+  mapJobListingForHr,
+  updateJobListingStatus,
+} from '../../../../../api/jobsApi';
 import { useHireDashboard } from '../../../HireDashboardContext';
+import PostJobModal from '../PostJobModal/PostJobModal';
 
 const tabs = ['All', 'Active', 'Paused', 'Closed'];
 
 const expiryClass = (days, status) => {
   if (status !== 'active') return '';
-  if (days <= 3)  return 'urgent';
-  if (days <= 7)  return 'warn';
+  if (days <= 3) return 'urgent';
+  if (days <= 7) return 'warn';
   return '';
 };
 
 const HireDashboardListings = () => {
-  const { listingsVersion } = useHireDashboard();
-  const [listings,  setListings]  = useState([]);
+  const { listingsVersion, refreshListings } = useHireDashboard();
+  const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('All');
-  const [openMenu,  setOpenMenu]  = useState(null);
+  const [openMenu, setOpenMenu] = useState(null);
+  const [editingJob, setEditingJob] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,6 +74,27 @@ const HireDashboardListings = () => {
     }
   };
 
+  const handleDelete = async (id, title) => {
+    if (!window.confirm(`Delete "${title}"? This cannot be undone.`)) {
+      return;
+    }
+
+    setDeletingId(id);
+    setOpenMenu(null);
+    const previous = listings;
+
+    try {
+      await deleteJobListing(id);
+      setListings((prev) => prev.filter((l) => l.id !== id));
+      refreshListings();
+    } catch {
+      setListings(previous);
+      setError('Could not delete job. Please try again.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const counts = tabs.reduce((acc, t) => {
     acc[t] = t === 'All' ? listings.length : listings.filter((l) => l.status === t.toLowerCase()).length;
     return acc;
@@ -79,7 +108,6 @@ const HireDashboardListings = () => {
     <section className="hire-dashboard-listings-section" id="hire-listings-anchor">
       <div className="hire-listings-wrapper">
 
-        {/* ── Header ── */}
         <div className="hire-listings-header">
           <div>
             <h2>Active Listings</h2>
@@ -102,7 +130,6 @@ const HireDashboardListings = () => {
         {loading && <p className="hire-listings-empty">Loading listings…</p>}
         {error && !loading && <p className="hire-listings-empty">{error}</p>}
 
-        {/* ── Grid ── */}
         {!loading && !error && filtered.length === 0 ? (
           <div className="hire-listings-empty">
             <p>No {activeTab.toLowerCase()} listings.</p>
@@ -113,19 +140,18 @@ const HireDashboardListings = () => {
               const pct = job.applications > 0
                 ? Math.round((job.shortlisted / job.applications) * 100)
                 : 0;
-              const ec  = expiryClass(job.daysLeft, job.status);
+              const ec = expiryClass(job.daysLeft, job.status);
 
               return (
                 <div
                   key={job.id}
                   className={[
                     'hire-listing-card',
-                    job.featured   ? 'featured'  : '',
+                    job.featured ? 'featured' : '',
                     job.status === 'paused' ? 'is-paused' : '',
                     job.status === 'closed' ? 'is-closed' : '',
                   ].filter(Boolean).join(' ')}
                 >
-                  {/* Banner + avatar + kebab */}
                   <div className="hire-listing-banner">
                     <div className="hire-listing-avatar">{job.initials}</div>
 
@@ -140,6 +166,12 @@ const HireDashboardListings = () => {
 
                       {openMenu === job.id && (
                         <div className="hire-listing-dropdown">
+                          <button
+                            type="button"
+                            onClick={() => { setEditingJob(job); setOpenMenu(null); }}
+                          >
+                            <FaEdit /> Edit job
+                          </button>
                           {job.status === 'active' && (
                             <button type="button" onClick={() => { setStatus(job.id, 'paused'); setOpenMenu(null); }}>
                               <FaPause /> Pause listing
@@ -160,18 +192,27 @@ const HireDashboardListings = () => {
                               <FaPlay /> Reopen listing
                             </button>
                           )}
+                          <button
+                            type="button"
+                            className="menu-danger"
+                            disabled={deletingId === job.id}
+                            onClick={() => handleDelete(job.id, job.title)}
+                          >
+                            <FaTrash /> {deletingId === job.id ? 'Deleting…' : 'Delete job'}
+                          </button>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Body */}
                   <div className="hire-listing-body">
 
                     <div className="hire-listing-identity">
                       <div className="hire-listing-title">{job.title}</div>
                       <div className="hire-listing-tags">
-                        <span className="hire-listing-type-tag">{job.type}</span>
+                        {(job.types?.length ? job.types : [job.type]).map((type) => (
+                          <span key={type} className="hire-listing-type-tag">{type}</span>
+                        ))}
                         <span className={`hire-listing-status-pill pill-${job.status}`}>
                           {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
                         </span>
@@ -186,7 +227,6 @@ const HireDashboardListings = () => {
 
                     <div className="hire-listing-divider" />
 
-                    {/* Pipeline bar */}
                     <div className="hire-listing-pipeline">
                       <div className="hire-listing-pipe-track">
                         <div className="hire-listing-pipe-fill" style={{ width: `${pct}%` }} />
@@ -228,6 +268,17 @@ const HireDashboardListings = () => {
         ) : null}
 
       </div>
+
+      {editingJob && (
+        <PostJobModal
+          job={editingJob}
+          onClose={() => setEditingJob(null)}
+          onPosted={() => {
+            setEditingJob(null);
+            refreshListings();
+          }}
+        />
+      )}
     </section>
   );
 };

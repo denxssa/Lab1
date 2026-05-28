@@ -10,22 +10,33 @@ class CvProfile extends Model
 {
     protected $fillable = [
         'user_id',
+        'first_name',
+        'last_name',
         'full_name',
         'email',
         'phone',
         'headline',
         'summary',
         'location',
+        'date_of_birth',
+        'nationality',
         'website',
         'linkedin',
         'github',
         'github_repositories',
         'portfolio_links',
+        'desired_role',
+        'job_type',
+        'expected_salary',
+        'availability',
+        'avatar_path',
     ];
 
     protected function casts(): array
     {
         return [
+            'date_of_birth' => 'date',
+            'expected_salary' => 'integer',
             'github_repositories' => 'array',
             'portfolio_links' => 'array',
         ];

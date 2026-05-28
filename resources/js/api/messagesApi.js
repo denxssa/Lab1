@@ -7,6 +7,10 @@ export function listConversations() {
     return axios.get('/api/conversations').then((response) => response.data);
 }
 
+export function listMessageableCandidates() {
+    return axios.get('/api/conversations/messageable-candidates').then((response) => response.data);
+}
+
 export function startConversation(payload) {
     return axios.post('/api/conversations', payload).then((response) => response.data);
 }

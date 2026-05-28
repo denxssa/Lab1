@@ -3,7 +3,7 @@ import { FiSearch } from 'react-icons/fi';
 import { listConversations, MESSAGES_POLL_MS } from '../../../../../../api/messagesApi';
 import './ConversationList.scss';
 
-export default function ConversationList({ selected, onSelect, refreshKey = 0 }) {
+export default function ConversationList({ selected, onSelect, refreshKey = 0, onInboxEmpty }) {
     const [conversations, setConversations] = useState([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
@@ -20,7 +20,9 @@ export default function ConversationList({ selected, onSelect, refreshKey = 0 })
             try {
                 const data = await listConversations();
                 if (!cancelled) {
-                    setConversations(data.conversations || []);
+                    const list = data.conversations || [];
+                    setConversations(list);
+                    onInboxEmpty?.(list.length === 0);
                 }
             } catch {
                 if (!cancelled && !silent) {
@@ -62,8 +64,11 @@ export default function ConversationList({ selected, onSelect, refreshKey = 0 })
             </div>
             {loading && <p className="conversation-list__status">Loading…</p>}
             {error && <p className="conversation-list__status conversation-list__status--error">{error}</p>}
-            {!loading && !error && filtered.length === 0 && (
-                <p className="conversation-list__status">No conversations yet.</p>
+            {!loading && !error && conversations.length === 0 && (
+                <p className="conversation-list__empty">No HR has messaged you yet.</p>
+            )}
+            {!loading && !error && conversations.length > 0 && filtered.length === 0 && (
+                <p className="conversation-list__status">No matching conversations.</p>
             )}
             <ul className="conversation-list__items">
                 {filtered.map((c) => (
