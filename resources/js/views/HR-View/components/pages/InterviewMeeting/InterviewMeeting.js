@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
-import { getRoomAccess } from '../../api/interviewsApi';
+import { getRoomAccess } from '../../../../../api/interviewsApi';
 import './InterviewMeeting.scss';
 
 const InterviewMeeting = ({ token, onLeave }) => {

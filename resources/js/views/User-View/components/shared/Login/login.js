@@ -53,7 +53,6 @@ export default function LoginContent() {
     const [values, setValues] = useState({
         email: '',
         password: '',
-        remember: false,
     });
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
@@ -65,10 +64,10 @@ export default function LoginContent() {
     }, [authLoading, user, navigate]);
 
     const onChange = (event) => {
-        const { name, type, checked, value } = event.target;
+        const { name, value } = event.target;
         const nextValues = {
             ...values,
-            [name]: type === 'checkbox' ? checked : value,
+            [name]: value,
         };
 
         setValues(nextValues);
@@ -95,7 +94,6 @@ export default function LoginContent() {
             const loggedInUser = await login({
                 email: values.email.trim(),
                 password: values.password,
-                remember: values.remember,
             });
             navigate(getHomePathForRole(loggedInUser?.role), { replace: true });
         } catch (error) {
@@ -109,9 +107,12 @@ export default function LoginContent() {
         <section className="li" data-aos="fade-up">
             <div className="li-card">
                 <div className="li-head">
-                    <p className="li-tag">Member Access</p>
+                    <p className="li-tag">Welcome back</p>
                     <h1>Log in</h1>
-                    <p className="li-sub">Access your saved jobs, application activity, and account details.</p>
+                    <p className="li-sub">
+                        Sign in with your account. You will be redirected to your dashboard based on your role
+                        (job seeker, HR, or admin).
+                    </p>
                 </div>
 
                 <form className="li-form" onSubmit={onSubmit} noValidate>
@@ -148,21 +149,6 @@ export default function LoginContent() {
                         />
                     </label>
                     <span className="li-msg">{errors.password ?? ''}</span>
-
-                    <div className="li-row">
-                        <label className="li-check" htmlFor="remember-me">
-                            <input
-                                id="remember-me"
-                                name="remember"
-                                type="checkbox"
-                                checked={values.remember}
-                                onChange={onChange}
-                                disabled={submitting}
-                            />
-                            <span>Remember me</span>
-                        </label>
-                        <a href="#" className="li-link">Forgot password?</a>
-                    </div>
 
                     <button type="submit" className="li-btn" disabled={submitting || authLoading}>
                         {submitting ? 'Signing in…' : 'Sign in'}

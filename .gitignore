@@ -11,3 +11,10 @@
 /resources/js/views/User-View/pages/Signup/
 /resources/js/views/User-View/components/shared/Login/
 /resources/js/views/User-View/components/shared/Signup/
+
+
+/storage
+/public/js/app.js
+/public/mix-manifest.json
+/storage/logs
+/tests

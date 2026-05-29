@@ -1,56 +1,87 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FiSend, FiMessageSquare } from 'react-icons/fi';
+import { listMessages, sendMessage, MESSAGES_POLL_MS } from '../../../../../../api/messagesApi';
 import './ChatWindow.scss';
 
-const staticMessages = {
-    1: [
-        { id: 1, from: 'them', text: 'Hi Vesa! We reviewed your application and we are impressed.', time: '10:20' },
-        { id: 2, from: 'me', text: 'Thank you! I am very excited about this opportunity.', time: '10:22' },
-        { id: 3, from: 'them', text: 'We would love to schedule an interview with you. Are you available this week?', time: '10:30' },
-    ],
-    2: [
-        { id: 1, from: 'them', text: 'Thank you for applying to StartupXYZ!', time: '09:10' },
-        { id: 2, from: 'them', text: 'We will get back to you shortly.', time: '09:15' },
-    ],
-    3: [
-        { id: 1, from: 'them', text: 'Hello! Please complete the technical assessment sent to your email.', time: 'Yesterday' },
-    ],
-    4: [
-        { id: 1, from: 'them', text: 'Your application is currently under review.', time: 'Yesterday' },
-    ],
-    5: [
-        { id: 1, from: 'them', text: 'Hi! We reviewed your profile and think you could be a great fit.', time: 'Mon' },
-    ],
-};
-
-export default function ChatWindow({ conversation }) {
+export default function ChatWindow({ conversation, onMessageSent, inboxEmpty = false }) {
     const [input, setInput] = useState('');
-    const [messages, setMessages] = useState(staticMessages);
+    const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [sending, setSending] = useState(false);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (!conversation?.id) {
+            setMessages([]);
+            return undefined;
+        }
+
+        let cancelled = false;
+
+        const load = async (silent = false) => {
+            if (!silent) {
+                setLoading(true);
+            }
+            setError('');
+            try {
+                const data = await listMessages(conversation.id);
+                if (!cancelled) {
+                    setMessages(data.messages || []);
+                }
+            } catch {
+                if (!cancelled && !silent) {
+                    setError('Could not load messages.');
+                    setMessages([]);
+                }
+            } finally {
+                if (!cancelled && !silent) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        load(false);
+        const pollId = window.setInterval(() => load(true), MESSAGES_POLL_MS);
+
+        return () => {
+            cancelled = true;
+            window.clearInterval(pollId);
+        };
+    }, [conversation?.id]);
 
     if (!conversation) {
         return (
             <div className="chat-window chat-window--empty">
                 <FiMessageSquare size={48} />
-                <p>Select a conversation to start messaging</p>
+                {inboxEmpty ? (
+                    <>
+                        <p>No HR has messaged you yet.</p>
+                        <span className="chat-window__empty-hint">
+                            When a recruiter contacts you, you can reply here.
+                        </span>
+                    </>
+                ) : (
+                    <p>Select a conversation to view messages</p>
+                )}
             </div>
         );
     }
 
-    const currentMessages = messages[conversation.id] || [];
+    const handleSend = async () => {
+        if (!input.trim() || sending) return;
 
-    const handleSend = () => {
-        if (!input.trim()) return;
-        const newMessage = {
-            id: currentMessages.length + 1,
-            from: 'me',
-            text: input.trim(),
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        };
-        setMessages(prev => ({
-            ...prev,
-            [conversation.id]: [...(prev[conversation.id] || []), newMessage],
-        }));
-        setInput('');
+        setSending(true);
+        setError('');
+        try {
+            const data = await sendMessage(conversation.id, input.trim());
+            setMessages((prev) => [...prev, data.message]);
+            setInput('');
+            onMessageSent?.();
+        } catch {
+            setError('Could not send message.');
+        } finally {
+            setSending(false);
+        }
     };
 
     const handleKeyDown = (e) => {
@@ -66,11 +97,13 @@ export default function ChatWindow({ conversation }) {
                 <div className="chat-window__avatar">{conversation.initials}</div>
                 <div>
                     <h3 className="chat-window__name">{conversation.name}</h3>
-                    <p className="chat-window__status">Active now</p>
+                    <p className="chat-window__status">Messages with HR</p>
                 </div>
             </div>
             <div className="chat-window__messages">
-                {currentMessages.map(msg => (
+                {loading && <p className="chat-window__status-line">Loading messages…</p>}
+                {error && <p className="chat-window__status-line chat-window__status-line--error">{error}</p>}
+                {messages.map((msg) => (
                     <div
                         key={msg.id}
                         className={`chat-window__message chat-window__message--${msg.from}`}
@@ -86,10 +119,11 @@ export default function ChatWindow({ conversation }) {
                     className="chat-window__input"
                     placeholder="Type a message..."
                     value={input}
-                    onChange={e => setInput(e.target.value)}
+                    onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    disabled={sending}
                 />
-                <button className="chat-window__send" onClick={handleSend}>
+                <button className="chat-window__send" onClick={handleSend} disabled={sending || !input.trim()}>
                     <FiSend size={18} />
                 </button>
             </div>

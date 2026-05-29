@@ -1,19 +1,50 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FiSearch } from 'react-icons/fi';
+import { listConversations, MESSAGES_POLL_MS } from '../../../../../../api/messagesApi';
 import './ConversationList.scss';
 
-const conversations = [
-    { id: 1, name: 'TechCorp HR', lastMessage: 'We would love to schedule an interview...', time: '10:30', unread: 2, initials: 'TC' },
-    { id: 2, name: 'StartupXYZ', lastMessage: 'Thank you for applying!', time: '09:15', unread: 0, initials: 'SX' },
-    { id: 3, name: 'Google Recruiting', lastMessage: 'Please complete the assessment.', time: 'Yesterday', unread: 1, initials: 'GR' },
-    { id: 4, name: 'Meta Careers', lastMessage: 'Your application is under review.', time: 'Yesterday', unread: 0, initials: 'MC' },
-    { id: 5, name: 'Amazon Jobs', lastMessage: 'Hi! We reviewed your profile...', time: 'Mon', unread: 0, initials: 'AJ' },
-];
-
-export default function ConversationList({ selected, onSelect }) {
+export default function ConversationList({ selected, onSelect, refreshKey = 0, onInboxEmpty }) {
+    const [conversations, setConversations] = useState([]);
     const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-    const filtered = conversations.filter(c =>
+    useEffect(() => {
+        let cancelled = false;
+
+        const load = async (silent = false) => {
+            if (!silent) {
+                setLoading(true);
+            }
+            setError('');
+            try {
+                const data = await listConversations();
+                if (!cancelled) {
+                    const list = data.conversations || [];
+                    setConversations(list);
+                    onInboxEmpty?.(list.length === 0);
+                }
+            } catch {
+                if (!cancelled && !silent) {
+                    setError('Could not load messages. Please log in.');
+                }
+            } finally {
+                if (!cancelled && !silent) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        load(false);
+        const pollId = window.setInterval(() => load(true), MESSAGES_POLL_MS);
+
+        return () => {
+            cancelled = true;
+            window.clearInterval(pollId);
+        };
+    }, [refreshKey]);
+
+    const filtered = conversations.filter((c) =>
         c.name.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -28,11 +59,19 @@ export default function ConversationList({ selected, onSelect }) {
                     type="text"
                     placeholder="Search conversations..."
                     value={search}
-                    onChange={e => setSearch(e.target.value)}
+                    onChange={(e) => setSearch(e.target.value)}
                 />
             </div>
+            {loading && <p className="conversation-list__status">Loading…</p>}
+            {error && <p className="conversation-list__status conversation-list__status--error">{error}</p>}
+            {!loading && !error && conversations.length === 0 && (
+                <p className="conversation-list__empty">No HR has messaged you yet.</p>
+            )}
+            {!loading && !error && conversations.length > 0 && filtered.length === 0 && (
+                <p className="conversation-list__status">No matching conversations.</p>
+            )}
             <ul className="conversation-list__items">
-                {filtered.map(c => (
+                {filtered.map((c) => (
                     <li
                         key={c.id}
                         className={`conversation-list__item ${selected?.id === c.id ? 'conversation-list__item--active' : ''}`}

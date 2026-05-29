@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FiX } from 'react-icons/fi';
 import { listCandidates } from '../../../../../api/interviewsApi';
 import './InterviewScheduleModal.scss';
 
@@ -130,7 +131,9 @@ const InterviewScheduleModal = ({ interview, onClose, onSave }) => {
             <h2>{interview ? 'Edit interview' : 'Schedule interview'}</h2>
             <p>Assign a candidate and generate a secure interview link.</p>
           </div>
-          <button type="button" className="ism-close" onClick={onClose} aria-label="Close">✕</button>
+          <button type="button" className="ism-close" onClick={onClose} aria-label="Close">
+            <FiX aria-hidden="true" />
+          </button>
         </div>
 
         <form className="ism-form" onSubmit={handleSubmit}>

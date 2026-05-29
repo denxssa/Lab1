@@ -1,41 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import './JobsCards.scss';
 import { useNavigate } from 'react-router-dom';
-import { listJobListings, mapJobListing } from '../../../../../api/jobsApi';
 
-const JobsCards = () => {
-  const jobsPerPage = 6;
-  const [page, setPage] = useState(1);
-  const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+const JobsCards = ({
+  jobs,
+  loading,
+  error,
+  page,
+  onPageChange,
+  jobsPerPage,
+}) => {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const load = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const data = await listJobListings();
-        if (!cancelled) {
-          setJobs((data.jobs || []).map(mapJobListing));
-        }
-      } catch {
-        if (!cancelled) setError('Could not load jobs. Please try again later.');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const start = (page - 1) * jobsPerPage;
   const visibleJobs = jobs.slice(start, start + jobsPerPage);
   const totalPages = Math.ceil(jobs.length / jobsPerPage) || 1;
@@ -60,6 +35,19 @@ const JobsCards = () => {
     );
   }
 
+  if (jobs.length === 0) {
+    return (
+      <section className="jobs-cards-section">
+        <div className="jobs-cards-wrapper">
+          <p>
+            No jobs match your filters. Selected types must all appear on a job
+            (a job can have other types too). Try fewer filters or a different search.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="jobs-cards-section">
       <div className="jobs-cards-wrapper">
@@ -74,48 +62,52 @@ const JobsCards = () => {
           >
             {job.featured && <div className="featured-badge">Featured</div>}
 
-            <div className="job-card-top">
+            <div className="job-card-header">
               <div className="job-initials">{job.initials}</div>
-
-              <div className="job-card-content">
-                <div className="job-title-row">
-                  <div className="job-title-text">
-                    <h3>{job.title}</h3>
-                    <p>{job.company}</p>
-                  </div>
-                  <div className="job-type">{job.type}</div>
-                </div>
-
-                <div className="job-details">
-                  <span>{job.location}</span>
-                  <span>{job.salary}</span>
-                  <span>{job.time}</span>
-                </div>
-
-                <div className="job-tags">
-                  {job.tags.map((tag) => (
-                    <div key={tag} className="job-tag">{tag}</div>
-                  ))}
-                </div>
+              <div className="job-title-block">
+                <h3 className="job-title">{job.title}</h3>
+                <p className="job-company">{job.company}</p>
+              </div>
+              <div className="job-types">
+                {(job.types?.length ? job.types : [job.type]).map((type) => (
+                  <span key={type} className="job-type">{type}</span>
+                ))}
               </div>
             </div>
+
+            <div className="job-card-meta">
+              <span className="job-meta-item">{job.location}</span>
+              <span className="job-meta-divider" aria-hidden="true" />
+              <span className="job-meta-item">{job.salary}</span>
+              <span className="job-meta-divider" aria-hidden="true" />
+              <span className="job-meta-item">{job.time}</span>
+            </div>
+
+            {job.tags.length > 0 && (
+              <div className="job-tags">
+                {job.tags.map((tag) => (
+                  <span key={tag} className="job-tag">{tag}</span>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>
 
       {jobs.length > jobsPerPage && (
         <div className="jobs-pagination">
-          <button onClick={() => setPage(page - 1)} disabled={page === 1}>{'<'}</button>
+          <button type="button" onClick={() => onPageChange(page - 1)} disabled={page === 1}>{'<'}</button>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
             <button
               key={pageNum}
+              type="button"
               className={page === pageNum ? 'active-page' : ''}
-              onClick={() => setPage(pageNum)}
+              onClick={() => onPageChange(pageNum)}
             >
               {pageNum}
             </button>
           ))}
-          <button onClick={() => setPage(page + 1)} disabled={page === totalPages}>{'>'}</button>
+          <button type="button" onClick={() => onPageChange(page + 1)} disabled={page === totalPages}>{'>'}</button>
         </div>
       )}
     </section>

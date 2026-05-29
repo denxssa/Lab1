@@ -7,6 +7,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -16,26 +18,22 @@ class AuthController extends Controller
             'full_name' => ['required', 'string', 'max:255'],
             'email'     => ['required', 'email', 'max:255', 'unique:users,email'],
             'password'  => ['required', 'string', 'min:8', 'confirmed'],
-            'role'      => ['nullable', 'string', 'in:candidate,hr'],
+            'role'      => ['prohibited'],
         ]);
-
-        $role = in_array($validated['role'] ?? '', [User::ROLE_CANDIDATE, User::ROLE_HR])
-            ? $validated['role']
-            : User::ROLE_CANDIDATE;
 
         $user = User::query()->create([
             'name'     => $validated['full_name'],
             'email'    => $validated['email'],
             'password' => $validated['password'],
-            'role'     => $role,
+            'role'     => User::ROLE_CANDIDATE,
         ]);
 
         $token = Auth::guard('api')->login($user);
 
-        return response()->json([
+        return $this->authResponse([
             'message' => 'Account created successfully.',
-            'token'   => $token,
-            'user'    => $user,
+            'token' => $token,
+            'user' => $user,
         ], 201);
     }
 
@@ -52,10 +50,44 @@ class AuthController extends Controller
             ]);
         }
 
-        return response()->json([
+        $user = Auth::guard('api')->user();
+
+        if (!$user || !in_array($user->role, [User::ROLE_CANDIDATE, User::ROLE_HR, User::ROLE_ADMIN], true)) {
+            Auth::guard('api')->logout();
+
+            throw ValidationException::withMessages([
+                'email' => ['This account is not allowed to sign in.'],
+            ]);
+        }
+
+        return $this->authResponse([
             'message' => 'Logged in successfully.',
-            'token'   => $token,
-            'user'    => Auth::guard('api')->user(),
+            'token' => $token,
+            'user' => $user,
+        ]);
+    }
+
+    public function refresh(): JsonResponse
+    {
+        try {
+            $newToken = JWTAuth::parseToken()->refresh();
+            $user = JWTAuth::setToken($newToken)->authenticate();
+        } catch (JWTException) {
+            return response()->json([
+                'message' => 'Session expired. Please sign in again.',
+            ], 401);
+        }
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Session expired. Please sign in again.',
+            ], 401);
+        }
+
+        return $this->authResponse([
+            'message' => 'Token refreshed.',
+            'token' => $newToken,
+            'user' => $user,
         ]);
     }
 
@@ -75,13 +107,22 @@ class AuthController extends Controller
         ]);
     }
 
-    public function refresh(): JsonResponse
+    private function tokenTtlSeconds(): int
     {
-        $token = Auth::guard('api')->refresh();
+        $ttlMinutes = (int) config('jwt.ttl', 1);
+
+        return max($ttlMinutes, 1) * 60;
+    }
+
+    private function authResponse(array $payload, int $status = 200): JsonResponse
+    {
+        $expiresIn = $this->tokenTtlSeconds();
 
         return response()->json([
-            'token' => $token,
-            'user'  => Auth::guard('api')->user(),
-        ]);
+            ...$payload,
+            'token_type' => 'bearer',
+            'expires_in' => $expiresIn,
+            'expires_at' => now()->addSeconds($expiresIn)->toIso8601String(),
+        ], $status);
     }
 }

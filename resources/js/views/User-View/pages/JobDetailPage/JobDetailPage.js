@@ -32,7 +32,11 @@ const JobDetailPage = () => {
         setJob(mapped);
         setRelatedJobs(
           allJobs
-            .filter((j) => j.id !== mapped.id && j.type === mapped.type)
+            .filter((j) => {
+              if (j.id === mapped.id) return false;
+              const sharedType = (mapped.types || []).some((type) => (j.types || []).includes(type));
+              return sharedType || j.type === mapped.type;
+            })
             .slice(0, 3),
         );
       } catch {

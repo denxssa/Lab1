@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(InterviewSeeder::class);
         $this->call(JobListingSeeder::class);
+        $this->call(JobApplicationSeeder::class);
         $this->call(CvTemplateSeeder::class);
     }
 }
