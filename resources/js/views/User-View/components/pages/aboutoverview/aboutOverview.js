@@ -31,7 +31,6 @@ const AboutOverview = () => {
                 <div className="about-overview__intro" data-aos="fade-up">
                     {overviewEyebrow && <span className="about-overview__eyebrow">{overviewEyebrow}</span>}
                     <h2>{missionTitle}</h2>
-                    {missionDescription && <p>{missionDescription}</p>}
                 </div>
 
                 <div className="about-overview__grid">

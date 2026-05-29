@@ -59,6 +59,11 @@ class JobListingController extends Controller
         }
 
         $jobs = JobListing::query()
+            ->withCount([
+                'applications',
+                'applications as reviewing_count'   => fn ($q) => $q->where('status', 'reviewing'),
+                'applications as shortlisted_count' => fn ($q) => $q->where('status', 'shortlisted'),
+            ])
             ->orderByDesc('created_at')
             ->get();
 

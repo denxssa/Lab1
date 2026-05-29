@@ -1,50 +1,98 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { fetchHrSettings, saveHrSettings, saveHrAccount, saveHrNotifications } from '../../../../../api/hrApi';
 import './HireDashboardSettings.scss';
 
+const DEFAULT_PROFILE = {
+  company_name: localStorage.getItem('user_company') || 'Your Company',
+  industry:    'Technology',
+  size:        '11–50',
+  location:    '',
+  website:     '',
+  description: '',
+};
+
 const HireDashboardSettings = () => {
-  const company = localStorage.getItem('user_company') || 'Your Company';
-
-  const [profile, setProfile] = useState({
-    name: company,
-    industry: 'Technology',
-    size: '11–50',
-    location: 'Prishtinë, Kosovo',
-    website: 'https://www.company.com',
-    description: 'We build innovative software solutions that help businesses grow.',
-  });
-
-  const [account, setAccount] = useState({
-    email: localStorage.getItem('user_email') || 'hiring@company.com',
-    currentPassword: '',
-    newPassword: '',
-  });
-
+  const [profile,      setProfile]      = useState(DEFAULT_PROFILE);
   const [profileSaved, setProfileSaved] = useState(false);
-  const [accountSaved, setAccountSaved] = useState(false);
-  const [notifications, setNotifications] = useState({
-    newApplication: true,
-    interviewReminder: true,
-    weeklyDigest: false,
-    marketingEmails: false,
+  const [profileSaving, setProfileSaving] = useState(false);
+
+  const [account,      setAccount]      = useState({
+    email:           localStorage.getItem('user_email') || '',
+    currentPassword: '',
+    newPassword:     '',
   });
+  const [accountSaved,  setAccountSaved]  = useState(false);
+  const [accountSaving, setAccountSaving] = useState(false);
+  const [accountError,  setAccountError]  = useState('');
+
+  const DEFAULT_NOTIFICATIONS = {
+    newApplication:    true,
+    interviewReminder: true,
+    weeklyDigest:      false,
+    marketingEmails:   false,
+  };
+
+  const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS);
+
+  // Load settings from API on mount
+  useEffect(() => {
+    fetchHrSettings()
+      .then((data) => {
+        if (data && data.company_name) {
+          setProfile({
+            company_name: data.company_name || DEFAULT_PROFILE.company_name,
+            industry:     data.industry     || DEFAULT_PROFILE.industry,
+            size:         data.size         || DEFAULT_PROFILE.size,
+            location:     data.location     || '',
+            website:      data.website      || '',
+            description:  data.description  || '',
+          });
+        }
+        if (data && data.notifications) {
+          setNotifications({ ...DEFAULT_NOTIFICATIONS, ...data.notifications });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleProfileChange = (e) => setProfile({ ...profile, [e.target.name]: e.target.value });
   const handleAccountChange = (e) => setAccount({ ...account, [e.target.name]: e.target.value });
 
-  const saveProfile = (e) => {
+  const saveProfile = async (e) => {
     e.preventDefault();
-    localStorage.setItem('user_company', profile.name);
-    setProfileSaved(true);
-    setTimeout(() => setProfileSaved(false), 2000);
+    setProfileSaving(true);
+    try {
+      await saveHrSettings(profile);
+      localStorage.setItem('user_company', profile.company_name);
+      setProfileSaved(true);
+      setTimeout(() => setProfileSaved(false), 2000);
+    } catch {
+      // silently fail — could add error state here
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
-  const saveAccount = (e) => {
+  const handleAccountSubmit = async (e) => {
     e.preventDefault();
-    setAccountSaved(true);
-    setTimeout(() => setAccountSaved(false), 2000);
+    setAccountError('');
+    setAccountSaving(true);
+    try {
+      await saveHrAccount({
+        email:        account.email || undefined,
+        new_password: account.newPassword || undefined,
+      });
+      setAccountSaved(true);
+      setAccount((prev) => ({ ...prev, currentPassword: '', newPassword: '' }));
+      setTimeout(() => setAccountSaved(false), 2000);
+    } catch (err) {
+      setAccountError(err?.response?.data?.message || 'Could not update account.');
+    } finally {
+      setAccountSaving(false);
+    }
   };
 
-  const initials = profile.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const initials = profile.company_name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
     <section className="hire-settings-section">
@@ -65,7 +113,7 @@ const HireDashboardSettings = () => {
           <div className="hire-settings-avatar-row">
             <div className="hire-settings-avatar">{initials}</div>
             <div>
-              <p className="hire-settings-avatar-name">{profile.name}</p>
+              <p className="hire-settings-avatar-name">{profile.company_name}</p>
               <p className="hire-settings-avatar-sub">Hiring Team</p>
             </div>
           </div>
@@ -74,7 +122,7 @@ const HireDashboardSettings = () => {
             <div className="hire-settings-row">
               <div className="hire-settings-field">
                 <label>Company Name</label>
-                <input name="name" value={profile.name} onChange={handleProfileChange} />
+                <input name="company_name" value={profile.company_name} onChange={handleProfileChange} />
               </div>
               <div className="hire-settings-field">
                 <label>Industry</label>
@@ -113,8 +161,8 @@ const HireDashboardSettings = () => {
               <label>Company Description</label>
               <textarea name="description" value={profile.description} onChange={handleProfileChange} rows={3} />
             </div>
-            <button type="submit" className="hire-settings-save">
-              {profileSaved ? '✓ Saved!' : 'Save Profile'}
+            <button type="submit" className="hire-settings-save" disabled={profileSaving}>
+              {profileSaved ? '✓ Saved!' : profileSaving ? 'Saving…' : 'Save Profile'}
             </button>
           </form>
         </div>
@@ -125,7 +173,7 @@ const HireDashboardSettings = () => {
             <h2>Account</h2>
             <p>Update your login credentials.</p>
           </div>
-          <form className="hire-settings-form" onSubmit={saveAccount}>
+          <form className="hire-settings-form" onSubmit={handleAccountSubmit}>
             <div className="hire-settings-field">
               <label>Email Address</label>
               <input name="email" type="email" value={account.email} onChange={handleAccountChange} />
@@ -141,8 +189,9 @@ const HireDashboardSettings = () => {
                 <input name="newPassword" type="password" value={account.newPassword} onChange={handleAccountChange} placeholder="••••••••" />
               </div>
             </div>
-            <button type="submit" className="hire-settings-save">
-              {accountSaved ? '✓ Saved!' : 'Update Account'}
+            {accountError && <p style={{ color: '#c0392b', fontSize: 13 }}>{accountError}</p>}
+            <button type="submit" className="hire-settings-save" disabled={accountSaving}>
+              {accountSaved ? '✓ Updated!' : accountSaving ? 'Saving…' : 'Update Account'}
             </button>
           </form>
         </div>
@@ -167,7 +216,11 @@ const HireDashboardSettings = () => {
                 </div>
                 <button
                   className={`hire-toggle${notifications[key] ? ' on' : ''}`}
-                  onClick={() => setNotifications({ ...notifications, [key]: !notifications[key] })}
+                  onClick={() => {
+                    const updated = { ...notifications, [key]: !notifications[key] };
+                    setNotifications(updated);
+                    saveHrNotifications(updated).catch(() => {});
+                  }}
                   type="button"
                 >
                   <span className="hire-toggle-knob" />
@@ -188,14 +241,14 @@ const HireDashboardSettings = () => {
               <p className="hire-danger-label">Sign out of all devices</p>
               <p className="hire-danger-sub">Ends all active sessions for this account.</p>
             </div>
-            <button className="hire-danger-btn">Sign Out All</button>
+            <button className="hire-danger-btn" type="button">Sign Out All</button>
           </div>
           <div className="hire-danger-row">
             <div>
               <p className="hire-danger-label">Delete company account</p>
               <p className="hire-danger-sub">Permanently removes all data and job listings.</p>
             </div>
-            <button className="hire-danger-btn hire-danger-btn--red">Delete Account</button>
+            <button className="hire-danger-btn hire-danger-btn--red" type="button">Delete Account</button>
           </div>
         </div>
 

@@ -33,9 +33,18 @@ const FALLBACK_PLANS = [
 ];
 
 const PricingPlans = () => {
-  const { plans: apiPlans } = usePricingContent();
+  const { plans: apiPlans, loading } = usePricingContent();
 
-  // Use API plans if loaded and non-empty, else fallback
+  if (loading) return (
+    <section className="pricing-plans">
+      <div className="pricing-container pricing-plans__grid">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="pricing-card" style={{ minHeight: 320, background: '#f7f5f2', border: '1px solid #ede8e1' }} />
+        ))}
+      </div>
+    </section>
+  );
+
   const plans = (apiPlans && apiPlans.length > 0) ? apiPlans : FALLBACK_PLANS;
 
   return (
