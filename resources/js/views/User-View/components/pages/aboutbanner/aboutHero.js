@@ -9,10 +9,15 @@ const AboutHero = () => {
     const heroDesc      = content.heroDescription || 'From the first announcement to the final shortlist, every step stays visible, structured, and easy for teams to manage together.';
     const primaryCta    = content.primaryCta    || 'Read About BeeHired';
     const heroEyebrow   = content.heroEyebrow   || null;
+    const heroBgImage   = content.heroBgImage   || null;
+
+    const wrapStyle = heroBgImage
+        ? { backgroundImage: `url("${heroBgImage}")`, backgroundPosition: 'center -250px', backgroundSize: 'cover', backgroundRepeat: 'no-repeat' }
+        : {};
 
     return (
         <section className="about-hero" data-aos="fade-up">
-            <div className="about-hero__wrap">
+            <div className="about-hero__wrap" style={wrapStyle}>
                 <div className="about-hero__copy">
                     {heroEyebrow && <span className="about-hero__eyebrow" data-aos="fade-up">{heroEyebrow}</span>}
                     <h1 data-aos="fade-up">{heroTitle}</h1>

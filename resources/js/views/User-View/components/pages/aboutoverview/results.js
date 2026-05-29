@@ -1,70 +1,62 @@
-import React, {useState} from 'react'
-import { FormattedMessage } from "react-intl";
+import React, { useEffect, useState } from 'react'
 import useAboutContent from '../../../../../hooks/useAboutContent';
 import './results.scss'
 import CountUp from "react-countup";
 import VisibilitySensor from "react-visibility-sensor";
 
-const Data = [
-    {
-        number:'2500',
-        text:<FormattedMessage id='applications-processed' defaultMessage='Applications Processed' />,
-    },
-    {
-        number:'340',
-        text:<FormattedMessage id='positions-published' defaultMessage='Positions Published' />,
-    },
-    {
-        number:'120',
-        text:<FormattedMessage id='companies' defaultMessage='Companies' />,
-    },
-    {
-        number:'345',
-        text:<FormattedMessage id='emplyed-students' defaultMessage='Employed Students' />,
-    }
-]
+const DEFAULT_STATS = [
+    { title: '2500', subtitle: 'Applications Processed' },
+    { title: '340',  subtitle: 'Positions Published' },
+    { title: '120',  subtitle: 'Companies' },
+    { title: '345',  subtitle: 'Employed Students' },
+];
 
 const Results = () => {
-
     const [viewPortEntered, setViewPortEntered] = useState(false);
+    const [stats, setStats] = useState(DEFAULT_STATS);
+    const [sectionTitle, setSectionTitle] = useState(null);
     const content = useAboutContent();
-    const statsTitle = content.statsTitle || null;
+
+    useEffect(() => {
+        fetch('/api/home-page-content')
+            .then(r => r.json())
+            .then(payload => {
+                const section = (payload?.homeSections || []).find(s => s.key === 'about_stats');
+                if (section) {
+                    if (section.title) setSectionTitle(section.title);
+                    if (section.items?.length) setStats(section.items);
+                }
+            })
+            .catch(() => {});
+    }, []);
+
+    const statsTitle = sectionTitle || content.statsTitle || 'Our Work';
 
     return (
         <div className='shared-results-numbers'>
-            <h1 data-aos="fade-up" data-aos-anchor-placement="top-bottom">
-                {statsTitle || <FormattedMessage id='shared-results-title' defaultMessage='Our Work' />}
-            </h1>
+            <h1 data-aos="fade-up" data-aos-anchor-placement="top-bottom">{statsTitle}</h1>
             <div className="numbers">
-                {Data.map((props) => {
-                    return(
-                        <div className="number">
-                            <div className="nr-container">
-                                <div className="circle"></div>
-                                <div className="nr">
-                                    <CountUp end={props.number} duration={1.75} useEasing={true} start={viewPortEntered ? null : 10}>
-                                        {({ countUpRef }) => {
-                                            return (
-                                                <VisibilitySensor
-                                                    active={!viewPortEntered}
-                                                    onChange={isVisible => {
-                                                        if (isVisible) {
-                                                            setViewPortEntered(true);
-                                                        }
-                                                    }}
-                                                    delayedCall
-                                                    >
-                                                        <span ref={countUpRef}></span>
-                                                        </VisibilitySensor>
-                                                );
-                                            }}
-                                        </CountUp>+
-                                </div>
+                {stats.map((stat, i) => (
+                    <div className="number" key={i}>
+                        <div className="nr-container">
+                            <div className="circle"></div>
+                            <div className="nr">
+                                <CountUp end={parseInt(stat.title) || 0} duration={1.75} useEasing={true} start={viewPortEntered ? null : 10}>
+                                    {({ countUpRef }) => (
+                                        <VisibilitySensor
+                                            active={!viewPortEntered}
+                                            onChange={isVisible => { if (isVisible) setViewPortEntered(true); }}
+                                            delayedCall
+                                        >
+                                            <span ref={countUpRef}></span>
+                                        </VisibilitySensor>
+                                    )}
+                                </CountUp>+
                             </div>
-                            <p>{props.text}</p>
                         </div>
-                    )
-                })}
+                        <p>{stat.subtitle}</p>
+                    </div>
+                ))}
             </div>
         </div>
     )
