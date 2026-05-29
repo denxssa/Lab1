@@ -2,16 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RefreshToken;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
+    private function issueRefreshToken(int $userId): string
+    {
+        RefreshToken::where('user_id', $userId)->delete();
+
+        $raw = Str::random(64);
+
+        RefreshToken::create([
+            'user_id'    => $userId,
+            'token'      => hash('sha256', $raw),
+            'expires_at' => now()->addMinutes((int) config('jwt.refresh_ttl', 43200)),
+        ]);
+
+        return $raw;
+    }
+
     public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -28,12 +45,14 @@ class AuthController extends Controller
             'role'     => User::ROLE_CANDIDATE,
         ]);
 
-        $token = Auth::guard('api')->login($user);
+        $token        = Auth::guard('api')->login($user);
+        $refreshToken = $this->issueRefreshToken($user->id);
 
         return $this->authResponse([
-            'message' => 'Account created successfully.',
-            'token' => $token,
-            'user' => $user,
+            'message'       => 'Account created successfully.',
+            'token'         => $token,
+            'refresh_token' => $refreshToken,
+            'user'          => $user,
         ], 201);
     }
 
@@ -60,39 +79,50 @@ class AuthController extends Controller
             ]);
         }
 
+        $refreshToken = $this->issueRefreshToken($user->id);
+
         return $this->authResponse([
-            'message' => 'Logged in successfully.',
-            'token' => $token,
-            'user' => $user,
+            'message'       => 'Logged in successfully.',
+            'token'         => $token,
+            'refresh_token' => $refreshToken,
+            'user'          => $user,
         ]);
     }
 
-    public function refresh(): JsonResponse
+    public function refresh(Request $request): JsonResponse
     {
-        try {
-            $newToken = JWTAuth::parseToken()->refresh();
-            $user = JWTAuth::setToken($newToken)->authenticate();
-        } catch (JWTException) {
-            return response()->json([
-                'message' => 'Session expired. Please sign in again.',
-            ], 401);
+        $raw = $request->input('refresh_token');
+
+        if (!$raw) {
+            return response()->json(['message' => 'Refresh token required.'], 401);
         }
 
-        if (!$user) {
-            return response()->json([
-                'message' => 'Session expired. Please sign in again.',
-            ], 401);
+        $record = RefreshToken::where('token', hash('sha256', $raw))->first();
+
+        if (!$record || $record->isExpired()) {
+            return response()->json(['message' => 'Session expired. Please sign in again.'], 401);
         }
+
+        $user         = $record->user;
+        $newToken     = Auth::guard('api')->login($user);
+        $refreshToken = $this->issueRefreshToken($user->id);
 
         return $this->authResponse([
-            'message' => 'Token refreshed.',
-            'token' => $newToken,
-            'user' => $user,
+            'message'       => 'Token refreshed.',
+            'token'         => $newToken,
+            'refresh_token' => $refreshToken,
+            'user'          => $user,
         ]);
     }
 
     public function logout(): JsonResponse
     {
+        $user = Auth::guard('api')->user();
+
+        if ($user) {
+            RefreshToken::where('user_id', $user->id)->delete();
+        }
+
         Auth::guard('api')->logout();
 
         return response()->json([
