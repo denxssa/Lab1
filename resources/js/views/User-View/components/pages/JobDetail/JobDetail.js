@@ -1,7 +1,80 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './JobDetail.scss';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../../../context/AuthContext';
+import { applyToJob, getSavedJobIds, saveJob, unsaveJob } from '../../../../../api/jobsApi';
 
 const JobDetail = ({ job, onBack, relatedJobs, onSelectJob }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // 'idle' | 'loading' | 'applied' | 'already' | 'error'
+  const [applyState, setApplyState] = useState('idle');
+  const [saved, setSaved] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+
+  // Check if the user has already applied / saved this job
+  useEffect(() => {
+    if (!user || !job?.id) return;
+
+    // Check saved status
+    getSavedJobIds()
+      .then((ids) => setSaved(ids.includes(job.id)))
+      .catch(() => {});
+  }, [user, job?.id]);
+
+  const handleApply = async () => {
+    if (!user) { navigate('/login'); return; }
+    if (applyState === 'applied' || applyState === 'already' || applyState === 'loading') return;
+
+    setApplyState('loading');
+    try {
+      await applyToJob(job.id);
+      setApplyState('applied');
+    } catch (err) {
+      const status = err?.response?.status;
+      if (status === 422 || status === 409) {
+        setApplyState('already');
+      } else {
+        setApplyState('error');
+        setTimeout(() => setApplyState('idle'), 3000);
+      }
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user) { navigate('/login'); return; }
+    if (saveLoading) return;
+
+    setSaveLoading(true);
+    try {
+      if (saved) {
+        await unsaveJob(job.id);
+        setSaved(false);
+      } else {
+        await saveJob(job.id);
+        setSaved(true);
+      }
+    } catch {
+      // silently ignore
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  const applyLabel = () => {
+    if (applyState === 'loading')  return 'Applying…';
+    if (applyState === 'applied')  return '✓ Applied';
+    if (applyState === 'already')  return '✓ Already Applied';
+    if (applyState === 'error')    return 'Failed – Try Again';
+    return '↗ Apply Now';
+  };
+
+  const saveLabel = () => {
+    if (saveLoading) return saved ? 'Unsaving…' : 'Saving…';
+    return saved ? '✓ Saved' : 'Save Job';
+  };
+
   return (
     <div className="job-detail-page">
 
@@ -58,8 +131,20 @@ const JobDetail = ({ job, onBack, relatedJobs, onSelectJob }) => {
       </ul>
 
       <div className="job-detail-actions" data-aos="fade-up">
-        <button className="apply-btn">↗ Apply Now</button>
-        <button className="save-btn">Save Job</button>
+        <button
+          className={`apply-btn${applyState === 'applied' || applyState === 'already' ? ' is-applied' : applyState === 'error' ? ' is-error' : ''}`}
+          onClick={handleApply}
+          disabled={applyState === 'loading' || applyState === 'applied' || applyState === 'already'}
+        >
+          {applyLabel()}
+        </button>
+        <button
+          className={`save-btn${saved ? ' saved' : ''}`}
+          onClick={handleSave}
+          disabled={saveLoading}
+        >
+          {saveLabel()}
+        </button>
       </div>
 
       <div className="job-detail-related" data-aos="fade-up">
