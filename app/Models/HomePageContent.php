@@ -39,5 +39,11 @@ class HomePageContent extends Model
         'pricing_hero_title',
         'pricing_hero_description',
         'pricing_primary_cta',
+        'contact_page_hero_eyebrow',
+        'contact_page_hero_title',
+        'contact_page_hero_description',
+        'contact_page_form_title',
+        'contact_page_form_description',
+        'contact_page_primary_cta',
     ];
 }

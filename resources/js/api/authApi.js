@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const TOKEN_KEY = 'auth_token';
 const TOKEN_EXPIRES_AT_KEY = 'auth_token_expires_at';
+const REFRESH_TOKEN_KEY = 'auth_refresh_token';
 const REFRESH_BUFFER_MS = 5000;
 
 let refreshTimer = null;
@@ -87,6 +88,11 @@ function setToken(data) {
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(resolveExpiry(data)));
     axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+
+    if (data.refresh_token) {
+        localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+    }
+
     scheduleTokenRefresh(data);
 }
 
@@ -94,6 +100,7 @@ function removeToken() {
     clearRefreshTimer();
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(TOKEN_EXPIRES_AT_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
     delete axios.defaults.headers.common.Authorization;
 
     if (typeof window !== 'undefined') {
@@ -110,19 +117,17 @@ function shouldAttemptRefresh(config) {
 }
 
 export function refreshToken() {
-    const token = getRawToken();
+    const raw = localStorage.getItem(REFRESH_TOKEN_KEY);
 
-    if (!token) {
-        return Promise.reject(new Error('No token'));
+    if (!raw) {
+        return Promise.reject(new Error('No refresh token'));
     }
 
     if (refreshPromise) {
         return refreshPromise;
     }
 
-    refreshPromise = axios.post('/auth/refresh', {}, {
-        headers: { Authorization: `Bearer ${token}` },
-    }).then((res) => {
+    refreshPromise = axios.post('/auth/refresh', { refresh_token: raw }).then((res) => {
         setToken(res.data);
         return res.data;
     }).finally(() => {
@@ -218,13 +223,14 @@ export function logout() {
 }
 
 export async function bootstrapAuth() {
-    const rawToken = getRawToken();
+    const rawToken     = getRawToken();
+    const rawRefresh   = localStorage.getItem(REFRESH_TOKEN_KEY);
 
-    if (!rawToken) {
+    if (!rawToken && !rawRefresh) {
         return null;
     }
 
-    if (isTokenExpired()) {
+    if (!rawToken || isTokenExpired()) {
         try {
             await refreshToken();
         } catch {

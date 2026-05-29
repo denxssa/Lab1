@@ -46,6 +46,12 @@ class HomePageContentController extends Controller
         'pricing_hero_title' => 'Scale your team, not your costs.',
         'pricing_hero_description' => 'Launch lean, scale as you grow, and keep every hiring decision visible from first application to final offer.',
         'pricing_primary_cta' => 'Get Started',
+        'contact_page_hero_eyebrow' => 'Contact',
+        'contact_page_hero_title' => 'Talk to the Bee Hired team',
+        'contact_page_hero_description' => 'Send us a message and we will help with accounts, HR profiles, or platform questions.',
+        'contact_page_form_title' => 'Send a message',
+        'contact_page_form_description' => 'Tell us what you need and the team will respond as soon as possible.',
+        'contact_page_primary_cta' => 'Send message',
     ];
 
     private const DEFAULT_SECTIONS = [
@@ -224,7 +230,7 @@ class HomePageContentController extends Controller
     public function update(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            '_pageKey' => ['nullable', 'string', 'in:home,companies'],
+            '_pageKey' => ['nullable', 'string', 'in:home,companies,contact'],
             'proofText' => ['nullable', 'string', 'max:255'],
             'heroTitle' => ['nullable', 'string', 'max:255'],
             'heroSubtitle' => ['nullable', 'string'],
@@ -250,10 +256,29 @@ class HomePageContentController extends Controller
             'statsTitle' => ['nullable', 'string', 'max:255'],
             'plansTitle' => ['nullable', 'string', 'max:255'],
             'faqTitle' => ['nullable', 'string', 'max:255'],
+            'formTitle' => ['nullable', 'string', 'max:255'],
+            'formDescription' => ['nullable', 'string'],
         ]);
 
         $content = $this->ensureDefaultContent();
         $pageKey = $validated['_pageKey'] ?? 'home';
+
+        if ($pageKey === 'contact') {
+            $content->fill([
+                'contact_page_hero_eyebrow'   => $validated['heroEyebrow']     ?? $content->contact_page_hero_eyebrow,
+                'contact_page_hero_title'     => $validated['heroTitle']        ?? $content->contact_page_hero_title,
+                'contact_page_hero_description' => $validated['heroDescription'] ?? $content->contact_page_hero_description,
+                'contact_page_form_title'     => $validated['formTitle']        ?? $content->contact_page_form_title,
+                'contact_page_form_description' => $validated['formDescription'] ?? $content->contact_page_form_description,
+                'contact_page_primary_cta'    => $validated['primaryCta']       ?? $content->contact_page_primary_cta,
+            ]);
+            $content->save();
+
+            return response()->json([
+                'message'     => 'Contact page content updated successfully.',
+                'pageContent' => $this->toPageContentShape($content),
+            ]);
+        }
 
         if ($pageKey === 'pricing') {
             $content->fill([
@@ -485,6 +510,14 @@ class HomePageContentController extends Controller
                 'missionDescription' => $content->about_mission_description,
                 'statsTitle'         => $content->about_stats_title,
                 'primaryCta'         => $content->about_primary_cta,
+            ],
+            'contact' => [
+                'heroEyebrow'     => $content->contact_page_hero_eyebrow,
+                'heroTitle'       => $content->contact_page_hero_title,
+                'heroDescription' => $content->contact_page_hero_description,
+                'formTitle'       => $content->contact_page_form_title,
+                'formDescription' => $content->contact_page_form_description,
+                'primaryCta'      => $content->contact_page_primary_cta,
             ],
         ];
     }
