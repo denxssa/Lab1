@@ -12,9 +12,8 @@
 /resources/js/views/User-View/components/shared/Login/
 /resources/js/views/User-View/components/shared/Signup/
 
-
-/storage
+# Logs and compiled assets (do not commit)
+/storage/logs/
 /public/js/app.js
 /public/mix-manifest.json
-/storage/logs
 /tests

@@ -81,6 +81,22 @@ export function getJobListing(id) {
     return axios.get(`/api/job-listings/${id}`).then((response) => response.data);
 }
 
+export function applyToJob(jobListingId) {
+    return axios.post(`/api/job-listings/${jobListingId}/apply`).then((response) => response.data);
+}
+
+export function getSavedJobIds() {
+    return axios.get('/api/saved-jobs').then((response) => response.data.saved_job_ids || []);
+}
+
+export function saveJob(jobListingId) {
+    return axios.post('/api/saved-jobs', { job_listing_id: jobListingId }).then((response) => response.data);
+}
+
+export function unsaveJob(jobListingId) {
+    return axios.delete(`/api/saved-jobs/${jobListingId}`).then((response) => response.data);
+}
+
 export function listJobListingsForHr() {
     return axios.get('/api/job-listings/manage').then((response) => response.data);
 }

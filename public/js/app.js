@@ -5222,6 +5222,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
 
 var TOKEN_KEY = 'auth_token';
 var TOKEN_EXPIRES_AT_KEY = 'auth_token_expires_at';
+var REFRESH_TOKEN_KEY = 'auth_refresh_token';
 var REFRESH_BUFFER_MS = 5000;
 var refreshTimer = null;
 var refreshPromise = null;
@@ -5294,12 +5295,16 @@ function setToken(data) {
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(TOKEN_EXPIRES_AT_KEY, String(resolveExpiry(data)));
   axios__WEBPACK_IMPORTED_MODULE_0__["default"].defaults.headers.common.Authorization = "Bearer ".concat(token);
+  if (data.refresh_token) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+  }
   scheduleTokenRefresh(data);
 }
 function removeToken() {
   clearRefreshTimer();
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(TOKEN_EXPIRES_AT_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
   delete axios__WEBPACK_IMPORTED_MODULE_0__["default"].defaults.headers.common.Authorization;
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('auth:token-cleared'));
@@ -5310,17 +5315,15 @@ function shouldAttemptRefresh(config) {
   return !url.includes('/auth/login') && !url.includes('/auth/register') && !url.includes('/auth/refresh');
 }
 function refreshToken() {
-  var token = getRawToken();
-  if (!token) {
-    return Promise.reject(new Error('No token'));
+  var raw = localStorage.getItem(REFRESH_TOKEN_KEY);
+  if (!raw) {
+    return Promise.reject(new Error('No refresh token'));
   }
   if (refreshPromise) {
     return refreshPromise;
   }
-  refreshPromise = axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/auth/refresh', {}, {
-    headers: {
-      Authorization: "Bearer ".concat(token)
-    }
+  refreshPromise = axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/auth/refresh', {
+    refresh_token: raw
   }).then(function (res) {
     setToken(res.data);
     return res.data;
@@ -5435,18 +5438,19 @@ function bootstrapAuth() {
 }
 function _bootstrapAuth() {
   _bootstrapAuth = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
-    var rawToken, _t2;
+    var rawToken, rawRefresh, _t2;
     return _regenerator().w(function (_context2) {
       while (1) switch (_context2.p = _context2.n) {
         case 0:
           rawToken = getRawToken();
-          if (rawToken) {
+          rawRefresh = localStorage.getItem(REFRESH_TOKEN_KEY);
+          if (!(!rawToken && !rawRefresh)) {
             _context2.n = 1;
             break;
           }
           return _context2.a(2, null);
         case 1:
-          if (!isTokenExpired()) {
+          if (!(!rawToken || isTokenExpired())) {
             _context2.n = 5;
             break;
           }
@@ -5838,6 +5842,28 @@ function getJobListing(id) {
     return response.data;
   });
 }
+function applyToJob(jobListingId) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post("/api/job-listings/".concat(jobListingId, "/apply")).then(function (response) {
+    return response.data;
+  });
+}
+function getSavedJobIds() {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/saved-jobs').then(function (response) {
+    return response.data.saved_job_ids || [];
+  });
+}
+function saveJob(jobListingId) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/api/saved-jobs', {
+    job_listing_id: jobListingId
+  }).then(function (response) {
+    return response.data;
+  });
+}
+function unsaveJob(jobListingId) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"]["delete"]("/api/saved-jobs/".concat(jobListingId)).then(function (response) {
+    return response.data;
+  });
+}
 function listJobListingsForHr() {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/job-listings/manage').then(function (response) {
     return response.data;
@@ -5863,28 +5889,6 @@ function updateJobListing(id, payload) {
 function deleteJobListing(id) {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"]["delete"]("/api/job-listings/".concat(id)).then(function (response) {
     return response.data;
-  });
-}
-function applyToJob(jobListingId) {
-  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post("/api/job-listings/".concat(jobListingId, "/apply")).then(function (r) {
-    return r.data;
-  });
-}
-function getSavedJobIds() {
-  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/saved-jobs').then(function (r) {
-    return r.data.saved_job_ids || [];
-  });
-}
-function saveJob(jobListingId) {
-  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/api/saved-jobs', {
-    job_listing_id: jobListingId
-  }).then(function (r) {
-    return r.data;
-  });
-}
-function unsaveJob(jobListingId) {
-  return axios__WEBPACK_IMPORTED_MODULE_0__["default"]["delete"]("/api/saved-jobs/".concat(jobListingId)).then(function (r) {
-    return r.data;
   });
 }
 function mapJobListing(job) {
@@ -5917,16 +5921,15 @@ function mapJobListing(job) {
   };
 }
 function mapJobListingForHr(job) {
-  var _job$applications_cou, _job$reviewing_count, _job$shortlisted_coun;
   var base = mapJobListing(job);
   var posted = job.created_at ? new Date(job.created_at) : new Date();
   var postedDays = Math.floor((Date.now() - posted.getTime()) / (1000 * 60 * 60 * 24));
   var status = job.status || (job.is_active ? 'active' : 'closed');
   return _objectSpread(_objectSpread({}, base), {}, {
     status: status,
-    applications: (_job$applications_cou = job.applications_count) !== null && _job$applications_cou !== void 0 ? _job$applications_cou : 0,
-    reviewing: (_job$reviewing_count = job.reviewing_count) !== null && _job$reviewing_count !== void 0 ? _job$reviewing_count : 0,
-    shortlisted: (_job$shortlisted_coun = job.shortlisted_count) !== null && _job$shortlisted_coun !== void 0 ? _job$shortlisted_coun : 0,
+    applications: 0,
+    reviewing: 0,
+    shortlisted: 0,
     daysLeft: status === 'active' ? 30 : 0,
     postedDays: postedDays,
     featured: false
@@ -6998,7 +7001,7 @@ var PlatformAdminProvider = function PlatformAdminProvider(_ref) {
               homeContent: pageKey === 'home' ? nextPageContent.home : data.homeContent
             });
             persist(optimisticState);
-            if (!(pageKey === 'about' || pageKey === 'pricing' || pageKey === 'companies')) {
+            if (!(pageKey === 'about' || pageKey === 'pricing' || pageKey === 'companies' || pageKey === 'contact')) {
               _context9.n = 7;
               break;
             }
@@ -7520,43 +7523,28 @@ var usePricingContent = function usePricingContent() {
     _useState4 = _slicedToArray(_useState3, 2),
     plans = _useState4[0],
     setPlans = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(!cache.hero || !cache.plans),
-    _useState6 = _slicedToArray(_useState5, 2),
-    loading = _useState6[0],
-    setLoading = _useState6[1];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    var promises = [];
     if (!cache.hero) {
-      promises.push(fetch('/api/home-page-content').then(function (r) {
+      fetch('/api/home-page-content').then(function (r) {
         return r.json();
       }).then(function (payload) {
         var _payload$pageContent;
         cache.hero = (payload === null || payload === void 0 || (_payload$pageContent = payload.pageContent) === null || _payload$pageContent === void 0 ? void 0 : _payload$pageContent.pricing) || {};
         setHero(cache.hero);
-      })["catch"](function () {
-        cache.hero = {};
-      }));
+      })["catch"](function () {});
     }
     if (!cache.plans) {
-      promises.push(fetch('/api/pricing-plans').then(function (r) {
+      fetch('/api/pricing-plans').then(function (r) {
         return r.json();
       }).then(function (data) {
         cache.plans = data;
         setPlans(data);
-      })["catch"](function () {
-        cache.plans = [];
-      }));
-    }
-    if (promises.length > 0) {
-      Promise.all(promises).then(function () {
-        return setLoading(false);
-      });
+      })["catch"](function () {});
     }
   }, []);
   return {
     hero: hero || {},
-    plans: plans || [],
-    loading: loading
+    plans: plans || null
   };
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (usePricingContent);
@@ -15182,94 +15170,128 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_icons_fa__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fa */ "./node_modules/react-icons/fa/index.mjs");
-/* harmony import */ var _api_hrApi__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../api/hrApi */ "./resources/js/api/hrApi.js");
-/* harmony import */ var _HireDashboardAnalytics_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./HireDashboardAnalytics.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardAnalytics/HireDashboardAnalytics.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
-function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+/* harmony import */ var _HireDashboardAnalytics_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./HireDashboardAnalytics.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardAnalytics/HireDashboardAnalytics.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 
 
 
 
-
-var ICON_MAP = {
-  FaUsers: react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaUsers,
-  FaPercent: react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaPercent,
-  FaClock: react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaClock,
-  FaBriefcase: react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaBriefcase
-};
-var FALLBACK_STATS = [{
+var stats = [{
   label: 'Total Applications',
-  value: '—',
-  icon: 'FaUsers'
+  value: '48',
+  change: '+12%',
+  up: true,
+  icon: react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaUsers
 }, {
   label: 'Conversion Rate',
-  value: '—',
-  icon: 'FaPercent'
+  value: '6.3%',
+  change: '+2.1%',
+  up: true,
+  icon: react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaPercent
 }, {
   label: 'Avg. Time to Hire',
-  value: '—',
-  icon: 'FaClock'
+  value: '18d',
+  change: '-3d',
+  up: true,
+  icon: react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaClock
 }, {
   label: 'Active Jobs',
-  value: '—',
-  icon: 'FaBriefcase'
+  value: '16',
+  change: '+4',
+  up: true,
+  icon: react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaBriefcase
 }];
+var byJob = [{
+  title: 'Senior Frontend Dev',
+  apps: 12
+}, {
+  title: 'UX/UI Designer',
+  apps: 9
+}, {
+  title: 'Backend Engineer',
+  apps: 8
+}, {
+  title: 'Data Scientist',
+  apps: 7
+}, {
+  title: 'DevOps Engineer',
+  apps: 5
+}, {
+  title: 'Marketing Manager',
+  apps: 4
+}, {
+  title: 'Financial Analyst',
+  apps: 3
+}];
+var funnel = [{
+  label: 'Applied',
+  value: 48
+}, {
+  label: 'Shortlisted',
+  value: 18
+}, {
+  label: 'Interviewed',
+  value: 12
+}, {
+  label: 'Hired',
+  value: 3
+}];
+var monthly = [{
+  month: 'Dec',
+  apps: 4
+}, {
+  month: 'Jan',
+  apps: 7
+}, {
+  month: 'Feb',
+  apps: 9
+}, {
+  month: 'Mar',
+  apps: 13
+}, {
+  month: 'Apr',
+  apps: 18
+}, {
+  month: 'May',
+  apps: 11
+}];
+var maxApps = Math.max.apply(Math, _toConsumableArray(byJob.map(function (j) {
+  return j.apps;
+})));
+var maxMonthly = Math.max.apply(Math, _toConsumableArray(monthly.map(function (m) {
+  return m.apps;
+})));
 var HireDashboardAnalytics = function HireDashboardAnalytics() {
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('6mo'),
     _useState2 = _slicedToArray(_useState, 2),
     range = _useState2[0],
     setRange = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
-    _useState4 = _slicedToArray(_useState3, 2),
-    data = _useState4[0],
-    setData = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
-    _useState6 = _slicedToArray(_useState5, 2),
-    loading = _useState6[0],
-    setLoading = _useState6[1];
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    setLoading(true);
-    (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_2__.fetchHrAnalytics)().then(setData)["catch"](function () {
-      return setData(null);
-    })["finally"](function () {
-      return setLoading(false);
-    });
-  }, [range]);
-  var stats = (data === null || data === void 0 ? void 0 : data.stats) || FALLBACK_STATS;
-  var byJob = (data === null || data === void 0 ? void 0 : data.byJob) || [];
-  var funnel = (data === null || data === void 0 ? void 0 : data.funnel) || [];
-  var monthly = (data === null || data === void 0 ? void 0 : data.monthly) || [];
-  var maxApps = byJob.length ? Math.max.apply(Math, _toConsumableArray(byJob.map(function (j) {
-    return j.apps;
-  }))) : 1;
-  var maxMonthly = monthly.length ? Math.max.apply(Math, _toConsumableArray(monthly.map(function (m) {
-    return m.apps;
-  })).concat([1])) : 1;
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("section", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
     className: "hire-analytics-section",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
       className: "hire-analytics-wrapper",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
         className: "hire-analytics-header",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h1", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h1", {
             children: "Analytics"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
             children: "Track your hiring performance and trends."
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
           className: "hire-analytics-range",
           children: ['30d', '3mo', '6mo', '1yr'].map(function (r) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
               className: "hire-range-btn".concat(range === r ? ' active' : ''),
               onClick: function onClick() {
                 return setRange(r);
@@ -15278,94 +15300,87 @@ var HireDashboardAnalytics = function HireDashboardAnalytics() {
             }, r);
           })
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
         className: "hire-analytics-stats",
         children: stats.map(function (s) {
-          var Icon = ICON_MAP[s.icon] || react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaUsers;
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
             className: "hire-analytics-stat",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
               className: "hire-analytics-stat-top",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
                 className: "hire-analytics-stat-label",
                 children: s.label
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
                 className: "hire-analytics-stat-icon",
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(Icon, {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(s.icon, {
                   "aria-hidden": "true"
                 })
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
               className: "hire-analytics-stat-value",
-              children: loading ? '…' : s.value
+              children: s.value
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+              className: "hire-analytics-stat-change ".concat(s.up ? 'up' : 'down'),
+              children: [s.up ? '↑' : '↓', " ", s.change, " vs last month"]
             })]
           }, s.label);
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
         className: "hire-analytics-row",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
           className: "hire-analytics-card",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
             children: "Applications by Job"
-          }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
-            className: "hire-analytics-empty",
-            children: "Loading\u2026"
-          }), !loading && byJob.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
-            className: "hire-analytics-empty",
-            children: "No application data yet."
-          }), !loading && byJob.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
             className: "hire-bar-chart",
             children: byJob.map(function (j) {
-              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
                 className: "hire-bar-row",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
                   className: "hire-bar-label",
                   children: j.title
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
                   className: "hire-bar-track",
-                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
                     className: "hire-bar-fill".concat(j.apps === maxApps ? ' peak' : ''),
                     style: {
                       width: "".concat(j.apps / maxApps * 100, "%")
                     }
                   })
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
                   className: "hire-bar-value",
                   children: j.apps
                 })]
               }, j.title);
             })
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
           className: "hire-analytics-card",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
             children: "Hiring Funnel"
-          }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
-            className: "hire-analytics-empty",
-            children: "Loading\u2026"
-          }), !loading && funnel.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
             className: "hire-funnel",
             children: funnel.map(function (f, i) {
-              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
                 className: "hire-funnel-step",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
                   className: "hire-funnel-row-header",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
                     className: "hire-funnel-label",
                     children: f.label
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
                     className: "hire-funnel-count",
                     children: f.value
                   })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
                   className: "hire-funnel-track",
-                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
                     className: "hire-funnel-fill step-".concat(i),
                     style: {
-                      width: funnel[0].value > 0 ? "".concat(f.value / funnel[0].value * 100, "%") : '0%'
+                      width: "".concat(f.value / funnel[0].value * 100, "%")
                     }
                   })
-                }), i < funnel.length - 1 && f.value > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("span", {
+                }), i < funnel.length - 1 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
                   className: "hire-funnel-pct",
                   children: [Math.round(funnel[i + 1].value / f.value * 100), "% moved to next stage"]
                 })]
@@ -15373,31 +15388,28 @@ var HireDashboardAnalytics = function HireDashboardAnalytics() {
             })
           })]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
         className: "hire-analytics-card hire-analytics-card--full",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
           children: "Applications Over Time"
-        }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
-          className: "hire-analytics-empty",
-          children: "Loading\u2026"
-        }), !loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
           className: "hire-trend-chart",
           children: monthly.map(function (m, i) {
             var isCurrent = i === monthly.length - 1;
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
               className: "hire-trend-col".concat(isCurrent ? ' current' : ''),
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
                 className: "hire-trend-value",
                 children: m.apps
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
                 className: "hire-trend-track",
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
                   className: "hire-trend-fill",
                   style: {
                     height: "".concat(m.apps / maxMonthly * 100, "%")
                   }
                 })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
                 className: "hire-trend-month",
                 children: m.month
               })]
@@ -16168,100 +16180,72 @@ var HireDashboardHires = function HireDashboardHires() {
                       children: hire.role
                     })]
                   }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
-                    className: "hire-hire-status status-active",
+                    className: "hire-hire-status status-".concat(hire.status.toLowerCase().replace(' ', '-')),
                     children: hire.status
                   })]
                 }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
-                  className: "hire-hire-divider"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-                  className: "hire-hire-section",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
-                    className: "hire-hire-section-title",
-                    children: "Role Details"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("ul", {
-                    className: "hire-hire-detail-list",
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
-                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaBuilding, {
-                        className: "hire-hire-detail-icon",
-                        "aria-hidden": "true"
-                      }), " ", hire.dept]
-                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
-                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaMapMarkerAlt, {
-                        className: "hire-hire-detail-icon",
-                        "aria-hidden": "true"
-                      }), " ", hire.location]
-                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
-                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaDollarSign, {
-                        className: "hire-hire-detail-icon",
-                        "aria-hidden": "true"
-                      }), " ", hire.salary]
-                    })]
+                  className: "hire-hire-status status-active",
+                  children: hire.status
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                className: "hire-hire-divider"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                className: "hire-hire-section",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                  className: "hire-hire-section-title",
+                  children: "Role Details"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("ul", {
+                  className: "hire-hire-detail-list",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaBuilding, {
+                      className: "hire-hire-detail-icon",
+                      "aria-hidden": "true"
+                    }), " ", hire.dept]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaMapMarkerAlt, {
+                      className: "hire-hire-detail-icon",
+                      "aria-hidden": "true"
+                    }), " ", hire.location]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaDollarSign, {
+                      className: "hire-hire-detail-icon",
+                      "aria-hidden": "true"
+                    }), " ", hire.salary]
                   })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
-                  className: "hire-hire-divider"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-                  className: "hire-hire-section",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                className: "hire-hire-divider"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                className: "hire-hire-section",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                  className: "hire-hire-section-title",
+                  children: "Hire Info"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("ul", {
+                  className: "hire-hire-detail-list",
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaCalendarAlt, {
+                      className: "hire-hire-detail-icon",
+                      "aria-hidden": "true"
+                    }), " Hired: ", hire.hiredDate]
+                  })
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                className: "hire-hire-divider"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                className: "hire-hire-section",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                  className: "hire-hire-section-title-row",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
                     className: "hire-hire-section-title",
-                    children: "Hire Info"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("ul", {
-                    className: "hire-hire-detail-list",
-                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
-                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaCalendarAlt, {
-                        className: "hire-hire-detail-icon",
-                        "aria-hidden": "true"
-                      }), " Hired: ", hire.hiredDate]
-                    })
-                  })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
-                  className: "hire-hire-divider"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-                  className: "hire-hire-section",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-                    className: "hire-hire-section-title-row",
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
-                      className: "hire-hire-section-title",
-                      children: "Next Steps"
-                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
-                      className: "hire-hire-progress-label",
-                      children: [doneCount, "/", hireSteps.length]
-                    })]
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
-                    className: "hire-hire-progress-bar",
-                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
-                      className: "hire-hire-progress-fill",
-                      style: {
-                        width: "".concat(progress, "%")
-                      }
-                    })
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("ul", {
-                    className: "hire-hire-steps-list",
-                    children: hireSteps.map(function (step) {
-                      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
-                        className: step.done ? 'done' : '',
-                        onClick: function onClick() {
-                          return toggleStep(hire.id, step.id);
-                        },
-                        children: [step.done ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaCheckCircle, {
-                          className: "step-icon checked",
-                          "aria-hidden": "true"
-                        }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaRegCircle, {
-                          className: "step-icon",
-                          "aria-hidden": "true"
-                        }), step.label]
-                      }, step.id);
-                    })
+                    children: "Next Steps"
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
+                    className: "hire-hire-progress-label",
+                    children: [doneCount, "/", hireSteps.length]
                   })]
                 }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
                   className: "hire-hire-actions",
                   children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
                     className: "hire-hire-action-btn",
-                    type: "button",
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaEnvelope, {
-                      "aria-hidden": "true"
-                    }), " Email"]
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
-                    className: "hire-hire-action-btn primary",
                     type: "button",
                     onClick: function onClick() {
                       return setProfileHire(hire);
@@ -16269,7 +16253,33 @@ var HireDashboardHires = function HireDashboardHires() {
                     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaUserCircle, {
                       "aria-hidden": "true"
                     }), " View profile"]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
+                    className: "hire-hire-action-btn",
+                    type: "button",
+                    onClick: function onClick() {
+                      return window.location.href = "mailto:".concat(hire.email);
+                    },
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaEnvelope, {
+                      "aria-hidden": "true"
+                    }), " Email"]
                   })]
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("ul", {
+                  className: "hire-hire-steps-list",
+                  children: hireSteps.map(function (step) {
+                    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
+                      className: step.done ? 'done' : '',
+                      onClick: function onClick() {
+                        return toggleStep(hire.id, step.id);
+                      },
+                      children: [step.done ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaCheckCircle, {
+                        className: "step-icon checked",
+                        "aria-hidden": "true"
+                      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaRegCircle, {
+                        className: "step-icon",
+                        "aria-hidden": "true"
+                      }), step.label]
+                    }, step.id);
+                  })
                 })]
               })]
             }, hire.id);
@@ -16486,10 +16496,6 @@ var HireDashboardInterviews = function HireDashboardInterviews() {
     _useState14 = _slicedToArray(_useState13, 2),
     detailsId = _useState14[0],
     setDetailsId = _useState14[1];
-  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState16 = _slicedToArray(_useState15, 2),
-    search = _useState16[0],
-    setSearch = _useState16[1];
   var loadInterviews = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
     var params, data, _t;
     return _regenerator().w(function (_context) {
@@ -16524,13 +16530,8 @@ var HireDashboardInterviews = function HireDashboardInterviews() {
     loadInterviews();
   }, [loadInterviews]);
   var filtered = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
-    var q = search.trim().toLowerCase();
-    if (!q) return interviews;
-    return interviews.filter(function (i) {
-      var _i$candidate_user, _i$title, _i$interviewer_name;
-      return ((_i$candidate_user = i.candidate_user) === null || _i$candidate_user === void 0 || (_i$candidate_user = _i$candidate_user.name) === null || _i$candidate_user === void 0 ? void 0 : _i$candidate_user.toLowerCase().includes(q)) || ((_i$title = i.title) === null || _i$title === void 0 ? void 0 : _i$title.toLowerCase().includes(q)) || ((_i$interviewer_name = i.interviewer_name) === null || _i$interviewer_name === void 0 ? void 0 : _i$interviewer_name.toLowerCase().includes(q));
-    });
-  }, [interviews, search]);
+    return interviews;
+  }, [interviews]);
   var detailsInterview = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
     return interviews.find(function (i) {
       return i.id === detailsId;
@@ -16702,32 +16703,12 @@ var HireDashboardInterviews = function HireDashboardInterviews() {
               }), "Schedule interview"]
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
-          className: "hire-list-search",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaSearch, {
-            className: "hire-search-icon",
-            "aria-hidden": "true"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("input", {
-            type: "text",
-            placeholder: "Search by candidate, role, or interviewer\u2026",
-            value: search,
-            onChange: function onChange(e) {
-              return setSearch(e.target.value);
-            }
-          }), search && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
-            type: "button",
-            className: "hire-search-clear",
-            onClick: function onClick() {
-              return setSearch('');
-            },
-            children: "\u2715"
-          })]
         }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
           className: "hire-interviews-empty",
           children: "Loading interviews\u2026"
         }), !loading && filtered.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
           className: "hire-interviews-empty",
-          children: search ? 'No interviews match your search.' : 'No interviews found.'
+          children: "No interviews found."
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
           className: "hire-interviews-list",
           children: filtered.map(function (item) {
@@ -16975,10 +16956,6 @@ var HireDashboardListings = function HireDashboardListings() {
     _useState12 = _slicedToArray(_useState11, 2),
     deletingId = _useState12[0],
     setDeletingId = _useState12[1];
-  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState14 = _slicedToArray(_useState13, 2),
-    search = _useState14[0],
-    setSearch = _useState14[1];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     var cancelled = false;
     var load = /*#__PURE__*/function () {
@@ -17116,17 +17093,9 @@ var HireDashboardListings = function HireDashboardListings() {
     }).length;
     return acc;
   }, {});
-  var filtered = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
-    var byTab = activeTab === 'All' ? listings : listings.filter(function (l) {
-      return l.status === activeTab.toLowerCase();
-    });
-    var q = search.trim().toLowerCase();
-    if (!q) return byTab;
-    return byTab.filter(function (l) {
-      var _l$title, _l$location, _l$company;
-      return ((_l$title = l.title) === null || _l$title === void 0 ? void 0 : _l$title.toLowerCase().includes(q)) || ((_l$location = l.location) === null || _l$location === void 0 ? void 0 : _l$location.toLowerCase().includes(q)) || ((_l$company = l.company) === null || _l$company === void 0 ? void 0 : _l$company.toLowerCase().includes(q));
-    });
-  }, [listings, activeTab, search]);
+  var filtered = activeTab === 'All' ? listings : listings.filter(function (l) {
+    return l.status === activeTab.toLowerCase();
+  });
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("section", {
     className: "hire-dashboard-listings-section",
     id: "hire-listings-anchor",
@@ -17157,26 +17126,6 @@ var HireDashboardListings = function HireDashboardListings() {
             }, tab);
           })
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-        className: "hire-list-search",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_1__.FaSearch, {
-          className: "hire-search-icon",
-          "aria-hidden": "true"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("input", {
-          type: "text",
-          placeholder: "Search by title, location, or company\u2026",
-          value: search,
-          onChange: function onChange(e) {
-            return setSearch(e.target.value);
-          }
-        }), search && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
-          type: "button",
-          className: "hire-search-clear",
-          onClick: function onClick() {
-            return setSearch('');
-          },
-          children: "\u2715"
-        })]
       }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
         className: "hire-listings-empty",
         children: "Loading listings\u2026"
@@ -17185,8 +17134,8 @@ var HireDashboardListings = function HireDashboardListings() {
         children: error
       }), !loading && !error && filtered.length === 0 ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
         className: "hire-listings-empty",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
-          children: search ? 'No listings match your search.' : "No ".concat(activeTab.toLowerCase(), " listings.")
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
+          children: ["No ", activeTab.toLowerCase(), " listings."]
         })
       }) : !loading && !error ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
         className: "hire-listings-grid",
@@ -17926,14 +17875,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _api_hrApi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../api/hrApi */ "./resources/js/api/hrApi.js");
-/* harmony import */ var _HireDashboardSettings_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./HireDashboardSettings.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardSettings/HireDashboardSettings.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _HireDashboardSettings_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HireDashboardSettings.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardSettings/HireDashboardSettings.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
-function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
@@ -17948,339 +17892,240 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-
-var DEFAULT_PROFILE = {
-  company_name: localStorage.getItem('user_company') || 'Your Company',
-  industry: 'Technology',
-  size: '11–50',
-  location: '',
-  website: '',
-  description: ''
-};
 var HireDashboardSettings = function HireDashboardSettings() {
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(DEFAULT_PROFILE),
+  var company = localStorage.getItem('user_company') || 'Your Company';
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+      name: company,
+      industry: 'Technology',
+      size: '11–50',
+      location: 'Prishtinë, Kosovo',
+      website: 'https://www.company.com',
+      description: 'We build innovative software solutions that help businesses grow.'
+    }),
     _useState2 = _slicedToArray(_useState, 2),
     profile = _useState2[0],
     setProfile = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    profileSaved = _useState4[0],
-    setProfileSaved = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState6 = _slicedToArray(_useState5, 2),
-    profileSaving = _useState6[0],
-    setProfileSaving = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
-      email: localStorage.getItem('user_email') || '',
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+      email: localStorage.getItem('user_email') || 'hiring@company.com',
       currentPassword: '',
       newPassword: ''
     }),
+    _useState4 = _slicedToArray(_useState3, 2),
+    account = _useState4[0],
+    setAccount = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState6 = _slicedToArray(_useState5, 2),
+    profileSaved = _useState6[0],
+    setProfileSaved = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState8 = _slicedToArray(_useState7, 2),
-    account = _useState8[0],
-    setAccount = _useState8[1];
-  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    accountSaved = _useState8[0],
+    setAccountSaved = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+      newApplication: true,
+      interviewReminder: true,
+      weeklyDigest: false,
+      marketingEmails: false
+    }),
     _useState0 = _slicedToArray(_useState9, 2),
-    accountSaved = _useState0[0],
-    setAccountSaved = _useState0[1];
-  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState10 = _slicedToArray(_useState1, 2),
-    accountSaving = _useState10[0],
-    setAccountSaving = _useState10[1];
-  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
-    _useState12 = _slicedToArray(_useState11, 2),
-    accountError = _useState12[0],
-    setAccountError = _useState12[1];
-  var DEFAULT_NOTIFICATIONS = {
-    newApplication: true,
-    interviewReminder: true,
-    weeklyDigest: false,
-    marketingEmails: false
-  };
-  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(DEFAULT_NOTIFICATIONS),
-    _useState14 = _slicedToArray(_useState13, 2),
-    notifications = _useState14[0],
-    setNotifications = _useState14[1];
-
-  // Load settings from API on mount
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.fetchHrSettings)().then(function (data) {
-      if (data && data.company_name) {
-        setProfile({
-          company_name: data.company_name || DEFAULT_PROFILE.company_name,
-          industry: data.industry || DEFAULT_PROFILE.industry,
-          size: data.size || DEFAULT_PROFILE.size,
-          location: data.location || '',
-          website: data.website || '',
-          description: data.description || ''
-        });
-      }
-      if (data && data.notifications) {
-        setNotifications(_objectSpread(_objectSpread({}, DEFAULT_NOTIFICATIONS), data.notifications));
-      }
-    })["catch"](function () {});
-  }, []);
+    notifications = _useState0[0],
+    setNotifications = _useState0[1];
   var handleProfileChange = function handleProfileChange(e) {
     return setProfile(_objectSpread(_objectSpread({}, profile), {}, _defineProperty({}, e.target.name, e.target.value)));
   };
   var handleAccountChange = function handleAccountChange(e) {
     return setAccount(_objectSpread(_objectSpread({}, account), {}, _defineProperty({}, e.target.name, e.target.value)));
   };
-  var saveProfile = /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(e) {
-      var _t;
-      return _regenerator().w(function (_context) {
-        while (1) switch (_context.p = _context.n) {
-          case 0:
-            e.preventDefault();
-            setProfileSaving(true);
-            _context.p = 1;
-            _context.n = 2;
-            return (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.saveHrSettings)(profile);
-          case 2:
-            localStorage.setItem('user_company', profile.company_name);
-            setProfileSaved(true);
-            setTimeout(function () {
-              return setProfileSaved(false);
-            }, 2000);
-            _context.n = 4;
-            break;
-          case 3:
-            _context.p = 3;
-            _t = _context.v;
-          case 4:
-            _context.p = 4;
-            setProfileSaving(false);
-            return _context.f(4);
-          case 5:
-            return _context.a(2);
-        }
-      }, _callee, null, [[1, 3, 4, 5]]);
-    }));
-    return function saveProfile(_x) {
-      return _ref.apply(this, arguments);
-    };
-  }();
-  var handleAccountSubmit = /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(e) {
-      var _err$response, _t2;
-      return _regenerator().w(function (_context2) {
-        while (1) switch (_context2.p = _context2.n) {
-          case 0:
-            e.preventDefault();
-            setAccountError('');
-            setAccountSaving(true);
-            _context2.p = 1;
-            _context2.n = 2;
-            return (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.saveHrAccount)({
-              email: account.email || undefined,
-              new_password: account.newPassword || undefined
-            });
-          case 2:
-            setAccountSaved(true);
-            setAccount(function (prev) {
-              return _objectSpread(_objectSpread({}, prev), {}, {
-                currentPassword: '',
-                newPassword: ''
-              });
-            });
-            setTimeout(function () {
-              return setAccountSaved(false);
-            }, 2000);
-            _context2.n = 4;
-            break;
-          case 3:
-            _context2.p = 3;
-            _t2 = _context2.v;
-            setAccountError((_t2 === null || _t2 === void 0 || (_err$response = _t2.response) === null || _err$response === void 0 || (_err$response = _err$response.data) === null || _err$response === void 0 ? void 0 : _err$response.message) || 'Could not update account.');
-          case 4:
-            _context2.p = 4;
-            setAccountSaving(false);
-            return _context2.f(4);
-          case 5:
-            return _context2.a(2);
-        }
-      }, _callee2, null, [[1, 3, 4, 5]]);
-    }));
-    return function handleAccountSubmit(_x2) {
-      return _ref2.apply(this, arguments);
-    };
-  }();
-  var initials = profile.company_name.split(' ').map(function (w) {
+  var saveProfile = function saveProfile(e) {
+    e.preventDefault();
+    localStorage.setItem('user_company', profile.name);
+    setProfileSaved(true);
+    setTimeout(function () {
+      return setProfileSaved(false);
+    }, 2000);
+  };
+  var saveAccount = function saveAccount(e) {
+    e.preventDefault();
+    setAccountSaved(true);
+    setTimeout(function () {
+      return setAccountSaved(false);
+    }, 2000);
+  };
+  var initials = profile.name.split(' ').map(function (w) {
     return w[0];
   }).join('').slice(0, 2).toUpperCase();
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("section", {
     className: "hire-settings-section",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
       className: "hire-settings-wrapper",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
         className: "hire-settings-header",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h1", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h1", {
           children: "Settings"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
           children: "Manage your company profile and account preferences."
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
         className: "hire-settings-block",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
           className: "hire-settings-block-header",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h2", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h2", {
             children: "Company Profile"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
             children: "This information appears on your job listings."
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
           className: "hire-settings-avatar-row",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
             className: "hire-settings-avatar",
             children: initials
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
               className: "hire-settings-avatar-name",
-              children: profile.company_name
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+              children: profile.name
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
               className: "hire-settings-avatar-sub",
               children: "Hiring Team"
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("form", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("form", {
           className: "hire-settings-form",
           onSubmit: saveProfile,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
             className: "hire-settings-row",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
               className: "hire-settings-field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("label", {
                 children: "Company Name"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
-                name: "company_name",
-                value: profile.company_name,
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
+                name: "name",
+                value: profile.name,
                 onChange: handleProfileChange
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
               className: "hire-settings-field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("label", {
                 children: "Industry"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("select", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("select", {
                 name: "industry",
                 value: profile.industry,
                 onChange: handleProfileChange,
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
                   children: "Technology"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
                   children: "Finance"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
                   children: "Healthcare"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
                   children: "Education"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
                   children: "Marketing"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
                   children: "Design"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
                   children: "Other"
                 })]
               })]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
             className: "hire-settings-row",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
               className: "hire-settings-field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("label", {
                 children: "Company Size"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("select", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("select", {
                 name: "size",
                 value: profile.size,
                 onChange: handleProfileChange,
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
                   children: "1\u201310"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
                   children: "11\u201350"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
                   children: "51\u2013200"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
                   children: "201\u2013500"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
                   children: "500+"
                 })]
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
               className: "hire-settings-field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("label", {
                 children: "Location"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
                 name: "location",
                 value: profile.location,
                 onChange: handleProfileChange
               })]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
             className: "hire-settings-field",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("label", {
               children: "Website"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
               name: "website",
               value: profile.website,
               onChange: handleProfileChange
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
             className: "hire-settings-field",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("label", {
               children: "Company Description"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("textarea", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("textarea", {
               name: "description",
               value: profile.description,
               onChange: handleProfileChange,
               rows: 3
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
             type: "submit",
             className: "hire-settings-save",
-            disabled: profileSaving,
-            children: profileSaved ? '✓ Saved!' : profileSaving ? 'Saving…' : 'Save Profile'
+            children: profileSaved ? '✓ Saved!' : 'Save Profile'
           })]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
         className: "hire-settings-block",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
           className: "hire-settings-block-header",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h2", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h2", {
             children: "Account"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
             children: "Update your login credentials."
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("form", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("form", {
           className: "hire-settings-form",
-          onSubmit: handleAccountSubmit,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          onSubmit: saveAccount,
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
             className: "hire-settings-field",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("label", {
               children: "Email Address"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
               name: "email",
               type: "email",
               value: account.email,
               onChange: handleAccountChange
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
             className: "hire-settings-divider"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
             className: "hire-settings-row",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
               className: "hire-settings-field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("label", {
                 children: "Current Password"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
                 name: "currentPassword",
                 type: "password",
                 value: account.currentPassword,
                 onChange: handleAccountChange,
                 placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
               className: "hire-settings-field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("label", {
                 children: "New Password"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
                 name: "newPassword",
                 type: "password",
                 value: account.newPassword,
@@ -18288,29 +18133,22 @@ var HireDashboardSettings = function HireDashboardSettings() {
                 placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
               })]
             })]
-          }), accountError && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
-            style: {
-              color: '#c0392b',
-              fontSize: 13
-            },
-            children: accountError
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
             type: "submit",
             className: "hire-settings-save",
-            disabled: accountSaving,
-            children: accountSaved ? '✓ Updated!' : accountSaving ? 'Saving…' : 'Update Account'
+            children: accountSaved ? '✓ Saved!' : 'Update Account'
           })]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
         className: "hire-settings-block",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
           className: "hire-settings-block-header",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h2", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h2", {
             children: "Notifications"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
             children: "Choose what you want to be notified about."
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
           className: "hire-settings-toggles",
           children: [{
             key: 'newApplication',
@@ -18328,72 +18166,68 @@ var HireDashboardSettings = function HireDashboardSettings() {
             key: 'marketingEmails',
             label: 'Product Updates',
             sub: 'News about new BEE HIRED features'
-          }].map(function (_ref3) {
-            var key = _ref3.key,
-              label = _ref3.label,
-              sub = _ref3.sub;
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }].map(function (_ref) {
+            var key = _ref.key,
+              label = _ref.label,
+              sub = _ref.sub;
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
               className: "hire-settings-toggle-row",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
                   className: "hire-settings-toggle-label",
                   children: label
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
                   className: "hire-settings-toggle-sub",
                   children: sub
                 })]
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
                 className: "hire-toggle".concat(notifications[key] ? ' on' : ''),
                 onClick: function onClick() {
-                  var updated = _objectSpread(_objectSpread({}, notifications), {}, _defineProperty({}, key, !notifications[key]));
-                  setNotifications(updated);
-                  (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.saveHrNotifications)(updated)["catch"](function () {});
+                  return setNotifications(_objectSpread(_objectSpread({}, notifications), {}, _defineProperty({}, key, !notifications[key])));
                 },
                 type: "button",
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
                   className: "hire-toggle-knob"
                 })
               })]
             }, key);
           })
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
         className: "hire-settings-block hire-settings-block--danger",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
           className: "hire-settings-block-header",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h2", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h2", {
             children: "Danger Zone"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
             children: "These actions are permanent and cannot be undone."
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
           className: "hire-danger-row",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
               className: "hire-danger-label",
               children: "Sign out of all devices"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
               className: "hire-danger-sub",
               children: "Ends all active sessions for this account."
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
             className: "hire-danger-btn",
-            type: "button",
             children: "Sign Out All"
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
           className: "hire-danger-row",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
               className: "hire-danger-label",
               children: "Delete company account"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
               className: "hire-danger-sub",
               children: "Permanently removes all data and job listings."
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
             className: "hire-danger-btn hire-danger-btn--red",
-            type: "button",
             children: "Delete Account"
           })]
         })]
@@ -18421,8 +18255,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _HireDashboardSidebar_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HireDashboardSidebar.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardSidebar/HireDashboardSidebar.scss");
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/development/chunk-UVKPFVEO.mjs");
 /* harmony import */ var _context_AuthContext__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../context/AuthContext */ "./resources/js/context/AuthContext.js");
-/* harmony import */ var _HireDashboardContext__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../HireDashboardContext */ "./resources/js/views/HR-View/HireDashboardContext.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -18438,11 +18271,10 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
 
 
 
-
 var mainNav = [{
   label: 'Overview',
   path: '/hire-dashboard',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -18451,22 +18283,22 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("rect", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
       x: "3",
       y: "3",
       width: "7",
       height: "7"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("rect", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
       x: "14",
       y: "3",
       width: "7",
       height: "7"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("rect", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
       x: "3",
       y: "14",
       width: "7",
       height: "7"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("rect", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
       x: "14",
       y: "14",
       width: "7",
@@ -18476,8 +18308,8 @@ var mainNav = [{
 }, {
   label: 'Applications',
   path: '/hire-dashboard/applications',
-  badgeKey: 'applications',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
+  badge: 3,
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -18486,16 +18318,16 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
       d: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("polyline", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("polyline", {
       points: "22,6 12,13 2,6"
     })]
   })
 }, {
   label: 'Active Listings',
   path: '/hire-dashboard/listings',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -18504,20 +18336,20 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("rect", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
       x: "8",
       y: "2",
       width: "8",
       height: "4",
       rx: "1"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
       d: "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
       x1: "9",
       y1: "12",
       x2: "15",
       y2: "12"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
       x1: "9",
       y1: "16",
       x2: "13",
@@ -18527,7 +18359,7 @@ var mainNav = [{
 }, {
   label: 'Interviews',
   path: '/hire-dashboard/interviews',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -18536,23 +18368,23 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("rect", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
       x: "3",
       y: "4",
       width: "18",
       height: "18",
       rx: "2"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
       x1: "16",
       y1: "2",
       x2: "16",
       y2: "6"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
       x1: "8",
       y1: "2",
       x2: "8",
       y2: "6"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
       x1: "3",
       y1: "10",
       x2: "21",
@@ -18562,7 +18394,7 @@ var mainNav = [{
 }, {
   label: 'Hires',
   path: '/hire-dashboard/hires',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -18571,14 +18403,14 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
       d: "M20 6L9 17l-5-5"
     })
   })
 }, {
   label: 'Analytics',
   path: '/hire-dashboard/analytics',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -18587,17 +18419,17 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
       x1: "18",
       y1: "20",
       x2: "18",
       y2: "10"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
       x1: "12",
       y1: "20",
       x2: "12",
       y2: "4"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
       x1: "6",
       y1: "20",
       x2: "6",
@@ -18607,8 +18439,8 @@ var mainNav = [{
 }, {
   label: 'Messages',
   path: '/hire-dashboard/messages',
-  badgeKey: 'messages',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
+  badge: 3,
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -18617,7 +18449,7 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
       d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
     })
   })
@@ -18625,7 +18457,7 @@ var mainNav = [{
 var bottomNav = [{
   label: 'Team',
   path: '/hire-dashboard/team',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -18634,22 +18466,22 @@ var bottomNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
       d: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("circle", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
       cx: "9",
       cy: "7",
       r: "4"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
       d: "M23 21v-2a4 4 0 0 0-3-3.87"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
       d: "M16 3.13a4 4 0 0 1 0 7.75"
     })]
   })
 }, {
   label: 'Settings',
   path: '/hire-dashboard/settings',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -18658,11 +18490,11 @@ var bottomNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("circle", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
       cx: "12",
       cy: "12",
       r: "3"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
       d: "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
     })]
   })
@@ -18673,18 +18505,7 @@ var HireDashboardSidebar = function HireDashboardSidebar() {
   var _useAuth = (0,_context_AuthContext__WEBPACK_IMPORTED_MODULE_3__.useAuth)(),
     user = _useAuth.user,
     logout = _useAuth.logout;
-  var _useHireDashboard = (0,_HireDashboardContext__WEBPACK_IMPORTED_MODULE_4__.useHireDashboard)(),
-    apps = _useHireDashboard.apps;
-  var company = localStorage.getItem('user_company') || (user === null || user === void 0 ? void 0 : user.company) || 'Your Company';
-
-  // Real badge counts
-  var reviewingCount = apps.filter(function (a) {
-    return a.status === 'Reviewing';
-  }).length;
-  var badges = {
-    applications: reviewingCount || null,
-    messages: null
-  };
+  var company = (user === null || user === void 0 ? void 0 : user.name) || localStorage.getItem('user_company') || 'Your Company';
   var initials = company.split(' ').map(function (w) {
     return w[0];
   }).join('').slice(0, 2).toUpperCase();
@@ -18714,13 +18535,13 @@ var HireDashboardSidebar = function HireDashboardSidebar() {
     navigate(path);
     setOpen(false);
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
-    children: [!open && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.Fragment, {
+    children: [!open && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
       className: "hire-hamburger",
       onClick: function onClick() {
         return setOpen(true);
       },
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
         width: "22",
         height: "22",
         viewBox: "0 0 24 24",
@@ -18729,33 +18550,33 @@ var HireDashboardSidebar = function HireDashboardSidebar() {
         strokeWidth: "2",
         strokeLinecap: "round",
         strokeLinejoin: "round",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
           x1: "3",
           y1: "6",
           x2: "21",
           y2: "6"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
           x1: "3",
           y1: "12",
           x2: "21",
           y2: "12"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
           x1: "3",
           y1: "18",
           x2: "21",
           y2: "18"
         })]
       })
-    }), open && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+    }), open && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
       className: "hire-sidebar-overlay",
       onClick: function onClick() {
         return setOpen(false);
       }
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("aside", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("aside", {
       className: "hire-sidebar".concat(open ? ' open' : ''),
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
         className: "hire-sidebar-top",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "hire-sidebar-brand",
           onClick: function onClick() {
             return handleNav('/');
@@ -18763,22 +18584,22 @@ var HireDashboardSidebar = function HireDashboardSidebar() {
           style: {
             cursor: 'pointer'
           },
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "hire-sidebar-brand-text",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "hire-sidebar-app",
               children: "BEE HIRED"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "hire-sidebar-company",
               children: company
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
             className: "hire-sidebar-close",
             onClick: function onClick(e) {
               e.stopPropagation();
               setOpen(false);
             },
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
               width: "18",
               height: "18",
               viewBox: "0 0 24 24",
@@ -18787,12 +18608,12 @@ var HireDashboardSidebar = function HireDashboardSidebar() {
               strokeWidth: "2",
               strokeLinecap: "round",
               strokeLinejoin: "round",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
                 x1: "18",
                 y1: "6",
                 x2: "6",
                 y2: "18"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
                 x1: "6",
                 y1: "6",
                 x2: "18",
@@ -18800,52 +18621,52 @@ var HireDashboardSidebar = function HireDashboardSidebar() {
               })]
             })
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("nav", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("nav", {
           className: "hire-sidebar-nav",
           children: mainNav.map(function (item) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
               className: "hire-nav-item".concat(location.pathname === item.path ? ' active' : ''),
               onClick: function onClick() {
                 return handleNav(item.path);
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "hire-nav-icon",
                 children: item.icon
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "hire-nav-label",
                 children: item.label
-              }), item.badgeKey && badges[item.badgeKey] ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+              }), item.badge && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "hire-nav-badge",
-                children: badges[item.badgeKey]
-              }) : null]
+                children: item.badge
+              })]
             }, item.path);
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
           className: "hire-sidebar-divider"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("nav", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("nav", {
           className: "hire-sidebar-nav",
           children: [bottomNav.map(function (item) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
               className: "hire-nav-item".concat(location.pathname === item.path ? ' active' : ''),
               onClick: function onClick() {
                 return handleNav(item.path);
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "hire-nav-icon",
                 children: item.icon
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "hire-nav-label",
                 children: item.label
               })]
             }, item.path);
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
             className: "hire-nav-item hire-nav-home",
             onClick: function onClick() {
               return handleNav('/');
             },
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "hire-nav-icon",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
                 width: "18",
                 height: "18",
                 viewBox: "0 0 24 24",
@@ -18854,40 +18675,40 @@ var HireDashboardSidebar = function HireDashboardSidebar() {
                 strokeWidth: "2",
                 strokeLinecap: "round",
                 strokeLinejoin: "round",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
                   d: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("polyline", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("polyline", {
                   points: "9 22 9 12 15 12 15 22"
                 })]
               })
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "hire-nav-label",
               children: "Home"
             })]
           })]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
         className: "hire-sidebar-bottom",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "hire-sidebar-user",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             className: "hire-sidebar-avatar",
             children: initials
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "hire-sidebar-user-info",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "hire-sidebar-user-name",
-              children: (user === null || user === void 0 ? void 0 : user.name) || 'Hiring Team'
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+              children: (user === null || user === void 0 ? void 0 : user.name) || company
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "hire-sidebar-user-role",
-              children: (user === null || user === void 0 ? void 0 : user.email) || ''
+              children: (user === null || user === void 0 ? void 0 : user.email) || 'Hiring Team'
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
           className: "hire-sidebar-signout",
           type: "button",
           onClick: handleSignOut,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
             width: "16",
             height: "16",
             viewBox: "0 0 24 24",
@@ -18896,11 +18717,11 @@ var HireDashboardSidebar = function HireDashboardSidebar() {
             strokeWidth: "2",
             strokeLinecap: "round",
             strokeLinejoin: "round",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
               d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("polyline", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("polyline", {
               points: "16 17 21 12 16 7"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
               x1: "21",
               y1: "12",
               x2: "9",
@@ -19032,18 +18853,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _api_hrApi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../api/hrApi */ "./resources/js/api/hrApi.js");
-/* harmony import */ var _HireDashboardTeam_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./HireDashboardTeam.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardTeam/HireDashboardTeam.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _HireDashboardTeam_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HireDashboardTeam.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardTeam/HireDashboardTeam.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
-function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
@@ -19058,96 +18874,58 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-
 var AVATAR_COLORS = ['#111111', '#3b5bdb', '#2d7a5a', '#9a7000', '#c0392b', '#6741d9'];
-var DEFAULT_MEMBERS = [{
-  id: 'default-1',
-  name: 'Denisa Gjuraj',
-  title: 'HR Manager',
-  initials: 'DG',
-  photo: null,
-  isDefault: true
-}, {
-  id: 'default-2',
-  name: 'Migjen Prenaj',
-  title: 'Talent Acquisition',
-  initials: 'MP',
-  photo: null,
-  isDefault: true
-}, {
-  id: 'default-3',
-  name: 'John Doe',
-  title: 'Recruiter',
-  initials: 'JD',
-  photo: null,
-  isDefault: true
-}];
 var PinIcon = function PinIcon() {
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("svg", {
     width: "15",
     height: "15",
     viewBox: "0 0 24 24",
     fill: "currentColor",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
       d: "M16 2a4 4 0 0 0-3.95 4.57L6 13H3.5a.5.5 0 0 0-.35.85l3 3a.5.5 0 0 0 .35.15H9v4.5a.5.5 0 0 0 1 0V17h2.5a.5.5 0 0 0 .35-.15l.92-.92A4 4 0 1 0 16 2z"
     })
   });
 };
-var getInitials = function getInitials(name) {
-  return (name || '?').trim().split(' ').map(function (w) {
-    return w[0];
-  }).join('').slice(0, 2).toUpperCase();
-};
 var HireDashboardTeam = function HireDashboardTeam() {
   // ── Hiring Team ──────────────────────────────────────────────────────
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(DEFAULT_MEMBERS),
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([{
+      id: 1,
+      name: 'Denisa Gjuraj',
+      role: 'HR Manager',
+      initials: 'DG',
+      photo: null
+    }, {
+      id: 2,
+      name: 'Migjen Prenaj',
+      role: 'Talent Acquisition',
+      initials: 'MP',
+      photo: null
+    }, {
+      id: 3,
+      name: 'John Doe',
+      role: 'Recruiter',
+      initials: 'JD',
+      photo: null
+    }]),
     _useState2 = _slicedToArray(_useState, 2),
     team = _useState2[0],
     setTeam = _useState2[1];
   var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState4 = _slicedToArray(_useState3, 2),
-    teamLoaded = _useState4[0],
-    setTeamLoaded = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState6 = _slicedToArray(_useState5, 2),
-    showAddMember = _useState6[0],
-    setShowAddMember = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    showAddMember = _useState4[0],
+    setShowAddMember = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
       name: '',
-      title: '',
-      photo: null,
-      file: null
+      role: '',
+      photo: null
     }),
+    _useState6 = _slicedToArray(_useState5, 2),
+    newMember = _useState6[0],
+    setNewMember = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState8 = _slicedToArray(_useState7, 2),
-    newMember = _useState8[0],
-    setNewMember = _useState8[1];
-  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState0 = _slicedToArray(_useState9, 2),
-    saving = _useState0[0],
-    setSaving = _useState0[1];
-  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
-    _useState10 = _slicedToArray(_useState1, 2),
-    removingId = _useState10[0],
-    setRemovingId = _useState10[1];
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.fetchHrTeam)().then(function (data) {
-      // Use DB data if any exists; otherwise keep the defaults
-      if (Array.isArray(data) && data.length > 0) {
-        setTeam(data.map(function (m) {
-          return {
-            id: m.id,
-            name: m.name,
-            title: m.title,
-            initials: getInitials(m.name),
-            photo: m.photo || null
-          };
-        }));
-      }
-      setTeamLoaded(true);
-    })["catch"](function () {
-      return setTeamLoaded(true);
-    });
-  }, []);
+    removingId = _useState8[0],
+    setRemovingId = _useState8[1];
   var handleMemberPhoto = function handleMemberPhoto(e) {
     var file = e.target.files[0];
     if (!file) return;
@@ -19155,119 +18933,45 @@ var HireDashboardTeam = function HireDashboardTeam() {
     reader.onload = function (ev) {
       return setNewMember(function (prev) {
         return _objectSpread(_objectSpread({}, prev), {}, {
-          photo: ev.target.result,
-          file: file
+          photo: ev.target.result
         });
       });
     };
     reader.readAsDataURL(file);
   };
-  var addMember = /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-      var formData, saved, _t;
-      return _regenerator().w(function (_context) {
-        while (1) switch (_context.p = _context.n) {
-          case 0:
-            if (newMember.name.trim()) {
-              _context.n = 1;
-              break;
-            }
-            return _context.a(2);
-          case 1:
-            setSaving(true);
-            _context.p = 2;
-            formData = new FormData();
-            formData.append('name', newMember.name.trim());
-            formData.append('title', newMember.title.trim() || 'Team Member');
-            if (newMember.file) formData.append('photo', newMember.file);
-            _context.n = 3;
-            return (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.addHrTeamMember)(formData);
-          case 3:
-            saved = _context.v;
-            setTeam(function (prev) {
-              var _prev$;
-              return [].concat(_toConsumableArray((_prev$ = prev[0]) !== null && _prev$ !== void 0 && _prev$.isDefault ? [] : prev), [{
-                id: saved.id,
-                name: saved.name,
-                title: saved.title,
-                initials: getInitials(saved.name),
-                photo: saved.photo || null
-              }]);
-            });
-            setNewMember({
-              name: '',
-              title: '',
-              photo: null,
-              file: null
-            });
-            setShowAddMember(false);
-            _context.n = 5;
-            break;
-          case 4:
-            _context.p = 4;
-            _t = _context.v;
-          case 5:
-            _context.p = 5;
-            setSaving(false);
-            return _context.f(5);
-          case 6:
-            return _context.a(2);
-        }
-      }, _callee, null, [[2, 4, 5, 6]]);
-    }));
-    return function addMember() {
-      return _ref.apply(this, arguments);
-    };
-  }();
-  var removeMember = /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(id) {
-      var _t2;
-      return _regenerator().w(function (_context2) {
-        while (1) switch (_context2.p = _context2.n) {
-          case 0:
-            if (!String(id).startsWith('default-')) {
-              _context2.n = 1;
-              break;
-            }
-            // Just remove from local state — defaults aren't in the DB
-            setTeam(function (prev) {
-              return prev.filter(function (m) {
-                return m.id !== id;
-              });
-            });
-            return _context2.a(2);
-          case 1:
-            setRemovingId(id);
-            _context2.p = 2;
-            _context2.n = 3;
-            return (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.removeHrTeamMember)(id);
-          case 3:
-            setTimeout(function () {
-              setTeam(function (prev) {
-                return prev.filter(function (m) {
-                  return m.id !== id;
-                });
-              });
-              setRemovingId(null);
-            }, 280);
-            _context2.n = 5;
-            break;
-          case 4:
-            _context2.p = 4;
-            _t2 = _context2.v;
-            setRemovingId(null);
-          case 5:
-            return _context2.a(2);
-        }
-      }, _callee2, null, [[2, 4]]);
-    }));
-    return function removeMember(_x) {
-      return _ref2.apply(this, arguments);
-    };
-  }();
+  var addMember = function addMember() {
+    if (!newMember.name.trim()) return;
+    var initials = newMember.name.trim().split(' ').map(function (w) {
+      return w[0];
+    }).join('').slice(0, 2).toUpperCase();
+    setTeam([].concat(_toConsumableArray(team), [{
+      id: Date.now(),
+      name: newMember.name.trim(),
+      role: newMember.role.trim() || 'Team Member',
+      initials: initials,
+      photo: newMember.photo || null
+    }]));
+    setNewMember({
+      name: '',
+      role: '',
+      photo: null
+    });
+    setShowAddMember(false);
+  };
+  var removeMember = function removeMember(id) {
+    setRemovingId(id);
+    setTimeout(function () {
+      setTeam(function (prev) {
+        return prev.filter(function (m) {
+          return m.id !== id;
+        });
+      });
+      setRemovingId(null);
+    }, 280);
+  };
 
-  // ── Team Notes (local — not persisted) ───────────────────────────────
-  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([{
+  // ── Team Notes ───────────────────────────────────────────────────────
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([{
       id: 1,
       from: 'Denisa',
       to: 'Migjen',
@@ -19277,7 +18981,7 @@ var HireDashboardTeam = function HireDashboardTeam() {
       id: 2,
       from: 'John',
       to: 'Denisa',
-      content: 'Can you schedule the panel interview for the Data Scientist role?',
+      content: 'Can you schedule the panel interview for Fatima Al-Zahra?',
       done: false
     }, {
       id: 3,
@@ -19292,28 +18996,30 @@ var HireDashboardTeam = function HireDashboardTeam() {
       content: 'Weekly sync moved to Thursday 2 PM this week.',
       done: false
     }]),
-    _useState12 = _slicedToArray(_useState11, 2),
-    notes = _useState12[0],
-    setNotes = _useState12[1];
-  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState14 = _slicedToArray(_useState13, 2),
-    showAddNote = _useState14[0],
-    setShowAddNote = _useState14[1];
-  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    _useState0 = _slicedToArray(_useState9, 2),
+    notes = _useState0[0],
+    setNotes = _useState0[1];
+  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState10 = _slicedToArray(_useState1, 2),
+    showAddNote = _useState10[0],
+    setShowAddNote = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
       from: '',
       to: '',
       content: ''
     }),
-    _useState16 = _slicedToArray(_useState15, 2),
-    newNote = _useState16[0],
-    setNewNote = _useState16[1];
+    _useState12 = _slicedToArray(_useState11, 2),
+    newNote = _useState12[0],
+    setNewNote = _useState12[1];
   var addNote = function addNote() {
     if (!newNote.content.trim()) return;
-    setNotes([_objectSpread(_objectSpread({
-      id: Date.now()
-    }, newNote), {}, {
+    setNotes([{
+      id: Date.now(),
+      from: newNote.from.trim(),
+      to: newNote.to.trim(),
+      content: newNote.content.trim(),
       done: false
-    })].concat(_toConsumableArray(notes)));
+    }].concat(_toConsumableArray(notes)));
     setNewNote({
       from: '',
       to: '',
@@ -19337,37 +19043,37 @@ var HireDashboardTeam = function HireDashboardTeam() {
       });
     });
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("section", {
     className: "hire-team-section",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
       className: "hire-team-wrapper",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
         className: "hire-team-page-header",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h1", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h1", {
           children: "Team"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
           children: "Manage your hiring team and leave notes for your coworkers."
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
         className: "hire-team-columns",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
           className: "hire-team-block",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
             className: "hire-team-block-header",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h2", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h2", {
                 children: "Hiring Team"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
                 children: "Members of your recruiting team."
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("button", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("button", {
               className: "hire-team-add-btn",
               onClick: function onClick() {
                 return setShowAddMember(function (v) {
                   return !v;
                 });
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
                 width: "13",
                 height: "13",
                 viewBox: "0 0 24 24",
@@ -19376,12 +19082,12 @@ var HireDashboardTeam = function HireDashboardTeam() {
                 strokeWidth: "2.5",
                 strokeLinecap: "round",
                 strokeLinejoin: "round",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("line", {
                   x1: "12",
                   y1: "5",
                   x2: "12",
                   y2: "19"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("line", {
                   x1: "5",
                   y1: "12",
                   x2: "19",
@@ -19389,17 +19095,17 @@ var HireDashboardTeam = function HireDashboardTeam() {
                 })]
               }), "Add"]
             })]
-          }), showAddMember && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), showAddMember && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
             className: "hire-team-add-form",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("label", {
               className: "hire-member-photo-upload",
-              children: [newMember.photo ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("img", {
+              children: [newMember.photo ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("img", {
                 src: newMember.photo,
                 className: "hire-member-photo-preview",
                 alt: "preview"
-              }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
                 className: "hire-member-photo-placeholder",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
                   width: "22",
                   height: "22",
                   viewBox: "0 0 24 24",
@@ -19408,17 +19114,17 @@ var HireDashboardTeam = function HireDashboardTeam() {
                   strokeWidth: "1.8",
                   strokeLinecap: "round",
                   strokeLinejoin: "round",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
                     d: "M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("circle", {
                     cx: "12",
                     cy: "13",
                     r: "4"
                   })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
                   children: "Add Photo"
                 })]
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
                 type: "file",
                 accept: "image/*",
                 onChange: handleMemberPhoto,
@@ -19426,7 +19132,7 @@ var HireDashboardTeam = function HireDashboardTeam() {
                   display: 'none'
                 }
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
               placeholder: "Full name",
               value: newMember.name,
               onChange: function onChange(e) {
@@ -19438,66 +19144,64 @@ var HireDashboardTeam = function HireDashboardTeam() {
                 return e.key === 'Enter' && addMember();
               },
               autoFocus: true
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
-              placeholder: "Title (e.g. Recruiter)",
-              value: newMember.title,
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
+              placeholder: "Role (e.g. Recruiter)",
+              value: newMember.role,
               onChange: function onChange(e) {
                 return setNewMember(_objectSpread(_objectSpread({}, newMember), {}, {
-                  title: e.target.value
+                  role: e.target.value
                 }));
               },
               onKeyDown: function onKeyDown(e) {
                 return e.key === 'Enter' && addMember();
               }
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
               className: "hire-team-form-btns",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
                 className: "hire-team-confirm",
                 onClick: addMember,
-                disabled: saving,
-                children: saving ? 'Saving…' : 'Add Member'
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                children: "Add Member"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
                 className: "hire-team-cancel",
                 onClick: function onClick() {
                   setShowAddMember(false);
                   setNewMember({
                     name: '',
-                    title: '',
-                    photo: null,
-                    file: null
+                    role: '',
+                    photo: null
                   });
                 },
                 children: "Cancel"
               })]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
             className: "hire-team-grid",
             children: [team.map(function (member, i) {
-              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
                 className: "hire-member-card".concat(removingId === member.id ? ' removing' : ''),
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
                   className: "hire-mc-photo-zone",
-                  children: member.photo ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("img", {
+                  children: member.photo ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("img", {
                     className: "hire-mc-photo",
                     src: member.photo,
                     alt: member.name
-                  }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                  }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
                     className: "hire-mc-initials",
                     style: {
                       background: AVATAR_COLORS[i % AVATAR_COLORS.length]
                     },
                     children: member.initials
                   })
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
                   className: "hire-mc-banner",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
                     className: "hire-mc-name",
                     children: member.name
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
                     className: "hire-mc-role",
-                    children: member.title
+                    children: member.role
                   })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
                   className: "hire-member-remove",
                   onClick: function onClick() {
                     return removeMember(member.id);
@@ -19506,15 +19210,15 @@ var HireDashboardTeam = function HireDashboardTeam() {
                   children: "\u2715"
                 })]
               }, member.id);
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
               className: "hire-member-card hire-member-add-card",
               onClick: function onClick() {
                 return setShowAddMember(true);
               },
               type: "button",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
                 className: "hire-mc-add-content",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
                   width: "22",
                   height: "22",
                   viewBox: "0 0 24 24",
@@ -19523,41 +19227,41 @@ var HireDashboardTeam = function HireDashboardTeam() {
                   strokeWidth: "2",
                   strokeLinecap: "round",
                   strokeLinejoin: "round",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("line", {
                     x1: "12",
                     y1: "5",
                     x2: "12",
                     y2: "19"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("line", {
                     x1: "5",
                     y1: "12",
                     x2: "19",
                     y2: "12"
                   })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
                   children: "Add Member"
                 })]
               })
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
           className: "hire-team-block",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
             className: "hire-team-block-header",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h2", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h2", {
                 children: "Team Notes"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
                 children: "Leave notes for your HR coworkers."
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("button", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("button", {
               className: "hire-team-add-btn",
               onClick: function onClick() {
                 return setShowAddNote(function (v) {
                   return !v;
                 });
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
                 width: "13",
                 height: "13",
                 viewBox: "0 0 24 24",
@@ -19566,12 +19270,12 @@ var HireDashboardTeam = function HireDashboardTeam() {
                 strokeWidth: "2.5",
                 strokeLinecap: "round",
                 strokeLinejoin: "round",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("line", {
                   x1: "12",
                   y1: "5",
                   x2: "12",
                   y2: "19"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("line", {
                   x1: "5",
                   y1: "12",
                   x2: "19",
@@ -19579,11 +19283,11 @@ var HireDashboardTeam = function HireDashboardTeam() {
                 })]
               }), "New Note"]
             })]
-          }), showAddNote && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), showAddNote && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
             className: "hire-team-add-form",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
               className: "hire-note-form-row",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
                 placeholder: "From",
                 value: newNote.from,
                 onChange: function onChange(e) {
@@ -19591,7 +19295,7 @@ var HireDashboardTeam = function HireDashboardTeam() {
                     from: e.target.value
                   }));
                 }
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
                 placeholder: "To",
                 value: newNote.to,
                 onChange: function onChange(e) {
@@ -19600,7 +19304,7 @@ var HireDashboardTeam = function HireDashboardTeam() {
                   }));
                 }
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("textarea", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("textarea", {
               placeholder: "Write your note\u2026",
               value: newNote.content,
               onChange: function onChange(e) {
@@ -19610,13 +19314,13 @@ var HireDashboardTeam = function HireDashboardTeam() {
               },
               rows: 3,
               autoFocus: true
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
               className: "hire-team-form-btns",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
                 className: "hire-team-confirm",
                 onClick: addNote,
                 children: "Post Note"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
                 className: "hire-team-cancel",
                 onClick: function onClick() {
                   return setShowAddNote(false);
@@ -19624,46 +19328,46 @@ var HireDashboardTeam = function HireDashboardTeam() {
                 children: "Cancel"
               })]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
             className: "hire-notes-grid",
             children: notes.map(function (note) {
-              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
                 className: "hire-note-card".concat(note.done ? ' done' : ''),
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
                   className: "hire-note-pin",
-                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(PinIcon, {})
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(PinIcon, {})
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
                   className: "hire-note-delete",
                   onClick: function onClick() {
                     return deleteNote(note.id);
                   },
                   type: "button",
                   children: "\u2715"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
                   className: "hire-note-meta",
-                  children: [note.from && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+                  children: [note.from && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("strong", {
                       children: "From:"
                     }), " ", note.from]
-                  }), note.to && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+                  }), note.to && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("strong", {
                       children: "To:"
                     }), " ", note.to]
                   })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
                   className: "hire-note-content",
                   children: note.content
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
                   className: "hire-note-footer",
-                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("label", {
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("label", {
                     className: "hire-note-check",
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
                       type: "checkbox",
                       checked: note.done,
                       onChange: function onChange() {
                         return toggleDone(note.id);
                       }
-                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
                       children: note.done ? 'Done ✓' : 'Mark as done'
                     })]
                   })
@@ -26173,23 +25877,32 @@ __webpack_require__.r(__webpack_exports__);
 
 var PricingHero = function PricingHero() {
   var _usePricingContent = (0,_hooks_usePricingContent__WEBPACK_IMPORTED_MODULE_2__["default"])(),
-    hero = _usePricingContent.hero,
-    loading = _usePricingContent.loading;
-  if (loading) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
-    className: "pricing-hero"
-  });
+    hero = _usePricingContent.hero;
+  var eyebrow = hero.heroEyebrow || null;
   var title = hero.heroTitle || 'Scale your team, not your costs.';
   var desc = hero.heroDescription || 'Launch lean, scale as you grow, and keep every hiring decision visible from first application to final offer.';
+  var cta = hero.primaryCta || null;
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
     className: "pricing-hero",
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
       className: "pricing-hero__inner pricing-container",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h1", {
+      children: [eyebrow && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+        className: "pricing-hero__eyebrow",
+        "data-aos": "fade-up",
+        children: eyebrow
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h1", {
         "data-aos": "fade-up",
         children: title
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
         "data-aos": "fade-up",
         children: desc
+      }), cta && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("a", {
+        className: "pricing-hero__cta",
+        href: "#pricing-plans",
+        "data-aos": "fade-up",
+        children: [cta, " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          children: "\u2192"
+        })]
       })]
     })
   });
@@ -26245,24 +25958,9 @@ var FALLBACK_PLANS = [{
 }];
 var PricingPlans = function PricingPlans() {
   var _usePricingContent = (0,_hooks_usePricingContent__WEBPACK_IMPORTED_MODULE_2__["default"])(),
-    apiPlans = _usePricingContent.plans,
-    loading = _usePricingContent.loading;
-  if (loading) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
-    className: "pricing-plans",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
-      className: "pricing-container pricing-plans__grid",
-      children: [1, 2, 3].map(function (i) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
-          className: "pricing-card",
-          style: {
-            minHeight: 320,
-            background: '#f7f5f2',
-            border: '1px solid #ede8e1'
-          }
-        }, i);
-      })
-    })
-  });
+    apiPlans = _usePricingContent.plans;
+
+  // Use API plans if loaded and non-empty, else fallback
   var plans = apiPlans && apiPlans.length > 0 ? apiPlans : FALLBACK_PLANS;
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
     className: "pricing-plans",
@@ -26347,7 +26045,11 @@ var AboutHero = function AboutHero() {
       style: wrapStyle,
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
         className: "about-hero__copy",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h1", {
+        children: [heroEyebrow && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          className: "about-hero__eyebrow",
+          "data-aos": "fade-up",
+          children: heroEyebrow
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h1", {
           "data-aos": "fade-up",
           children: heroTitle
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
@@ -26435,6 +26137,8 @@ var AboutOverview = function AboutOverview() {
           children: overviewEyebrow
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h2", {
           children: missionTitle
+        }), missionDescription && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          children: missionDescription
         })]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
         className: "about-overview__grid",
@@ -33509,7 +33213,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".hire-analytics-section {\n  width: 100%;\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-analytics-section {\n    padding: 24px 16px 48px;\n  }\n}\n\n.hire-analytics-wrapper {\n  display: flex;\n  flex-direction: column;\n  gap: 20px;\n}\n\n.hire-analytics-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-end;\n  flex-wrap: wrap;\n  gap: 16px;\n}\n.hire-analytics-header h1 {\n  margin: 0 0 4px;\n  font-size: 26px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-analytics-header p {\n  margin: 0;\n  font-size: 14px;\n  color: #7a746d;\n}\n\n.hire-analytics-range {\n  display: flex;\n  gap: 4px;\n  background: #f2efea;\n  border-radius: 12px;\n  padding: 4px;\n}\n\n.hire-range-btn {\n  border: none;\n  background: none;\n  padding: 6px 16px;\n  border-radius: 9px;\n  font-size: 13px;\n  font-weight: 500;\n  color: #7a746d;\n  cursor: pointer;\n  font-family: inherit;\n  transition: 0.15s ease;\n}\n.hire-range-btn.active {\n  background: #ffffff;\n  color: #111111;\n  font-weight: 700;\n  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);\n}\n.hire-range-btn:hover:not(.active) {\n  color: #111111;\n}\n\n.hire-analytics-stats {\n  display: grid;\n  grid-template-columns: repeat(4, 1fr);\n  gap: 14px;\n}\n@media (max-width: 900px) {\n  .hire-analytics-stats {\n    grid-template-columns: repeat(2, 1fr);\n  }\n}\n@media (max-width: 480px) {\n  .hire-analytics-stats {\n    grid-template-columns: 1fr;\n  }\n}\n\n.hire-analytics-stat {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 16px;\n  padding: 20px;\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n  transition: box-shadow 0.2s, border-color 0.2s;\n}\n.hire-analytics-stat:hover {\n  border-color: #d4cdc5;\n  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);\n}\n\n.hire-analytics-stat-top {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 8px;\n}\n\n.hire-analytics-stat-label {\n  font-size: 12.5px;\n  color: #7a746d;\n  font-weight: 500;\n  line-height: 1.4;\n}\n\n.hire-analytics-stat-icon {\n  width: 32px;\n  height: 32px;\n  background: #fdf9e6;\n  border-radius: 9px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #c9a800;\n  font-size: 13px;\n  flex-shrink: 0;\n}\n\n.hire-analytics-stat-value {\n  font-size: 32px;\n  font-weight: 800;\n  color: #111111;\n  line-height: 1;\n  letter-spacing: -0.02em;\n}\n\n.hire-analytics-stat-change {\n  font-size: 12px;\n  font-weight: 600;\n}\n.hire-analytics-stat-change.up {\n  color: #2d9a5f;\n}\n.hire-analytics-stat-change.down {\n  color: #d94f4f;\n}\n\n.hire-analytics-row {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 14px;\n}\n@media (max-width: 700px) {\n  .hire-analytics-row {\n    grid-template-columns: 1fr;\n  }\n}\n\n.hire-analytics-card {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 16px;\n  padding: 24px;\n}\n@media (max-width: 768px) {\n  .hire-analytics-card {\n    padding: 16px;\n  }\n}\n.hire-analytics-card h3 {\n  margin: 0 0 20px;\n  font-size: 11px;\n  font-weight: 700;\n  color: #9e9890;\n  text-transform: uppercase;\n  letter-spacing: 0.09em;\n}\n.hire-analytics-card--full {\n  grid-column: 1/-1;\n}\n\n.hire-bar-chart {\n  display: flex;\n  flex-direction: column;\n  gap: 14px;\n}\n\n.hire-bar-row {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n}\n\n.hire-bar-label {\n  font-size: 12.5px;\n  color: #555050;\n  width: 130px;\n  flex-shrink: 0;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n@media (max-width: 480px) {\n  .hire-bar-label {\n    width: 80px;\n  }\n}\n\n.hire-bar-track {\n  flex: 1;\n  background: #f5f1eb;\n  border-radius: 999px;\n  height: 8px;\n  overflow: hidden;\n}\n\n.hire-bar-fill {\n  height: 100%;\n  background: #f5e27a;\n  border-radius: 999px;\n  transition: width 0.5s ease;\n}\n.hire-bar-fill.peak {\n  background: #fdd535;\n}\n\n.hire-bar-value {\n  font-size: 12.5px;\n  font-weight: 700;\n  color: #111111;\n  width: 20px;\n  text-align: right;\n  flex-shrink: 0;\n}\n\n.hire-funnel {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.hire-funnel-step {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n}\n\n.hire-funnel-row-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n\n.hire-funnel-label {\n  font-size: 12.5px;\n  font-weight: 600;\n  color: #333333;\n}\n\n.hire-funnel-count {\n  font-size: 13px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-funnel-track {\n  width: 100%;\n  height: 10px;\n  background: #f5f1eb;\n  border-radius: 999px;\n  overflow: hidden;\n}\n\n.hire-funnel-fill {\n  height: 100%;\n  border-radius: 999px;\n  transition: width 0.5s ease;\n}\n.hire-funnel-fill.step-0 {\n  background: #f5e27a;\n}\n.hire-funnel-fill.step-1 {\n  background: #fad93a;\n}\n.hire-funnel-fill.step-2 {\n  background: #fdd535;\n}\n.hire-funnel-fill.step-3 {\n  background: #fdd535;\n  box-shadow: 0 0 0 2px rgba(253, 213, 53, 0.3);\n}\n\n.hire-funnel-pct {\n  font-size: 11px;\n  color: #b0a89e;\n  padding: 2px 0 6px 0;\n}\n\n.hire-trend-chart {\n  display: flex;\n  align-items: flex-end;\n  gap: 6px;\n  height: 160px;\n  padding-top: 20px;\n}\n\n.hire-trend-col {\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 6px;\n  height: 100%;\n  justify-content: flex-end;\n  border-radius: 6px;\n  padding: 0 2px;\n}\n.hire-trend-col.current {\n  background: rgba(0, 0, 0, 0.032);\n  border-radius: 8px;\n}\n\n.hire-trend-value {\n  font-size: 11px;\n  font-weight: 600;\n  color: #9e9890;\n}\n.current .hire-trend-value {\n  color: #111111;\n  font-weight: 700;\n}\n\n.hire-trend-track {\n  width: 100%;\n  background: transparent;\n  border-radius: 6px 6px 0 0;\n  flex: 1;\n  display: flex;\n  align-items: flex-end;\n  overflow: hidden;\n}\n\n.hire-trend-fill {\n  width: 100%;\n  background: #fdd535;\n  border-radius: 6px 6px 0 0;\n  transition: height 0.4s ease;\n}\n\n.hire-trend-month {\n  font-size: 11px;\n  color: #b0a89e;\n  font-weight: 500;\n}\n.current .hire-trend-month {\n  color: #111111;\n  font-weight: 700;\n}\n\n.hire-analytics-empty {\n  text-align: center;\n  color: #b0a89e;\n  font-size: 14px;\n  padding: 24px 0;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".hire-analytics-section {\n  width: 100%;\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-analytics-section {\n    padding: 24px 16px 48px;\n  }\n}\n\n.hire-analytics-wrapper {\n  display: flex;\n  flex-direction: column;\n  gap: 20px;\n}\n\n.hire-analytics-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-end;\n  flex-wrap: wrap;\n  gap: 16px;\n}\n.hire-analytics-header h1 {\n  margin: 0 0 4px;\n  font-size: 26px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-analytics-header p {\n  margin: 0;\n  font-size: 14px;\n  color: #7a746d;\n}\n\n.hire-analytics-range {\n  display: flex;\n  gap: 4px;\n  background: #f2efea;\n  border-radius: 12px;\n  padding: 4px;\n}\n\n.hire-range-btn {\n  border: none;\n  background: none;\n  padding: 6px 16px;\n  border-radius: 9px;\n  font-size: 13px;\n  font-weight: 500;\n  color: #7a746d;\n  cursor: pointer;\n  font-family: inherit;\n  transition: 0.15s ease;\n}\n.hire-range-btn.active {\n  background: #ffffff;\n  color: #111111;\n  font-weight: 700;\n  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);\n}\n.hire-range-btn:hover:not(.active) {\n  color: #111111;\n}\n\n.hire-analytics-stats {\n  display: grid;\n  grid-template-columns: repeat(4, 1fr);\n  gap: 14px;\n}\n@media (max-width: 900px) {\n  .hire-analytics-stats {\n    grid-template-columns: repeat(2, 1fr);\n  }\n}\n@media (max-width: 480px) {\n  .hire-analytics-stats {\n    grid-template-columns: 1fr;\n  }\n}\n\n.hire-analytics-stat {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 16px;\n  padding: 20px;\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n  transition: box-shadow 0.2s, border-color 0.2s;\n}\n.hire-analytics-stat:hover {\n  border-color: #d4cdc5;\n  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);\n}\n\n.hire-analytics-stat-top {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 8px;\n}\n\n.hire-analytics-stat-label {\n  font-size: 12.5px;\n  color: #7a746d;\n  font-weight: 500;\n  line-height: 1.4;\n}\n\n.hire-analytics-stat-icon {\n  width: 32px;\n  height: 32px;\n  background: #fdf9e6;\n  border-radius: 9px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #c9a800;\n  font-size: 13px;\n  flex-shrink: 0;\n}\n\n.hire-analytics-stat-value {\n  font-size: 32px;\n  font-weight: 800;\n  color: #111111;\n  line-height: 1;\n  letter-spacing: -0.02em;\n}\n\n.hire-analytics-stat-change {\n  font-size: 12px;\n  font-weight: 600;\n}\n.hire-analytics-stat-change.up {\n  color: #2d9a5f;\n}\n.hire-analytics-stat-change.down {\n  color: #d94f4f;\n}\n\n.hire-analytics-row {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 14px;\n}\n@media (max-width: 700px) {\n  .hire-analytics-row {\n    grid-template-columns: 1fr;\n  }\n}\n\n.hire-analytics-card {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 16px;\n  padding: 24px;\n}\n@media (max-width: 768px) {\n  .hire-analytics-card {\n    padding: 16px;\n  }\n}\n.hire-analytics-card h3 {\n  margin: 0 0 20px;\n  font-size: 11px;\n  font-weight: 700;\n  color: #9e9890;\n  text-transform: uppercase;\n  letter-spacing: 0.09em;\n}\n.hire-analytics-card--full {\n  grid-column: 1/-1;\n}\n\n.hire-bar-chart {\n  display: flex;\n  flex-direction: column;\n  gap: 14px;\n}\n\n.hire-bar-row {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n}\n\n.hire-bar-label {\n  font-size: 12.5px;\n  color: #555050;\n  width: 130px;\n  flex-shrink: 0;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n@media (max-width: 480px) {\n  .hire-bar-label {\n    width: 80px;\n  }\n}\n\n.hire-bar-track {\n  flex: 1;\n  background: #f5f1eb;\n  border-radius: 999px;\n  height: 8px;\n  overflow: hidden;\n}\n\n.hire-bar-fill {\n  height: 100%;\n  background: #f5e27a;\n  border-radius: 999px;\n  transition: width 0.5s ease;\n}\n.hire-bar-fill.peak {\n  background: #fdd535;\n}\n\n.hire-bar-value {\n  font-size: 12.5px;\n  font-weight: 700;\n  color: #111111;\n  width: 20px;\n  text-align: right;\n  flex-shrink: 0;\n}\n\n.hire-funnel {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.hire-funnel-step {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n}\n\n.hire-funnel-row-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n\n.hire-funnel-label {\n  font-size: 12.5px;\n  font-weight: 600;\n  color: #333333;\n}\n\n.hire-funnel-count {\n  font-size: 13px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-funnel-track {\n  width: 100%;\n  height: 10px;\n  background: #f5f1eb;\n  border-radius: 999px;\n  overflow: hidden;\n}\n\n.hire-funnel-fill {\n  height: 100%;\n  border-radius: 999px;\n  transition: width 0.5s ease;\n}\n.hire-funnel-fill.step-0 {\n  background: #f5e27a;\n}\n.hire-funnel-fill.step-1 {\n  background: #fad93a;\n}\n.hire-funnel-fill.step-2 {\n  background: #fdd535;\n}\n.hire-funnel-fill.step-3 {\n  background: #fdd535;\n  box-shadow: 0 0 0 2px rgba(253, 213, 53, 0.3);\n}\n\n.hire-funnel-pct {\n  font-size: 11px;\n  color: #b0a89e;\n  padding: 2px 0 6px 0;\n}\n\n.hire-trend-chart {\n  display: flex;\n  align-items: flex-end;\n  gap: 6px;\n  height: 160px;\n  padding-top: 20px;\n}\n\n.hire-trend-col {\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 6px;\n  height: 100%;\n  justify-content: flex-end;\n  border-radius: 6px;\n  padding: 0 2px;\n}\n.hire-trend-col.current {\n  background: rgba(0, 0, 0, 0.032);\n  border-radius: 8px;\n}\n\n.hire-trend-value {\n  font-size: 11px;\n  font-weight: 600;\n  color: #9e9890;\n}\n.current .hire-trend-value {\n  color: #111111;\n  font-weight: 700;\n}\n\n.hire-trend-track {\n  width: 100%;\n  background: transparent;\n  border-radius: 6px 6px 0 0;\n  flex: 1;\n  display: flex;\n  align-items: flex-end;\n  overflow: hidden;\n}\n\n.hire-trend-fill {\n  width: 100%;\n  background: #fdd535;\n  border-radius: 6px 6px 0 0;\n  transition: height 0.4s ease;\n}\n\n.hire-trend-month {\n  font-size: 11px;\n  color: #b0a89e;\n  font-weight: 500;\n}\n.current .hire-trend-month {\n  color: #111111;\n  font-weight: 700;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -33581,7 +33285,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".hire-dashboard-hires-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-dashboard-hires-section {\n    padding: 24px 16px 48px;\n  }\n}\n\n.hire-hires-wrapper {\n  display: flex;\n  flex-direction: column;\n  gap: 28px;\n}\n\n.hire-list-search {\n  position: relative;\n  display: flex;\n  align-items: center;\n}\n.hire-list-search input {\n  width: 100%;\n  height: 40px;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 0 36px 0 36px;\n  font-size: 13.5px;\n  font-family: inherit;\n  color: #111111;\n  background: #ffffff;\n  outline: none;\n  transition: border-color 0.2s, box-shadow 0.2s;\n}\n.hire-list-search input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-list-search input::placeholder {\n  color: #b0a89e;\n}\n.hire-list-search input:focus {\n  border-color: #c8c2bb;\n  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);\n}\n\n.hire-hires-empty {\n  text-align: center;\n  color: #7a746d;\n  font-size: 14px;\n  padding: 16px 0;\n}\n\n.hire-hires-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 16px;\n}\n.hire-hires-header h2 {\n  margin: 0 0 4px;\n  font-size: 24px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-hires-header p {\n  margin: 0;\n  font-size: 14px;\n  color: #7a746d;\n}\n\n.hire-hires-stats {\n  display: flex;\n  align-items: center;\n  gap: 20px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  padding: 14px 22px;\n}\n\n.hire-hires-stat {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 2px;\n}\n\n.hire-hires-stat-num {\n  font-size: 22px;\n  font-weight: 800;\n  color: #111111;\n  line-height: 1;\n}\n.hire-hires-stat-num.starting {\n  color: #c58a00;\n}\n.hire-hires-stat-num.active {\n  color: #18a87a;\n}\n\n.hire-hires-stat-label {\n  font-size: 11px;\n  color: #7a746d;\n  white-space: nowrap;\n}\n\n.hire-hires-stat-divider {\n  width: 1px;\n  height: 32px;\n  background: #e7dfd4;\n}\n\n.hire-hires-list {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 18px;\n  align-items: start;\n}\n@media (max-width: 960px) {\n  .hire-hires-list {\n    grid-template-columns: repeat(2, 1fr);\n  }\n}\n@media (max-width: 560px) {\n  .hire-hires-list {\n    grid-template-columns: 1fr;\n  }\n}\n\n.hire-hire-card {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  transition: box-shadow 0.2s, border-color 0.2s, transform 0.18s;\n}\n.hire-hire-card:hover {\n  border-color: #d4cdc5;\n  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.09);\n  transform: translateY(-2px);\n}\n\n.hire-hire-banner {\n  position: relative;\n  height: 88px;\n  flex-shrink: 0;\n  background: repeating-linear-gradient(-52deg, transparent 0px, transparent 9px, rgba(255, 255, 255, 0.18) 9px, rgba(255, 255, 255, 0.18) 10px), linear-gradient(135deg, #cfc8be 0%, #e7dfd4 60%, #f2efea 100%);\n}\n\n.hire-hire-avatar {\n  position: absolute;\n  bottom: -20px;\n  left: 20px;\n  width: 52px;\n  height: 52px;\n  background: #ffffff;\n  border: 3px solid #fdd535;\n  border-radius: 14px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 17px;\n  font-weight: 800;\n  color: #111111;\n  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);\n}\n\n.hire-hire-card-body {\n  padding: 28px 18px 18px;\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  flex: 1;\n}\n\n.hire-hire-card-top {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 10px;\n}\n\n.hire-hire-identity {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n  min-width: 0;\n}\n\n.hire-hire-name {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-hire-role {\n  font-size: 12px;\n  color: #7a746d;\n}\n\n.hire-hire-status {\n  border-radius: 999px;\n  padding: 4px 11px;\n  font-size: 11px;\n  font-weight: 700;\n  white-space: nowrap;\n  flex-shrink: 0;\n}\n.hire-hire-status.status-active {\n  background: #e6f4ec;\n  color: #18a87a;\n  border: 1px solid #b3e6ce;\n}\n.hire-hire-status.status-starting-soon {\n  background: #fff8e1;\n  color: #b88a00;\n  border: 1px solid #f5d87a;\n}\n\n.hire-hire-divider {\n  height: 1px;\n  background: #f0ece6;\n}\n\n.hire-hire-section {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.hire-hire-section-title {\n  font-size: 10px;\n  font-weight: 700;\n  color: #111111;\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n}\n\n.hire-hire-section-title-row {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n}\n\n.hire-hire-progress-label {\n  font-size: 11px;\n  font-weight: 700;\n  color: #7a746d;\n}\n\n.hire-hire-detail-list {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n.hire-hire-detail-list li {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  font-size: 12.5px;\n  color: #444444;\n}\n\n.hire-hire-detail-icon {\n  color: #bbb5ae;\n  font-size: 12px;\n  flex-shrink: 0;\n}\n\n.hire-hire-progress-bar {\n  height: 5px;\n  background: #f0ece6;\n  border-radius: 99px;\n  overflow: hidden;\n}\n\n.hire-hire-progress-fill {\n  height: 100%;\n  border-radius: 99px;\n  background: #fdd535;\n  transition: width 0.4s ease;\n}\n\n.hire-hire-steps-list {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n.hire-hire-steps-list li {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  font-size: 12.5px;\n  color: #444444;\n  cursor: pointer;\n  border-radius: 6px;\n  padding: 4px 6px;\n  margin: 0 -6px;\n  transition: background 0.15s;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.hire-hire-steps-list li:hover {\n  background: #f7f4f0;\n}\n.hire-hire-steps-list li.done {\n  color: #9e9890;\n  text-decoration: line-through;\n}\n\n.step-icon {\n  font-size: 13px;\n  flex-shrink: 0;\n  color: #ccc7c0;\n}\n.step-icon.checked {\n  color: #18a87a;\n}\n\n.hire-history {\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n}\n\n.hire-history-header h3 {\n  margin: 0 0 4px;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-history-header p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.hire-history-list {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.hire-history-group {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  overflow: hidden;\n  transition: border-color 0.2s;\n}\n.hire-history-group.open {\n  border-color: #d4cdc5;\n}\n\n.hire-history-month-row {\n  width: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: 16px 20px;\n  background: none;\n  border: none;\n  cursor: pointer;\n  font-family: inherit;\n  transition: background 0.15s;\n}\n.hire-history-month-row:hover {\n  background: #fafaf8;\n}\n\n.hire-history-month-left {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n}\n\n.hire-history-month-name {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-history-month-count {\n  font-size: 12px;\n  font-weight: 600;\n  color: #7a746d;\n  background: #f2efea;\n  border-radius: 999px;\n  padding: 3px 10px;\n}\n\n.hire-history-chevron {\n  font-size: 12px;\n  color: #7a746d;\n  transition: transform 0.2s;\n}\n.open .hire-history-chevron {\n  transform: rotate(180deg);\n}\n\n.hire-history-rows {\n  border-top: 1px solid #f0ece6;\n  display: flex;\n  flex-direction: column;\n}\n\n.hire-history-row {\n  display: flex;\n  align-items: center;\n  gap: 16px;\n  padding: 14px 20px;\n  border-bottom: 1px solid #f0ece6;\n  flex-wrap: wrap;\n  transition: background 0.15s;\n}\n.hire-history-row:last-child {\n  border-bottom: none;\n}\n.hire-history-row:hover {\n  background: #fafaf8;\n}\n\n.hire-history-initials {\n  width: 38px;\n  height: 38px;\n  background: #f2efea;\n  border-radius: 10px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 700;\n  color: #111111;\n  flex-shrink: 0;\n}\n\n.hire-history-info {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 160px;\n  flex: 1;\n}\n\n.hire-history-name {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111111;\n}\n\n.hire-history-role {\n  font-size: 12px;\n  color: #7a746d;\n}\n\n.hire-history-meta {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  flex-shrink: 0;\n}\n.hire-history-meta span {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  font-size: 12px;\n  color: #7a746d;\n}\n.hire-history-meta span svg {\n  color: #bbb5ae;\n  font-size: 11px;\n}\n\n.hire-history-status {\n  margin-left: auto;\n  font-size: 11px;\n  font-weight: 700;\n  padding: 4px 11px;\n  border-radius: 999px;\n  background: #e6f4ec;\n  color: #18a87a;\n  border: 1px solid #b3e6ce;\n  flex-shrink: 0;\n}\n@media (max-width: 600px) {\n  .hire-history-status {\n    margin-left: 0;\n  }\n}\n\n.hire-hire-actions {\n  display: flex;\n  gap: 8px;\n  margin-top: 4px;\n}\n\n.hire-hire-action-btn {\n  flex: 1;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 6px;\n  height: 36px;\n  border-radius: 8px;\n  font-size: 12.5px;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  transition: background 0.2s, box-shadow 0.2s;\n  border: 1px solid #e7dfd4;\n  background: #fafaf8;\n  color: #444444;\n}\n.hire-hire-action-btn:hover {\n  background: #f2efea;\n  border-color: #d4cdc5;\n}\n.hire-hire-action-btn.primary {\n  background: #111111;\n  border-color: #111111;\n  color: #ffffff;\n}\n.hire-hire-action-btn.primary:hover {\n  background: #2e2e2e;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".hire-dashboard-hires-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-dashboard-hires-section {\n    padding: 24px 16px 48px;\n  }\n}\n\n.hire-hires-wrapper {\n  display: flex;\n  flex-direction: column;\n  gap: 28px;\n}\n\n.hire-list-search {\n  position: relative;\n  display: flex;\n  align-items: center;\n}\n.hire-list-search input {\n  width: 100%;\n  height: 40px;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 0 36px 0 36px;\n  font-size: 13.5px;\n  font-family: inherit;\n  color: #111111;\n  background: #ffffff;\n  outline: none;\n  transition: border-color 0.2s, box-shadow 0.2s;\n}\n.hire-list-search input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-list-search input::placeholder {\n  color: #b0a89e;\n}\n.hire-list-search input:focus {\n  border-color: #c8c2bb;\n  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);\n}\n\n.hire-hires-empty {\n  text-align: center;\n  color: #7a746d;\n  font-size: 14px;\n  padding: 16px 0;\n}\n\n.hire-hires-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 16px;\n}\n.hire-hires-header h2 {\n  margin: 0 0 4px;\n  font-size: 24px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-hires-header p {\n  margin: 0;\n  font-size: 14px;\n  color: #7a746d;\n}\n\n.hire-hires-stats {\n  display: flex;\n  align-items: center;\n  gap: 20px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  padding: 14px 22px;\n}\n\n.hire-hires-stat {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 2px;\n}\n\n.hire-hires-stat-num {\n  font-size: 22px;\n  font-weight: 800;\n  color: #111111;\n  line-height: 1;\n}\n.hire-hires-stat-num.starting {\n  color: #c58a00;\n}\n.hire-hires-stat-num.active {\n  color: #18a87a;\n}\n\n.hire-hires-stat-label {\n  font-size: 11px;\n  color: #7a746d;\n  white-space: nowrap;\n}\n\n.hire-hires-stat-divider {\n  width: 1px;\n  height: 32px;\n  background: #e7dfd4;\n}\n\n.hire-hires-toolbar {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n}\n\n.hire-hires-sort {\n  height: 40px;\n  padding: 0 14px;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  font-size: 13px;\n  font-family: inherit;\n  color: #555050;\n  background: #ffffff;\n  cursor: pointer;\n  outline: none;\n}\n.hire-hires-sort:focus {\n  border-color: #bbb5ae;\n}\n\n.hire-hires-empty {\n  font-size: 14px;\n  color: #7a746d;\n  padding: 8px 0;\n}\n\n.hire-hires-list {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 18px;\n  align-items: start;\n}\n@media (max-width: 960px) {\n  .hire-hires-list {\n    grid-template-columns: repeat(2, 1fr);\n  }\n}\n@media (max-width: 560px) {\n  .hire-hires-list {\n    grid-template-columns: 1fr;\n  }\n}\n\n.hire-hire-card {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  transition: box-shadow 0.2s, border-color 0.2s, transform 0.18s;\n}\n.hire-hire-card:hover {\n  border-color: #d4cdc5;\n  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.09);\n  transform: translateY(-2px);\n}\n\n.hire-hire-banner {\n  position: relative;\n  height: 88px;\n  flex-shrink: 0;\n  background: repeating-linear-gradient(-52deg, transparent 0px, transparent 9px, rgba(255, 255, 255, 0.18) 9px, rgba(255, 255, 255, 0.18) 10px), linear-gradient(135deg, #cfc8be 0%, #e7dfd4 60%, #f2efea 100%);\n}\n\n.hire-hire-avatar {\n  position: absolute;\n  bottom: -20px;\n  left: 20px;\n  width: 52px;\n  height: 52px;\n  background: #ffffff;\n  border: 3px solid #fdd535;\n  border-radius: 14px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 17px;\n  font-weight: 800;\n  color: #111111;\n  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);\n}\n\n.hire-hire-card-body {\n  padding: 28px 18px 18px;\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  flex: 1;\n}\n\n.hire-hire-card-top {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 10px;\n}\n\n.hire-hire-identity {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n  min-width: 0;\n}\n\n.hire-hire-name {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-hire-role {\n  font-size: 12px;\n  color: #7a746d;\n}\n\n.hire-hire-status {\n  border-radius: 999px;\n  padding: 4px 11px;\n  font-size: 11px;\n  font-weight: 700;\n  white-space: nowrap;\n  flex-shrink: 0;\n}\n.hire-hire-status.status-active {\n  background: #e6f4ec;\n  color: #18a87a;\n  border: 1px solid #b3e6ce;\n}\n.hire-hire-status.status-starting-soon {\n  background: #fff8e1;\n  color: #b88a00;\n  border: 1px solid #f5d87a;\n}\n\n.hire-hire-divider {\n  height: 1px;\n  background: #f0ece6;\n}\n\n.hire-hire-section {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.hire-hire-section-title {\n  font-size: 10px;\n  font-weight: 700;\n  color: #111111;\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n}\n\n.hire-hire-section-title-row {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n}\n\n.hire-hire-progress-label {\n  font-size: 11px;\n  font-weight: 700;\n  color: #7a746d;\n}\n\n.hire-hire-detail-list {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n.hire-hire-detail-list li {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  font-size: 12.5px;\n  color: #444444;\n}\n\n.hire-hire-detail-icon {\n  color: #bbb5ae;\n  font-size: 12px;\n  flex-shrink: 0;\n}\n\n.hire-hire-progress-bar {\n  height: 5px;\n  background: #f0ece6;\n  border-radius: 99px;\n  overflow: hidden;\n}\n\n.hire-hire-progress-fill {\n  height: 100%;\n  border-radius: 99px;\n  background: #fdd535;\n  transition: width 0.4s ease;\n}\n\n.hire-hire-steps-list {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n.hire-hire-steps-list li {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  font-size: 12.5px;\n  color: #444444;\n  cursor: pointer;\n  border-radius: 6px;\n  padding: 4px 6px;\n  margin: 0 -6px;\n  transition: background 0.15s;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.hire-hire-steps-list li:hover {\n  background: #f7f4f0;\n}\n.hire-hire-steps-list li.done {\n  color: #9e9890;\n  text-decoration: line-through;\n}\n\n.step-icon {\n  font-size: 13px;\n  flex-shrink: 0;\n  color: #ccc7c0;\n}\n.step-icon.checked {\n  color: #18a87a;\n}\n\n.hire-history {\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n}\n\n.hire-history-header h3 {\n  margin: 0 0 4px;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-history-header p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.hire-history-list {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.hire-history-group {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  overflow: hidden;\n  transition: border-color 0.2s;\n}\n.hire-history-group.open {\n  border-color: #d4cdc5;\n}\n\n.hire-history-month-row {\n  width: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: 16px 20px;\n  background: none;\n  border: none;\n  cursor: pointer;\n  font-family: inherit;\n  transition: background 0.15s;\n}\n.hire-history-month-row:hover {\n  background: #fafaf8;\n}\n\n.hire-history-month-left {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n}\n\n.hire-history-month-name {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-history-month-count {\n  font-size: 12px;\n  font-weight: 600;\n  color: #7a746d;\n  background: #f2efea;\n  border-radius: 999px;\n  padding: 3px 10px;\n}\n\n.hire-history-chevron {\n  font-size: 12px;\n  color: #7a746d;\n  transition: transform 0.2s;\n}\n.open .hire-history-chevron {\n  transform: rotate(180deg);\n}\n\n.hire-history-rows {\n  border-top: 1px solid #f0ece6;\n  display: flex;\n  flex-direction: column;\n}\n\n.hire-history-row {\n  display: flex;\n  align-items: center;\n  gap: 16px;\n  padding: 14px 20px;\n  border-bottom: 1px solid #f0ece6;\n  flex-wrap: wrap;\n  transition: background 0.15s;\n}\n.hire-history-row:last-child {\n  border-bottom: none;\n}\n.hire-history-row:hover {\n  background: #fafaf8;\n}\n\n.hire-history-initials {\n  width: 38px;\n  height: 38px;\n  background: #f2efea;\n  border-radius: 10px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 700;\n  color: #111111;\n  flex-shrink: 0;\n}\n\n.hire-history-info {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 160px;\n  flex: 1;\n}\n\n.hire-history-name {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111111;\n}\n\n.hire-history-role {\n  font-size: 12px;\n  color: #7a746d;\n}\n\n.hire-history-meta {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  flex-shrink: 0;\n}\n.hire-history-meta span {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  font-size: 12px;\n  color: #7a746d;\n}\n.hire-history-meta span svg {\n  color: #bbb5ae;\n  font-size: 11px;\n}\n\n.hire-history-status {\n  margin-left: auto;\n  font-size: 11px;\n  font-weight: 700;\n  padding: 4px 11px;\n  border-radius: 999px;\n  flex-shrink: 0;\n}\n.hire-history-status.status-active {\n  background: #e6f4ec;\n  color: #18a87a;\n  border: 1px solid #b3e6ce;\n}\n.hire-history-status.status-starting-soon {\n  background: #fff8e1;\n  color: #b88a00;\n  border: 1px solid #f5d87a;\n}\n@media (max-width: 600px) {\n  .hire-history-status {\n    margin-left: 0;\n  }\n}\n\n.hire-hire-actions {\n  display: flex;\n  gap: 8px;\n  margin-top: 4px;\n}\n\n.hire-hire-action-btn {\n  flex: 1;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 6px;\n  height: 36px;\n  border-radius: 8px;\n  font-size: 12.5px;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  transition: background 0.2s, box-shadow 0.2s;\n  border: 1px solid #e7dfd4;\n  background: #fafaf8;\n  color: #444444;\n}\n.hire-hire-action-btn:hover {\n  background: #f2efea;\n  border-color: #d4cdc5;\n}\n.hire-hire-action-btn.primary {\n  background: #111111;\n  border-color: #111111;\n  color: #ffffff;\n}\n.hire-hire-action-btn.primary:hover {\n  background: #2e2e2e;\n}\n.hire-hire-action-btn.danger {\n  flex: 0 0 36px;\n  color: #c0392b;\n  border-color: #f5c6c2;\n}\n.hire-hire-action-btn.danger:hover {\n  background: #fdf0ef;\n  border-color: #e8a09a;\n}\n.hire-hire-action-btn.danger:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -33605,7 +33309,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".hire-dashboard-interviews-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-dashboard-interviews-section {\n    padding: 24px 16px 48px;\n  }\n}\n\n.hire-interviews-wrapper {\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n}\n\n.hire-interviews-eyebrow {\n  display: block;\n  color: #7a746d;\n  font-size: 12px;\n  font-weight: 600;\n  letter-spacing: 0.04em;\n  text-transform: uppercase;\n  margin-bottom: 4px;\n}\n\n.hire-list-search {\n  position: relative;\n  display: flex;\n  align-items: center;\n}\n.hire-list-search input {\n  width: 100%;\n  height: 40px;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 0 36px 0 36px;\n  font-size: 13.5px;\n  font-family: inherit;\n  color: #111111;\n  background: #ffffff;\n  outline: none;\n  transition: border-color 0.2s, box-shadow 0.2s;\n}\n.hire-list-search input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-list-search input::placeholder {\n  color: #b0a89e;\n}\n.hire-list-search input:focus {\n  border-color: #c8c2bb;\n  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);\n}\n\n.hire-interviews-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-end;\n  flex-wrap: wrap;\n  gap: 16px;\n}\n.hire-interviews-header h2 {\n  margin: 0 0 4px;\n  font-size: 24px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-interviews-header p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.hire-interviews-header-actions {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  flex-wrap: wrap;\n}\n\n.hire-interviews-schedule-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 7px;\n  height: 38px;\n  padding: 0 18px;\n  background: #111111;\n  color: #ffffff;\n  border: none;\n  border-radius: 999px;\n  font-size: 13px;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  white-space: nowrap;\n  transition: background 0.2s, transform 0.15s;\n}\n.hire-interviews-schedule-btn:hover {\n  background: #333333;\n  transform: translateY(-1px);\n}\n\n.hire-interviews-tabs {\n  display: flex;\n  gap: 6px;\n  flex-wrap: wrap;\n}\n.hire-interviews-tabs .hire-tab {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 6px 14px;\n  border-radius: 999px;\n  border: 1px solid #e7dfd4;\n  background: #ffffff;\n  font-size: 13px;\n  font-weight: 500;\n  color: #7a746d;\n  cursor: pointer;\n  transition: 0.15s ease;\n  font-family: inherit;\n}\n.hire-interviews-tabs .hire-tab:hover {\n  border-color: #c8c2bb;\n  color: #111111;\n}\n.hire-interviews-tabs .hire-tab.active {\n  background: #fdd535;\n  border-color: #fdd535;\n  color: #111111;\n  font-weight: 600;\n}\n\n.hire-interviews-empty {\n  text-align: center;\n  color: #7a746d;\n  font-size: 14px;\n  padding: 48px 0;\n  margin: 0;\n}\n\n.hire-interviews-list {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n}\n\n.hire-interview-row {\n  display: flex;\n  align-items: center;\n  gap: 14px;\n  padding: 15px 20px;\n  border-bottom: 1px solid #f2efea;\n  transition: background 0.15s;\n  flex-wrap: wrap;\n}\n.hire-interview-row:last-child {\n  border-bottom: none;\n}\n.hire-interview-row:hover {\n  background: #fafaf8;\n}\n@media (max-width: 600px) {\n  .hire-interview-row {\n    padding: 13px 14px;\n    gap: 10px;\n  }\n}\n\n.hire-interview-initials {\n  width: 40px;\n  height: 40px;\n  background: #fdd535;\n  border-radius: 12px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 700;\n  color: #111111;\n  flex-shrink: 0;\n}\n\n.hire-interview-info {\n  flex: 1;\n  min-width: 140px;\n}\n.hire-interview-info .hire-interview-name {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111111;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  margin-bottom: 2px;\n}\n.hire-interview-info .hire-interview-role {\n  font-size: 12.5px;\n  color: #7a746d;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.hire-interview-info .hire-interview-company {\n  font-size: 12px;\n  color: #9a948c;\n  margin-top: 1px;\n}\n\n.hire-interview-type-badge {\n  display: inline-flex;\n  align-items: center;\n  gap: 5px;\n  padding: 4px 10px;\n  border-radius: 999px;\n  font-size: 12px;\n  font-weight: 600;\n  flex-shrink: 0;\n}\n.hire-interview-type-badge.type-video {\n  background: #e8f5fb;\n  color: #0d6a9e;\n  border: 1px solid #b8ddf0;\n}\n.hire-interview-type-badge.type-phone {\n  background: #f0f4ff;\n  color: #3b52c4;\n  border: 1px solid #c5cef5;\n}\n.hire-interview-type-badge.type-in_person {\n  background: #f0fff4;\n  color: #276749;\n  border: 1px solid #9ae6b4;\n}\n\n.hire-interview-date,\n.hire-interview-location,\n.hire-interview-interviewer {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  font-size: 12.5px;\n  color: #7a746d;\n  white-space: nowrap;\n  flex-shrink: 0;\n}\n@media (max-width: 600px) {\n  .hire-interview-date,\n  .hire-interview-location,\n  .hire-interview-interviewer {\n    font-size: 12px;\n  }\n}\n\n.hire-interview-status {\n  border-radius: 999px;\n  padding: 5px 12px;\n  font-size: 12px;\n  font-weight: 600;\n  flex-shrink: 0;\n  white-space: nowrap;\n}\n.hire-interview-status.status-scheduled {\n  background: #fff8e1;\n  color: #b88a00;\n  border: 1px solid #f5d87a;\n}\n.hire-interview-status.status-in_progress {\n  background: #e3f2fd;\n  color: #1565c0;\n  border: 1px solid #90caf9;\n}\n.hire-interview-status.status-rescheduled {\n  background: #fff8e1;\n  color: #f57f17;\n  border: 1px solid #ffe082;\n}\n.hire-interview-status.status-completed {\n  background: #e8f5e9;\n  color: #2e7d32;\n  border: 1px solid #c8e6c9;\n}\n.hire-interview-status.status-cancelled {\n  background: #f2efea;\n  color: #7a746d;\n  border: 1px solid #e7dfd4;\n}\n\n.hire-interview-actions {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  flex-wrap: wrap;\n}\n.hire-interview-actions button {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 5px;\n  min-height: 32px;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  background: #ffffff;\n  color: #111111;\n  cursor: pointer;\n  font: inherit;\n  font-size: 12px;\n  font-weight: 600;\n  padding: 0 10px;\n  transition: 0.15s ease;\n  white-space: nowrap;\n}\n.hire-interview-actions button:hover {\n  border-color: #c8c2bb;\n  background: #f7f4f0;\n}\n.hire-interview-actions .hire-interview-join-btn {\n  background: #111111;\n  color: #ffffff;\n  border-color: #111111;\n}\n.hire-interview-actions .hire-interview-join-btn:hover {\n  background: #333333;\n  border-color: #333333;\n}\n\n.hire-interview-details-overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.45);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 9999;\n  padding: 24px;\n}\n\n.hire-interview-details {\n  background: #ffffff;\n  border-radius: 20px;\n  padding: 28px;\n  max-width: 480px;\n  width: 100%;\n  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.16);\n}\n.hire-interview-details h3 {\n  margin: 0 0 20px;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-interview-details p {\n  margin: 0 0 10px;\n  font-size: 14px;\n  color: #444444;\n  line-height: 1.5;\n  word-break: break-all;\n  overflow-wrap: anywhere;\n}\n.hire-interview-details p strong {\n  color: #111111;\n}\n.hire-interview-details button {\n  margin-top: 16px;\n  padding: 10px 22px;\n  border-radius: 999px;\n  border: none;\n  background: #f2efea;\n  color: #111111;\n  font-size: 14px;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  transition: background 0.2s;\n}\n.hire-interview-details button:hover {\n  background: #e7dfd4;\n}\n\n.hire-interviews-join {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 24px;\n  padding: 20px 22px;\n  border: 1px solid #e7dfd4;\n  border-radius: 16px;\n  background: #fafaf8;\n  flex-wrap: wrap;\n}\n.hire-interviews-join h3 {\n  margin: 0 0 6px;\n  font-size: 16px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-interviews-join p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".hire-dashboard-interviews-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-dashboard-interviews-section {\n    padding: 24px 16px 48px;\n  }\n}\n\n.hire-interviews-wrapper {\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n}\n\n.hire-interviews-eyebrow {\n  display: block;\n  color: #7a746d;\n  font-size: 12px;\n  font-weight: 600;\n  letter-spacing: 0.04em;\n  text-transform: uppercase;\n  margin-bottom: 4px;\n}\n\n.hire-interviews-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-end;\n  flex-wrap: wrap;\n  gap: 16px;\n}\n.hire-interviews-header h2 {\n  margin: 0 0 4px;\n  font-size: 24px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-interviews-header p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.hire-interviews-header-actions {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  flex-wrap: wrap;\n}\n\n.hire-interviews-schedule-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 7px;\n  height: 38px;\n  padding: 0 18px;\n  background: #111111;\n  color: #ffffff;\n  border: none;\n  border-radius: 999px;\n  font-size: 13px;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  white-space: nowrap;\n  transition: background 0.2s, transform 0.15s;\n}\n.hire-interviews-schedule-btn:hover {\n  background: #333333;\n  transform: translateY(-1px);\n}\n\n.hire-interviews-tabs {\n  display: flex;\n  gap: 6px;\n  flex-wrap: wrap;\n}\n.hire-interviews-tabs .hire-tab {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 6px 14px;\n  border-radius: 999px;\n  border: 1px solid #e7dfd4;\n  background: #ffffff;\n  font-size: 13px;\n  font-weight: 500;\n  color: #7a746d;\n  cursor: pointer;\n  transition: 0.15s ease;\n  font-family: inherit;\n}\n.hire-interviews-tabs .hire-tab:hover {\n  border-color: #c8c2bb;\n  color: #111111;\n}\n.hire-interviews-tabs .hire-tab.active {\n  background: #fdd535;\n  border-color: #fdd535;\n  color: #111111;\n  font-weight: 600;\n}\n\n.hire-interviews-empty {\n  text-align: center;\n  color: #7a746d;\n  font-size: 14px;\n  padding: 48px 0;\n  margin: 0;\n}\n\n.hire-interviews-list {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n}\n\n.hire-interview-row {\n  display: flex;\n  align-items: center;\n  gap: 14px;\n  padding: 15px 20px;\n  border-bottom: 1px solid #f2efea;\n  transition: background 0.15s;\n  flex-wrap: wrap;\n}\n.hire-interview-row:last-child {\n  border-bottom: none;\n}\n.hire-interview-row:hover {\n  background: #fafaf8;\n}\n@media (max-width: 600px) {\n  .hire-interview-row {\n    padding: 13px 14px;\n    gap: 10px;\n  }\n}\n\n.hire-interview-initials {\n  width: 40px;\n  height: 40px;\n  background: #fdd535;\n  border-radius: 12px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 700;\n  color: #111111;\n  flex-shrink: 0;\n}\n\n.hire-interview-info {\n  flex: 1;\n  min-width: 140px;\n}\n.hire-interview-info .hire-interview-name {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111111;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  margin-bottom: 2px;\n}\n.hire-interview-info .hire-interview-role {\n  font-size: 12.5px;\n  color: #7a746d;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.hire-interview-info .hire-interview-company {\n  font-size: 12px;\n  color: #9a948c;\n  margin-top: 1px;\n}\n\n.hire-interview-type-badge {\n  display: inline-flex;\n  align-items: center;\n  gap: 5px;\n  padding: 4px 10px;\n  border-radius: 999px;\n  font-size: 12px;\n  font-weight: 600;\n  flex-shrink: 0;\n}\n.hire-interview-type-badge.type-video {\n  background: #e8f5fb;\n  color: #0d6a9e;\n  border: 1px solid #b8ddf0;\n}\n.hire-interview-type-badge.type-phone {\n  background: #f0f4ff;\n  color: #3b52c4;\n  border: 1px solid #c5cef5;\n}\n.hire-interview-type-badge.type-in_person {\n  background: #f0fff4;\n  color: #276749;\n  border: 1px solid #9ae6b4;\n}\n\n.hire-interview-date,\n.hire-interview-location,\n.hire-interview-interviewer {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  font-size: 12.5px;\n  color: #7a746d;\n  white-space: nowrap;\n  flex-shrink: 0;\n}\n@media (max-width: 600px) {\n  .hire-interview-date,\n  .hire-interview-location,\n  .hire-interview-interviewer {\n    font-size: 12px;\n  }\n}\n\n.hire-interview-status {\n  border-radius: 999px;\n  padding: 5px 12px;\n  font-size: 12px;\n  font-weight: 600;\n  flex-shrink: 0;\n  white-space: nowrap;\n}\n.hire-interview-status.status-scheduled {\n  background: #fff8e1;\n  color: #b88a00;\n  border: 1px solid #f5d87a;\n}\n.hire-interview-status.status-in_progress {\n  background: #e3f2fd;\n  color: #1565c0;\n  border: 1px solid #90caf9;\n}\n.hire-interview-status.status-rescheduled {\n  background: #fff8e1;\n  color: #f57f17;\n  border: 1px solid #ffe082;\n}\n.hire-interview-status.status-completed {\n  background: #e8f5e9;\n  color: #2e7d32;\n  border: 1px solid #c8e6c9;\n}\n.hire-interview-status.status-cancelled {\n  background: #f2efea;\n  color: #7a746d;\n  border: 1px solid #e7dfd4;\n}\n\n.hire-interview-actions {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  flex-wrap: wrap;\n}\n.hire-interview-actions button {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 5px;\n  min-height: 32px;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  background: #ffffff;\n  color: #111111;\n  cursor: pointer;\n  font: inherit;\n  font-size: 12px;\n  font-weight: 600;\n  padding: 0 10px;\n  transition: 0.15s ease;\n  white-space: nowrap;\n}\n.hire-interview-actions button:hover {\n  border-color: #c8c2bb;\n  background: #f7f4f0;\n}\n.hire-interview-actions .hire-interview-join-btn {\n  background: #111111;\n  color: #ffffff;\n  border-color: #111111;\n}\n.hire-interview-actions .hire-interview-join-btn:hover {\n  background: #333333;\n  border-color: #333333;\n}\n\n.hire-interview-details-overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.45);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 9999;\n  padding: 24px;\n}\n\n.hire-interview-details {\n  background: #ffffff;\n  border-radius: 20px;\n  padding: 28px;\n  max-width: 480px;\n  width: 100%;\n  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.16);\n}\n.hire-interview-details h3 {\n  margin: 0 0 20px;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-interview-details p {\n  margin: 0 0 10px;\n  font-size: 14px;\n  color: #444444;\n  line-height: 1.5;\n}\n.hire-interview-details p strong {\n  color: #111111;\n}\n.hire-interview-details button {\n  margin-top: 16px;\n  padding: 10px 22px;\n  border-radius: 999px;\n  border: none;\n  background: #f2efea;\n  color: #111111;\n  font-size: 14px;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  transition: background 0.2s;\n}\n.hire-interview-details button:hover {\n  background: #e7dfd4;\n}\n\n.hire-interviews-join {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 24px;\n  padding: 20px 22px;\n  border: 1px solid #e7dfd4;\n  border-radius: 16px;\n  background: #fafaf8;\n  flex-wrap: wrap;\n}\n.hire-interviews-join h3 {\n  margin: 0 0 6px;\n  font-size: 16px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-interviews-join p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -33629,7 +33333,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".hire-dashboard-listings-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-dashboard-listings-section {\n    padding: 24px 16px 48px;\n  }\n}\n\n.hire-listings-wrapper {\n  display: flex;\n  flex-direction: column;\n  gap: 22px;\n}\n\n.hire-listings-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-end;\n  flex-wrap: wrap;\n  gap: 16px;\n}\n.hire-listings-header h2 {\n  margin: 0 0 4px;\n  font-size: 24px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-listings-header p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.hire-list-search {\n  position: relative;\n  display: flex;\n  align-items: center;\n}\n.hire-list-search input {\n  width: 100%;\n  height: 40px;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 0 36px 0 36px;\n  font-size: 13.5px;\n  font-family: inherit;\n  color: #111111;\n  background: #ffffff;\n  outline: none;\n  transition: border-color 0.2s, box-shadow 0.2s;\n}\n.hire-list-search input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-list-search input::placeholder {\n  color: #b0a89e;\n}\n.hire-list-search input:focus {\n  border-color: #c8c2bb;\n  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);\n}\n\n.hire-listings-post-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  height: 40px;\n  padding: 0 20px;\n  background: #fdd535;\n  border: none;\n  border-radius: 10px;\n  font-size: 13.5px;\n  font-weight: 700;\n  font-family: inherit;\n  color: #111111;\n  cursor: pointer;\n  white-space: nowrap;\n  transition: background 0.18s, box-shadow 0.18s;\n}\n.hire-listings-post-btn:hover {\n  background: #f5cb00;\n  box-shadow: 0 4px 14px rgba(253, 213, 53, 0.45);\n}\n\n.hire-listings-tabs {\n  display: flex;\n  gap: 6px;\n  flex-wrap: wrap;\n}\n\n.hire-tab {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 6px 14px;\n  border-radius: 999px;\n  border: 1px solid #e7dfd4;\n  background: #ffffff;\n  font-size: 13px;\n  font-weight: 500;\n  color: #7a746d;\n  cursor: pointer;\n  transition: 0.15s ease;\n  font-family: inherit;\n}\n.hire-tab:hover {\n  border-color: #c8c2bb;\n  color: #111111;\n}\n.hire-tab.active {\n  background: #fdd535;\n  border-color: #fdd535;\n  color: #111111;\n  font-weight: 600;\n}\n\n.hire-tab-count {\n  font-size: 11px;\n  font-weight: 700;\n  background: rgba(0, 0, 0, 0.08);\n  border-radius: 999px;\n  padding: 1px 6px;\n}\n.hire-tab.active .hire-tab-count {\n  background: rgba(0, 0, 0, 0.12);\n}\n\n.hire-listings-grid {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 16px;\n}\n@media (max-width: 980px) {\n  .hire-listings-grid {\n    grid-template-columns: repeat(2, 1fr);\n  }\n}\n@media (max-width: 560px) {\n  .hire-listings-grid {\n    grid-template-columns: 1fr;\n  }\n}\n\n.hire-listings-empty {\n  text-align: center;\n  padding: 64px 24px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 16px;\n}\n.hire-listings-empty p {\n  margin: 0;\n  font-size: 14px;\n  color: #7a746d;\n}\n\n.hire-listing-card {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  transition: box-shadow 0.2s, border-color 0.2s, transform 0.18s;\n}\n.hire-listing-card:hover {\n  border-color: #d4cdc5;\n  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);\n  transform: translateY(-2px);\n}\n.hire-listing-card.featured {\n  border-color: #fdd535;\n}\n.hire-listing-card.featured .hire-listing-banner {\n  background: repeating-linear-gradient(-52deg, transparent 0px, transparent 9px, rgba(255, 255, 255, 0.22) 9px, rgba(255, 255, 255, 0.22) 10px), linear-gradient(135deg, #f5d800 0%, #fdd535 60%, #ffe97a 100%);\n}\n.hire-listing-card.is-paused {\n  opacity: 0.7;\n}\n.hire-listing-card.is-closed {\n  opacity: 0.48;\n}\n\n.hire-listing-banner {\n  position: relative;\n  height: 72px;\n  flex-shrink: 0;\n  background: repeating-linear-gradient(-52deg, transparent 0px, transparent 9px, rgba(255, 255, 255, 0.18) 9px, rgba(255, 255, 255, 0.18) 10px), linear-gradient(135deg, #cfc8be 0%, #e7dfd4 60%, #f2efea 100%);\n}\n\n.hire-listing-avatar {\n  position: absolute;\n  bottom: -18px;\n  left: 18px;\n  width: 48px;\n  height: 48px;\n  background: #ffffff;\n  border: 3px solid #fdd535;\n  border-radius: 13px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 14px;\n  font-weight: 800;\n  color: #111111;\n  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.09);\n}\n\n.hire-listing-menu-wrap {\n  position: absolute;\n  top: 10px;\n  right: 12px;\n}\n\n.hire-listing-kebab {\n  width: 28px;\n  height: 28px;\n  background: rgba(255, 255, 255, 0.75);\n  border: none;\n  border-radius: 8px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #555050;\n  font-size: 12px;\n  cursor: pointer;\n  backdrop-filter: blur(4px);\n  transition: background 0.15s;\n}\n.hire-listing-kebab:hover {\n  background: #ffffff;\n}\n\n.hire-listing-dropdown {\n  position: absolute;\n  top: calc(100% + 6px);\n  right: 0;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);\n  overflow: hidden;\n  z-index: 200;\n  min-width: 158px;\n}\n.hire-listing-dropdown button {\n  display: flex;\n  align-items: center;\n  gap: 9px;\n  width: 100%;\n  padding: 10px 14px;\n  background: none;\n  border: none;\n  font-size: 13px;\n  font-weight: 500;\n  font-family: inherit;\n  color: #333333;\n  cursor: pointer;\n  text-align: left;\n  transition: background 0.12s;\n}\n.hire-listing-dropdown button svg {\n  font-size: 11px;\n  color: #b0a89e;\n}\n.hire-listing-dropdown button:hover {\n  background: #f7f4f0;\n}\n.hire-listing-dropdown button.menu-resume {\n  color: #2d7a5a;\n}\n.hire-listing-dropdown button.menu-resume svg {\n  color: #2d7a5a;\n}\n.hire-listing-dropdown button.menu-danger {\n  color: #bf1603;\n}\n.hire-listing-dropdown button.menu-danger svg {\n  color: #bf1603;\n}\n.hire-listing-dropdown button.menu-danger:hover {\n  background: #fdf2f2;\n}\n\n.hire-listing-body {\n  padding: 26px 18px 18px;\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  flex: 1;\n}\n\n.hire-listing-identity {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n\n.hire-listing-title {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n  line-height: 1.3;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.hire-listing-tags {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  flex-wrap: wrap;\n}\n\n.hire-listing-type-tag {\n  background: #f2efea;\n  color: #555050;\n  border-radius: 999px;\n  padding: 3px 10px;\n  font-size: 11.5px;\n  font-weight: 600;\n  border: 1px solid #e7dfd4;\n}\n\n.hire-listing-status-pill {\n  padding: 3px 10px;\n  border-radius: 999px;\n  font-size: 11px;\n  font-weight: 600;\n}\n.hire-listing-status-pill.pill-active {\n  background: #eef7f2;\n  color: #2d7a5a;\n  border: 1px solid #c2e0d4;\n}\n.hire-listing-status-pill.pill-paused {\n  background: #fef9ec;\n  color: #9a7000;\n  border: 1px solid #edd98a;\n}\n.hire-listing-status-pill.pill-closed {\n  background: #f2efea;\n  color: #9e9890;\n  border: 1px solid #e7dfd4;\n}\n\n.hire-listing-meta {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n}\n.hire-listing-meta span {\n  display: inline-flex;\n  align-items: center;\n  gap: 7px;\n  font-size: 12.5px;\n  color: #555050;\n}\n.hire-listing-meta span svg {\n  color: #c8c2bb;\n  font-size: 11px;\n  flex-shrink: 0;\n}\n\n.hire-listing-divider {\n  height: 1px;\n  background: #f2efea;\n}\n\n.hire-listing-pipeline {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.hire-listing-pipe-track {\n  height: 5px;\n  background: #f2efea;\n  border-radius: 999px;\n  overflow: hidden;\n}\n\n.hire-listing-pipe-fill {\n  height: 100%;\n  background: linear-gradient(90deg, #f5cb00, #fdd535);\n  border-radius: 999px;\n  transition: width 0.5s ease;\n}\n\n.hire-listing-pipe-stats {\n  display: flex;\n  align-items: baseline;\n  justify-content: space-between;\n  gap: 6px;\n  flex-wrap: wrap;\n}\n\n.pipe-total {\n  font-size: 12.5px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.pipe-breakdown {\n  display: flex;\n  gap: 8px;\n  flex-wrap: wrap;\n}\n\n.pipe-dot {\n  font-size: 11.5px;\n  font-weight: 600;\n  padding-left: 11px;\n  position: relative;\n}\n.pipe-dot::before {\n  content: \"\";\n  position: absolute;\n  left: 0;\n  top: 50%;\n  transform: translateY(-50%);\n  width: 6px;\n  height: 6px;\n  border-radius: 50%;\n}\n.pipe-dot.blue {\n  color: #9a7000;\n}\n.pipe-dot.blue::before {\n  background: #fdd535;\n}\n.pipe-dot.yellow {\n  color: #9a7000;\n}\n.pipe-dot.yellow::before {\n  background: #fdd535;\n}\n.pipe-dot.green {\n  color: #2d7a5a;\n}\n.pipe-dot.green::before {\n  background: #2d7a5a;\n}\n.pipe-dot.muted {\n  color: #b0a89e;\n  font-weight: 400;\n  padding-left: 0;\n}\n.pipe-dot.muted::before {\n  display: none;\n}\n\n.hire-listing-footer {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 8px;\n}\n\n.hire-listing-posted {\n  font-size: 11.5px;\n  color: #b0a89e;\n}\n\n.hire-listing-expiry {\n  font-size: 12px;\n  font-weight: 700;\n  color: #b0a89e;\n  display: flex;\n  align-items: center;\n  gap: 4px;\n}\n.hire-listing-expiry.warn {\n  color: #b88a00;\n}\n.hire-listing-expiry.urgent {\n  color: #bf1603;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".hire-dashboard-listings-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-dashboard-listings-section {\n    padding: 24px 16px 48px;\n  }\n}\n\n.hire-listings-wrapper {\n  display: flex;\n  flex-direction: column;\n  gap: 22px;\n}\n\n.hire-listings-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-end;\n  flex-wrap: wrap;\n  gap: 16px;\n}\n.hire-listings-header h2 {\n  margin: 0 0 4px;\n  font-size: 24px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-listings-header p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.hire-listings-post-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  height: 40px;\n  padding: 0 20px;\n  background: #fdd535;\n  border: none;\n  border-radius: 10px;\n  font-size: 13.5px;\n  font-weight: 700;\n  font-family: inherit;\n  color: #111111;\n  cursor: pointer;\n  white-space: nowrap;\n  transition: background 0.18s, box-shadow 0.18s;\n}\n.hire-listings-post-btn:hover {\n  background: #f5cb00;\n  box-shadow: 0 4px 14px rgba(253, 213, 53, 0.45);\n}\n\n.hire-listings-tabs {\n  display: flex;\n  gap: 6px;\n  flex-wrap: wrap;\n}\n\n.hire-tab {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 6px 14px;\n  border-radius: 999px;\n  border: 1px solid #e7dfd4;\n  background: #ffffff;\n  font-size: 13px;\n  font-weight: 500;\n  color: #7a746d;\n  cursor: pointer;\n  transition: 0.15s ease;\n  font-family: inherit;\n}\n.hire-tab:hover {\n  border-color: #c8c2bb;\n  color: #111111;\n}\n.hire-tab.active {\n  background: #fdd535;\n  border-color: #fdd535;\n  color: #111111;\n  font-weight: 600;\n}\n\n.hire-tab-count {\n  font-size: 11px;\n  font-weight: 700;\n  background: rgba(0, 0, 0, 0.08);\n  border-radius: 999px;\n  padding: 1px 6px;\n}\n.hire-tab.active .hire-tab-count {\n  background: rgba(0, 0, 0, 0.12);\n}\n\n.hire-listings-grid {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 16px;\n}\n@media (max-width: 980px) {\n  .hire-listings-grid {\n    grid-template-columns: repeat(2, 1fr);\n  }\n}\n@media (max-width: 560px) {\n  .hire-listings-grid {\n    grid-template-columns: 1fr;\n  }\n}\n\n.hire-listings-empty {\n  text-align: center;\n  padding: 64px 24px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 16px;\n}\n.hire-listings-empty p {\n  margin: 0;\n  font-size: 14px;\n  color: #7a746d;\n}\n\n.hire-listing-card {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  transition: box-shadow 0.2s, border-color 0.2s, transform 0.18s;\n}\n.hire-listing-card:hover {\n  border-color: #d4cdc5;\n  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);\n  transform: translateY(-2px);\n}\n.hire-listing-card.featured {\n  border-color: #fdd535;\n}\n.hire-listing-card.featured .hire-listing-banner {\n  background: repeating-linear-gradient(-52deg, transparent 0px, transparent 9px, rgba(255, 255, 255, 0.22) 9px, rgba(255, 255, 255, 0.22) 10px), linear-gradient(135deg, #f5d800 0%, #fdd535 60%, #ffe97a 100%);\n}\n.hire-listing-card.is-paused {\n  opacity: 0.7;\n}\n.hire-listing-card.is-closed {\n  opacity: 0.48;\n}\n\n.hire-listing-banner {\n  position: relative;\n  height: 72px;\n  flex-shrink: 0;\n  background: repeating-linear-gradient(-52deg, transparent 0px, transparent 9px, rgba(255, 255, 255, 0.18) 9px, rgba(255, 255, 255, 0.18) 10px), linear-gradient(135deg, #cfc8be 0%, #e7dfd4 60%, #f2efea 100%);\n}\n\n.hire-listing-avatar {\n  position: absolute;\n  bottom: -18px;\n  left: 18px;\n  width: 48px;\n  height: 48px;\n  background: #ffffff;\n  border: 3px solid #fdd535;\n  border-radius: 13px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 14px;\n  font-weight: 800;\n  color: #111111;\n  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.09);\n}\n\n.hire-listing-menu-wrap {\n  position: absolute;\n  top: 10px;\n  right: 12px;\n}\n\n.hire-listing-kebab {\n  width: 28px;\n  height: 28px;\n  background: rgba(255, 255, 255, 0.75);\n  border: none;\n  border-radius: 8px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #555050;\n  font-size: 12px;\n  cursor: pointer;\n  backdrop-filter: blur(4px);\n  transition: background 0.15s;\n}\n.hire-listing-kebab:hover {\n  background: #ffffff;\n}\n\n.hire-listing-dropdown {\n  position: absolute;\n  top: calc(100% + 6px);\n  right: 0;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);\n  overflow: hidden;\n  z-index: 200;\n  min-width: 158px;\n}\n.hire-listing-dropdown button {\n  display: flex;\n  align-items: center;\n  gap: 9px;\n  width: 100%;\n  padding: 10px 14px;\n  background: none;\n  border: none;\n  font-size: 13px;\n  font-weight: 500;\n  font-family: inherit;\n  color: #333333;\n  cursor: pointer;\n  text-align: left;\n  transition: background 0.12s;\n}\n.hire-listing-dropdown button svg {\n  font-size: 11px;\n  color: #b0a89e;\n}\n.hire-listing-dropdown button:hover {\n  background: #f7f4f0;\n}\n.hire-listing-dropdown button.menu-resume {\n  color: #2d7a5a;\n}\n.hire-listing-dropdown button.menu-resume svg {\n  color: #2d7a5a;\n}\n.hire-listing-dropdown button.menu-danger {\n  color: #bf1603;\n}\n.hire-listing-dropdown button.menu-danger svg {\n  color: #bf1603;\n}\n.hire-listing-dropdown button.menu-danger:hover {\n  background: #fdf2f2;\n}\n\n.hire-listing-body {\n  padding: 26px 18px 18px;\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  flex: 1;\n}\n\n.hire-listing-identity {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n\n.hire-listing-title {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n  line-height: 1.3;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.hire-listing-tags {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  flex-wrap: wrap;\n}\n\n.hire-listing-type-tag {\n  background: #f2efea;\n  color: #555050;\n  border-radius: 999px;\n  padding: 3px 10px;\n  font-size: 11.5px;\n  font-weight: 600;\n  border: 1px solid #e7dfd4;\n}\n\n.hire-listing-status-pill {\n  padding: 3px 10px;\n  border-radius: 999px;\n  font-size: 11px;\n  font-weight: 600;\n}\n.hire-listing-status-pill.pill-active {\n  background: #eef7f2;\n  color: #2d7a5a;\n  border: 1px solid #c2e0d4;\n}\n.hire-listing-status-pill.pill-paused {\n  background: #fef9ec;\n  color: #9a7000;\n  border: 1px solid #edd98a;\n}\n.hire-listing-status-pill.pill-closed {\n  background: #f2efea;\n  color: #9e9890;\n  border: 1px solid #e7dfd4;\n}\n\n.hire-listing-meta {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n}\n.hire-listing-meta span {\n  display: inline-flex;\n  align-items: center;\n  gap: 7px;\n  font-size: 12.5px;\n  color: #555050;\n}\n.hire-listing-meta span svg {\n  color: #c8c2bb;\n  font-size: 11px;\n  flex-shrink: 0;\n}\n\n.hire-listing-divider {\n  height: 1px;\n  background: #f2efea;\n}\n\n.hire-listing-pipeline {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.hire-listing-pipe-track {\n  height: 5px;\n  background: #f2efea;\n  border-radius: 999px;\n  overflow: hidden;\n}\n\n.hire-listing-pipe-fill {\n  height: 100%;\n  background: linear-gradient(90deg, #f5cb00, #fdd535);\n  border-radius: 999px;\n  transition: width 0.5s ease;\n}\n\n.hire-listing-pipe-stats {\n  display: flex;\n  align-items: baseline;\n  justify-content: space-between;\n  gap: 6px;\n  flex-wrap: wrap;\n}\n\n.pipe-total {\n  font-size: 12.5px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.pipe-breakdown {\n  display: flex;\n  gap: 8px;\n  flex-wrap: wrap;\n}\n\n.pipe-dot {\n  font-size: 11.5px;\n  font-weight: 600;\n  padding-left: 11px;\n  position: relative;\n}\n.pipe-dot::before {\n  content: \"\";\n  position: absolute;\n  left: 0;\n  top: 50%;\n  transform: translateY(-50%);\n  width: 6px;\n  height: 6px;\n  border-radius: 50%;\n}\n.pipe-dot.blue {\n  color: #9a7000;\n}\n.pipe-dot.blue::before {\n  background: #fdd535;\n}\n.pipe-dot.yellow {\n  color: #9a7000;\n}\n.pipe-dot.yellow::before {\n  background: #fdd535;\n}\n.pipe-dot.green {\n  color: #2d7a5a;\n}\n.pipe-dot.green::before {\n  background: #2d7a5a;\n}\n.pipe-dot.muted {\n  color: #b0a89e;\n  font-weight: 400;\n  padding-left: 0;\n}\n.pipe-dot.muted::before {\n  display: none;\n}\n\n.hire-listing-footer {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 8px;\n}\n\n.hire-listing-posted {\n  font-size: 11.5px;\n  color: #b0a89e;\n}\n\n.hire-listing-expiry {\n  font-size: 12px;\n  font-weight: 700;\n  color: #b0a89e;\n  display: flex;\n  align-items: center;\n  gap: 4px;\n}\n.hire-listing-expiry.warn {\n  color: #b88a00;\n}\n.hire-listing-expiry.urgent {\n  color: #bf1603;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -33653,7 +33357,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".hire-messages-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 8px 24px 24px;\n}\n@media (max-width: 768px) {\n  .hire-messages-section {\n    padding: 24px 16px 40px;\n  }\n}\n\n.hire-messages-wrapper {\n  display: grid;\n  grid-template-columns: 320px 1fr;\n  height: calc(100vh - 100px);\n  min-height: 560px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  overflow: hidden;\n}\n@media (max-width: 768px) {\n  .hire-messages-wrapper {\n    grid-template-columns: 1fr;\n    height: auto;\n  }\n}\n\n.hire-messages-left {\n  display: flex;\n  flex-direction: column;\n  border-right: 1px solid #e7dfd4;\n  background: #fafaf8;\n  overflow: hidden;\n}\n\n.hire-messages-new-btn {\n  margin-left: auto;\n  padding: 4px 10px;\n  font-size: 12px;\n  font-weight: 600;\n  border: 1px solid #e7dfd4;\n  border-radius: 8px;\n  background: #fff;\n  cursor: pointer;\n}\n\n.hire-messages-new-panel {\n  border-bottom: 1px solid #e7dfd4;\n  background: #fff;\n}\n\n.hire-messages-new-panel-header {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: 12px 16px 10px;\n  font-size: 13px;\n  font-weight: 600;\n  color: #111111;\n}\n\n.hire-messages-new-close {\n  background: none;\n  border: none;\n  color: #b0a89e;\n  font-size: 13px;\n  cursor: pointer;\n  padding: 2px 4px;\n  line-height: 1;\n}\n.hire-messages-new-close:hover {\n  color: #555050;\n}\n\n.hire-messages-new-empty {\n  padding: 8px 16px 14px;\n  font-size: 12.5px;\n  color: #7a746d;\n  line-height: 1.5;\n}\n\n.hire-messages-new-list {\n  max-height: 220px;\n  overflow-y: auto;\n  padding: 0 8px 10px;\n}\n\n.hire-messages-new-item {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  width: 100%;\n  text-align: left;\n  padding: 8px 10px;\n  border: none;\n  background: none;\n  border-radius: 10px;\n  cursor: pointer;\n  transition: background 0.15s;\n}\n.hire-messages-new-item:hover {\n  background: #f2efea;\n}\n\n.hire-messages-new-avatar {\n  width: 34px;\n  height: 34px;\n  border-radius: 50%;\n  background: #1b1f3b;\n  color: #fdd535;\n  font-size: 12px;\n  font-weight: 800;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-shrink: 0;\n}\n\n.hire-messages-new-info {\n  display: flex;\n  flex-direction: column;\n  min-width: 0;\n}\n\n.hire-messages-new-name {\n  font-size: 13px;\n  font-weight: 600;\n  color: #111111;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.hire-messages-new-email {\n  font-size: 11.5px;\n  color: #7a746d;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.hire-messages-status {\n  padding: 8px 16px;\n  font-size: 13px;\n  color: #6b7280;\n}\n.hire-messages-status--error {\n  color: #b91c1c;\n}\n\n.hire-messages-left-header {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 24px 20px 16px;\n}\n.hire-messages-left-header h2 {\n  margin: 0;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-messages-total {\n  background: #fdd535;\n  color: #111111;\n  font-size: 11px;\n  font-weight: 800;\n  border-radius: 999px;\n  padding: 2px 7px;\n  line-height: 1.4;\n}\n\n.hire-messages-search {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  margin: 0 16px 12px;\n  padding: 0 14px;\n  height: 38px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  transition: border-color 0.2s;\n}\n.hire-messages-search:focus-within {\n  border-color: #c8c2bb;\n}\n.hire-messages-search svg {\n  color: #b0a89e;\n  flex-shrink: 0;\n}\n.hire-messages-search input {\n  flex: 1;\n  border: none;\n  background: none;\n  outline: none;\n  font-size: 13px;\n  font-family: inherit;\n  color: #111111;\n}\n.hire-messages-search input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-messages-search input::placeholder {\n  color: #b0a89e;\n}\n\n.hire-messages-list {\n  flex: 1;\n  overflow-y: auto;\n  padding: 4px 0 12px;\n}\n.hire-messages-list::-webkit-scrollbar {\n  width: 4px;\n}\n.hire-messages-list::-webkit-scrollbar-track {\n  background: transparent;\n}\n.hire-messages-list::-webkit-scrollbar-thumb {\n  background: #e7dfd4;\n  border-radius: 4px;\n}\n\n.hire-messages-item {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 16px;\n  cursor: pointer;\n  transition: background 0.15s;\n}\n.hire-messages-item:hover {\n  background: #f2efea;\n}\n.hire-messages-item.active {\n  background: #fdf9e6;\n  border-left: 3px solid #fdd535;\n  padding-left: 13px;\n}\n\n.hire-msg-avatar {\n  width: 44px;\n  height: 44px;\n  border-radius: 50%;\n  background: #1b1f3b;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 800;\n  color: #fdd535;\n  flex-shrink: 0;\n  letter-spacing: 0.03em;\n}\n\n.hire-msg-info {\n  flex: 1;\n  min-width: 0;\n}\n\n.hire-msg-top {\n  display: flex;\n  justify-content: space-between;\n  align-items: baseline;\n  gap: 6px;\n  margin-bottom: 3px;\n}\n\n.hire-msg-name {\n  font-size: 13.5px;\n  font-weight: 600;\n  color: #111111;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.hire-msg-time {\n  font-size: 11.5px;\n  color: #b0a89e;\n  flex-shrink: 0;\n}\n\n.hire-msg-bottom {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 6px;\n}\n\n.hire-msg-preview {\n  font-size: 12.5px;\n  color: #7a746d;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  flex: 1;\n  min-width: 0;\n}\n\n.hire-msg-badge {\n  background: #fdd535;\n  color: #111111;\n  font-size: 10.5px;\n  font-weight: 800;\n  border-radius: 999px;\n  padding: 1px 6px;\n  flex-shrink: 0;\n  line-height: 1.5;\n}\n\n.hire-messages-right {\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n  background: #ffffff;\n}\n\n.hire-messages-thread-header {\n  display: flex;\n  align-items: center;\n  gap: 14px;\n  padding: 20px 24px;\n  border-bottom: 1px solid #f2efea;\n  flex-shrink: 0;\n}\n\n.hire-thread-name {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-thread-role {\n  font-size: 12px;\n  color: #7a746d;\n  margin-top: 1px;\n}\n\n.hire-messages-thread {\n  flex: 1;\n  overflow-y: auto;\n  padding: 24px 24px 16px;\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.hire-messages-thread::-webkit-scrollbar {\n  width: 4px;\n}\n.hire-messages-thread::-webkit-scrollbar-track {\n  background: transparent;\n}\n.hire-messages-thread::-webkit-scrollbar-thumb {\n  background: #e7dfd4;\n  border-radius: 4px;\n}\n\n.hire-bubble-wrap {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n  max-width: 68%;\n}\n.hire-bubble-wrap.me {\n  align-self: flex-end;\n  align-items: flex-end;\n}\n.hire-bubble-wrap.them {\n  align-self: flex-start;\n  align-items: flex-start;\n}\n.hire-bubble-wrap + .hire-bubble-wrap {\n  margin-top: 8px;\n}\n\n.hire-bubble {\n  padding: 10px 14px;\n  border-radius: 16px;\n  font-size: 13.5px;\n  line-height: 1.5;\n}\n.them .hire-bubble {\n  background: #f2efea;\n  color: #111111;\n  border-bottom-left-radius: 4px;\n}\n.me .hire-bubble {\n  background: #111111;\n  color: #ffffff;\n  border-bottom-right-radius: 4px;\n}\n\n.hire-bubble-time {\n  font-size: 11px;\n  color: #b0a89e;\n  padding: 0 4px;\n}\n\n.hire-messages-input-bar {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 16px 20px;\n  border-top: 1px solid #f2efea;\n  flex-shrink: 0;\n}\n.hire-messages-input-bar input {\n  flex: 1;\n  height: 44px;\n  padding: 0 16px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  font-size: 13.5px;\n  font-family: inherit;\n  color: #111111;\n  background: #fafaf8;\n  outline: none;\n  transition: border-color 0.2s;\n}\n.hire-messages-input-bar input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-messages-input-bar input::placeholder {\n  color: #b0a89e;\n}\n.hire-messages-input-bar input:focus {\n  border-color: #c8c2bb;\n  background: #ffffff;\n}\n\n.hire-send-btn {\n  width: 44px;\n  height: 44px;\n  border-radius: 12px;\n  background: #111111;\n  border: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #ffffff;\n  cursor: pointer;\n  flex-shrink: 0;\n  transition: opacity 0.15s;\n}\n.hire-send-btn:hover:not(:disabled) {\n  opacity: 0.82;\n}\n.hire-send-btn:disabled {\n  opacity: 0.35;\n  cursor: default;\n}\n\n.hire-messages-empty-state {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  gap: 12px;\n  padding: 48px 32px;\n  text-align: center;\n}\n.hire-messages-empty-state p {\n  margin: 0;\n}\n\n.hire-empty-state-title {\n  font-size: 15px;\n  font-weight: 600;\n  color: #444444;\n}\n\n.hire-empty-state-sub {\n  font-size: 13px;\n  color: #b0a89e;\n  max-width: 260px;\n  line-height: 1.5;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".hire-messages-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 8px 24px 24px;\n}\n@media (max-width: 768px) {\n  .hire-messages-section {\n    padding: 24px 16px 40px;\n  }\n}\n\n.hire-messages-wrapper {\n  display: grid;\n  grid-template-columns: 320px 1fr;\n  height: calc(100vh - 100px);\n  min-height: 560px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  overflow: hidden;\n}\n@media (max-width: 768px) {\n  .hire-messages-wrapper {\n    grid-template-columns: 1fr;\n    height: auto;\n  }\n}\n\n.hire-messages-left {\n  display: flex;\n  flex-direction: column;\n  border-right: 1px solid #e7dfd4;\n  background: #fafaf8;\n  overflow: hidden;\n}\n\n.hire-messages-new-btn {\n  margin-left: auto;\n  padding: 4px 10px;\n  font-size: 12px;\n  font-weight: 600;\n  border: 1px solid #e7dfd4;\n  border-radius: 8px;\n  background: #fff;\n  cursor: pointer;\n}\n\n.hire-messages-new-panel {\n  padding: 12px 16px;\n  border-bottom: 1px solid #e7dfd4;\n  font-size: 13px;\n}\n.hire-messages-new-panel .hire-messages-new-item {\n  display: block;\n  width: 100%;\n  text-align: left;\n  margin: 4px 0;\n  padding: 6px 8px;\n  border: none;\n  background: #fff;\n  border-radius: 6px;\n  cursor: pointer;\n}\n\n.hire-messages-status {\n  padding: 8px 16px;\n  font-size: 13px;\n  color: #6b7280;\n}\n.hire-messages-status--error {\n  color: #b91c1c;\n}\n\n.hire-messages-left-header {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 24px 20px 16px;\n}\n.hire-messages-left-header h2 {\n  margin: 0;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-messages-total {\n  background: #fdd535;\n  color: #111111;\n  font-size: 11px;\n  font-weight: 800;\n  border-radius: 999px;\n  padding: 2px 7px;\n  line-height: 1.4;\n}\n\n.hire-messages-search {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  margin: 0 16px 12px;\n  padding: 0 14px;\n  height: 38px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  transition: border-color 0.2s;\n}\n.hire-messages-search:focus-within {\n  border-color: #c8c2bb;\n}\n.hire-messages-search svg {\n  color: #b0a89e;\n  flex-shrink: 0;\n}\n.hire-messages-search input {\n  flex: 1;\n  border: none;\n  background: none;\n  outline: none;\n  font-size: 13px;\n  font-family: inherit;\n  color: #111111;\n}\n.hire-messages-search input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-messages-search input::placeholder {\n  color: #b0a89e;\n}\n\n.hire-messages-list {\n  flex: 1;\n  overflow-y: auto;\n  padding: 4px 0 12px;\n}\n.hire-messages-list::-webkit-scrollbar {\n  width: 4px;\n}\n.hire-messages-list::-webkit-scrollbar-track {\n  background: transparent;\n}\n.hire-messages-list::-webkit-scrollbar-thumb {\n  background: #e7dfd4;\n  border-radius: 4px;\n}\n\n.hire-messages-item {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 16px;\n  cursor: pointer;\n  transition: background 0.15s;\n}\n.hire-messages-item:hover {\n  background: #f2efea;\n}\n.hire-messages-item.active {\n  background: #fdf9e6;\n  border-left: 3px solid #fdd535;\n  padding-left: 13px;\n}\n\n.hire-msg-avatar {\n  width: 44px;\n  height: 44px;\n  border-radius: 50%;\n  background: #1b1f3b;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 800;\n  color: #fdd535;\n  flex-shrink: 0;\n  letter-spacing: 0.03em;\n}\n\n.hire-msg-info {\n  flex: 1;\n  min-width: 0;\n}\n\n.hire-msg-top {\n  display: flex;\n  justify-content: space-between;\n  align-items: baseline;\n  gap: 6px;\n  margin-bottom: 3px;\n}\n\n.hire-msg-name {\n  font-size: 13.5px;\n  font-weight: 600;\n  color: #111111;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.hire-msg-time {\n  font-size: 11.5px;\n  color: #b0a89e;\n  flex-shrink: 0;\n}\n\n.hire-msg-bottom {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 6px;\n}\n\n.hire-msg-preview {\n  font-size: 12.5px;\n  color: #7a746d;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  flex: 1;\n  min-width: 0;\n}\n\n.hire-msg-badge {\n  background: #fdd535;\n  color: #111111;\n  font-size: 10.5px;\n  font-weight: 800;\n  border-radius: 999px;\n  padding: 1px 6px;\n  flex-shrink: 0;\n  line-height: 1.5;\n}\n\n.hire-messages-right {\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n  background: #ffffff;\n}\n\n.hire-messages-thread-header {\n  display: flex;\n  align-items: center;\n  gap: 14px;\n  padding: 20px 24px;\n  border-bottom: 1px solid #f2efea;\n  flex-shrink: 0;\n}\n\n.hire-thread-name {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-thread-role {\n  font-size: 12px;\n  color: #7a746d;\n  margin-top: 1px;\n}\n\n.hire-messages-thread {\n  flex: 1;\n  overflow-y: auto;\n  padding: 24px 24px 16px;\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.hire-messages-thread::-webkit-scrollbar {\n  width: 4px;\n}\n.hire-messages-thread::-webkit-scrollbar-track {\n  background: transparent;\n}\n.hire-messages-thread::-webkit-scrollbar-thumb {\n  background: #e7dfd4;\n  border-radius: 4px;\n}\n\n.hire-bubble-wrap {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n  max-width: 68%;\n}\n.hire-bubble-wrap.me {\n  align-self: flex-end;\n  align-items: flex-end;\n}\n.hire-bubble-wrap.them {\n  align-self: flex-start;\n  align-items: flex-start;\n}\n.hire-bubble-wrap + .hire-bubble-wrap {\n  margin-top: 8px;\n}\n\n.hire-bubble {\n  padding: 10px 14px;\n  border-radius: 16px;\n  font-size: 13.5px;\n  line-height: 1.5;\n}\n.them .hire-bubble {\n  background: #f2efea;\n  color: #111111;\n  border-bottom-left-radius: 4px;\n}\n.me .hire-bubble {\n  background: #111111;\n  color: #ffffff;\n  border-bottom-right-radius: 4px;\n}\n\n.hire-bubble-time {\n  font-size: 11px;\n  color: #b0a89e;\n  padding: 0 4px;\n}\n\n.hire-messages-input-bar {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 16px 20px;\n  border-top: 1px solid #f2efea;\n  flex-shrink: 0;\n}\n.hire-messages-input-bar input {\n  flex: 1;\n  height: 44px;\n  padding: 0 16px;\n  border: 1px solid #e7dfd4;\n  border-radius: 12px;\n  font-size: 13.5px;\n  font-family: inherit;\n  color: #111111;\n  background: #fafaf8;\n  outline: none;\n  transition: border-color 0.2s;\n}\n.hire-messages-input-bar input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-messages-input-bar input::placeholder {\n  color: #b0a89e;\n}\n.hire-messages-input-bar input:focus {\n  border-color: #c8c2bb;\n  background: #ffffff;\n}\n\n.hire-send-btn {\n  width: 44px;\n  height: 44px;\n  border-radius: 12px;\n  background: #111111;\n  border: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #ffffff;\n  cursor: pointer;\n  flex-shrink: 0;\n  transition: opacity 0.15s;\n}\n.hire-send-btn:hover:not(:disabled) {\n  opacity: 0.82;\n}\n.hire-send-btn:disabled {\n  opacity: 0.35;\n  cursor: default;\n}\n\n.hire-messages-empty-state {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.hire-messages-empty-state p {\n  font-size: 14px;\n  color: #b0a89e;\n  margin: 0;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
