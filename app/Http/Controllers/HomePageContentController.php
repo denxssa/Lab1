@@ -40,6 +40,8 @@ class HomePageContentController extends Controller
         'about_hero_description' => 'From the first announcement to the final shortlist, every step stays visible, structured, and easy for teams to manage together.',
         'about_mission_title' => 'Built to keep hiring clear, structured, and easy to manage',
         'about_mission_description' => 'Recruitment is often fragmented across email, spreadsheets, and disconnected tools. BeeHired consolidates announcements, applications, evaluations, and decisions in one secure platform.',
+        'about_overview_eyebrow' => null,
+        'about_hero_bg_image' => null,
         'about_stats_title' => 'Our Work',
         'about_primary_cta' => 'Read About BeeHired',
         'pricing_hero_eyebrow' => 'Pricing',
@@ -213,6 +215,28 @@ class HomePageContentController extends Controller
                 ],
             ],
         ],
+        [
+            'key' => 'about_stats',
+            'title' => 'Our Work',
+            'is_active' => true,
+            'sort_order' => 8,
+            'items' => [
+                ['title' => '2500', 'subtitle' => 'Applications Processed', 'sort_order' => 1, 'is_active' => true],
+                ['title' => '340',  'subtitle' => 'Positions Published',    'sort_order' => 2, 'is_active' => true],
+                ['title' => '120',  'subtitle' => 'Companies',              'sort_order' => 3, 'is_active' => true],
+                ['title' => '345',  'subtitle' => 'Employed Students',      'sort_order' => 4, 'is_active' => true],
+            ],
+        ],
+        [
+            'key' => 'about_overview',
+            'title' => 'Mission & Overview',
+            'is_active' => true,
+            'sort_order' => 9,
+            'items' => [
+                ['title' => 'What BeeHired Solves', 'description' => 'Recruitment is often fragmented across email, spreadsheets, and disconnected tools. BeeHired consolidates announcements, applications, evaluations, and decisions in one secure platform.', 'sort_order' => 1, 'is_active' => true],
+                ['title' => 'Why Organizations Use It', 'description' => 'Faster processing, better visibility, and consistent candidate handling. Teams can collaborate efficiently while maintaining professional standards and audit-ready records.', 'sort_order' => 2, 'is_active' => true],
+            ],
+        ],
     ];
 
     public function show(): JsonResponse
@@ -253,6 +277,8 @@ class HomePageContentController extends Controller
             'heroEyebrow' => ['nullable', 'string', 'max:255'],
             'missionTitle' => ['nullable', 'string', 'max:255'],
             'missionDescription' => ['nullable', 'string'],
+            'overviewEyebrow' => ['nullable', 'string', 'max:255'],
+            'heroBgImage'     => ['nullable', 'string', 'max:500'],
             'statsTitle' => ['nullable', 'string', 'max:255'],
             'plansTitle' => ['nullable', 'string', 'max:255'],
             'faqTitle' => ['nullable', 'string', 'max:255'],
@@ -302,6 +328,8 @@ class HomePageContentController extends Controller
                 'about_hero_description'    => $validated['heroDescription']    ?? $content->about_hero_description,
                 'about_mission_title'       => $validated['missionTitle']       ?? $content->about_mission_title,
                 'about_mission_description' => $validated['missionDescription'] ?? $content->about_mission_description,
+                'about_overview_eyebrow'    => $validated['overviewEyebrow']    ?? $content->about_overview_eyebrow,
+                'about_hero_bg_image'       => $validated['heroBgImage']        ?? $content->about_hero_bg_image,
                 'about_stats_title'         => $validated['statsTitle']         ?? $content->about_stats_title,
                 'about_primary_cta'         => $validated['primaryCta']         ?? $content->about_primary_cta,
             ]);
@@ -508,6 +536,8 @@ class HomePageContentController extends Controller
                 'heroDescription'    => $content->about_hero_description,
                 'missionTitle'       => $content->about_mission_title,
                 'missionDescription' => $content->about_mission_description,
+                'overviewEyebrow'    => $content->about_overview_eyebrow,
+                'heroBgImage'        => $content->about_hero_bg_image,
                 'statsTitle'         => $content->about_stats_title,
                 'primaryCta'         => $content->about_primary_cta,
             ],

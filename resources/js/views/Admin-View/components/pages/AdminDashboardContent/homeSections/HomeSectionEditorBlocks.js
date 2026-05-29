@@ -450,3 +450,75 @@ export function FooterFields({ section, setHomeSectionsForm }) {
     </div>
   );
 }
+
+export function AboutStatsFields({ section, updateSectionTitle, updateItemField, onAddItem, onDeleteItem }) {
+  return (
+    <div className="admin-field">
+      <div className="admin-home-row">
+        <label>Stats</label>
+        <button
+          type="button"
+          className="admin-btn admin-btn-light"
+          onClick={() => onAddItem('about_stats', { title: '0', subtitle: 'New Stat', sortOrder: (section.items?.length || 0) + 1, isActive: true })}
+        >
+          <FiPlus /> Add
+        </button>
+      </div>
+      <div className="admin-field">
+        <label>Section title</label>
+        <input value={section.title || ''} onChange={(e) => updateSectionTitle(section.key, e.target.value)} placeholder="e.g. Our Work" />
+      </div>
+      {(section.items || []).map((item, idx) => (
+        <div key={item.id || idx} className="admin-home-item-card">
+          <div className="admin-home-item-card__head">
+            <strong>Stat {idx + 1}</strong>
+            <button type="button" className="admin-btn admin-btn-danger" onClick={() => onDeleteItem(item)}><FiTrash2 /></button>
+          </div>
+          <div className="admin-home-field-grid">
+            <div className="admin-field">
+              <label>Number</label>
+              <input value={item.title || ''} onChange={(e) => updateItemField(section.key, idx, 'title', e.target.value)} placeholder="e.g. 2500" />
+            </div>
+            <div className="admin-field">
+              <label>Label</label>
+              <input value={item.subtitle || ''} onChange={(e) => updateItemField(section.key, idx, 'subtitle', e.target.value)} placeholder="e.g. Applications Processed" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function AboutOverviewFields({ section, updateItemField, onAddItem, onDeleteItem }) {
+  return (
+    <div className="admin-field">
+      <div className="admin-home-row">
+        <label>Overview Panels</label>
+        <button
+          type="button"
+          className="admin-btn admin-btn-light"
+          onClick={() => onAddItem('about_overview', { title: 'New Panel', description: '', sortOrder: (section.items?.length || 0) + 1, isActive: true })}
+        >
+          <FiPlus /> Add
+        </button>
+      </div>
+      {(section.items || []).map((item, idx) => (
+        <div key={item.id || idx} className="admin-home-item-card">
+          <div className="admin-home-item-card__head">
+            <strong>Panel {idx + 1}</strong>
+            <button type="button" className="admin-btn admin-btn-danger" onClick={() => onDeleteItem(item)}><FiTrash2 /></button>
+          </div>
+          <div className="admin-field">
+            <label>Title</label>
+            <input value={item.title || ''} onChange={(e) => updateItemField(section.key, idx, 'title', e.target.value)} placeholder="e.g. What BeeHired Solves" />
+          </div>
+          <div className="admin-field">
+            <label>Description</label>
+            <textarea rows={4} value={item.description || ''} onChange={(e) => updateItemField(section.key, idx, 'description', e.target.value)} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

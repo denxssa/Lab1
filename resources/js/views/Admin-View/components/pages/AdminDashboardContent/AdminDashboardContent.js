@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { FiEdit2, FiExternalLink, FiUsers } from 'react-icons/fi';
 import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
 import AdminHomeSectionsPanel from './AdminHomeSectionsPanel';
+import AdminAboutPanel from './AdminAboutPanel';
+import AdminPricingPanel from './AdminPricingPanel';
 import '../../shared/AdminShared.scss';
 
 const pageFields = {
@@ -28,6 +30,7 @@ const pageFields = {
     { key: 'heroDescription', label: 'Hero description', type: 'textarea' },
     { key: 'missionTitle', label: 'Mission title' },
     { key: 'missionDescription', label: 'Mission description', type: 'textarea' },
+    { key: 'overviewEyebrow', label: 'Overview eyebrow (e.g. Workflow)' },
     { key: 'statsTitle', label: 'Stats section title' },
     { key: 'primaryCta', label: 'Primary CTA' },
   ],
@@ -71,6 +74,21 @@ const COMPANIES_SECTION_GROUPS = [
     title: 'Company cards & details',
     subtitle: 'Listing cards, detail page content, images, metadata, and reviews.',
     keys: ['companies_cards'],
+  },
+];
+
+const ABOUT_SECTION_GROUPS = [
+  {
+    id: 'about_stats',
+    title: 'Stats',
+    subtitle: 'Numbers shown in the Our Work section.',
+    keys: ['about_stats'],
+  },
+  {
+    id: 'about_overview',
+    title: 'Overview panels',
+    subtitle: 'The two mission/overview text panels.',
+    keys: ['about_overview'],
   },
 ];
 
@@ -165,36 +183,26 @@ const AdminDashboardContent = () => {
       )}
 
       {activePage === 'about' && (
-        <section className="admin-card">
-          <div className="admin-card-head">
-            <div>
-              <h2>Team Members</h2>
-              <p>Manage the team photos, names, and bios that appear on the About Us page.</p>
-            </div>
-            <a className="admin-btn admin-btn-dark" href="/admin-dashboard/team">
-              <FiUsers />
-              Manage Team
-            </a>
-          </div>
-        </section>
+        <AdminAboutPanel
+          pageContent={form}
+          updatePageContent={updatePageContent}
+          homeSectionsForm={homeSectionsForm}
+          setHomeSectionsForm={setHomeSectionsForm}
+          persistHomeSections={updateHomeSections}
+          uploadHomeSectionImage={uploadHomeSectionImage}
+          createHomeSectionItem={createHomeSectionItem}
+          deleteHomeSectionItem={deleteHomeSectionItem}
+        />
       )}
 
       {activePage === 'pricing' && (
-        <section className="admin-card">
-          <div className="admin-card-head">
-            <div>
-              <h2>Pricing Plans</h2>
-              <p>Add, edit, or remove the pricing plans that appear on the Pricing page.</p>
-            </div>
-            <a className="admin-btn admin-btn-dark" href="/admin-dashboard/pricing">
-              <FiUsers />
-              Manage Plans
-            </a>
-          </div>
-        </section>
+        <AdminPricingPanel
+          pageContent={form}
+          updatePageContent={updatePageContent}
+        />
       )}
 
-      {fields.length > 0 && (
+      {fields.length > 0 && activePage !== 'about' && activePage !== 'pricing' && (
         <section className="admin-card">
           <div className="admin-card-head">
             <div>

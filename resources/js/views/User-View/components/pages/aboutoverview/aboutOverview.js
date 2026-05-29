@@ -1,34 +1,46 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './aboutOverview.scss';
 import useAboutContent from '../../../../../hooks/useAboutContent';
 
+const DEFAULT_PANELS = [
+    { title: 'What BeeHired Solves', description: 'Recruitment is often fragmented across email, spreadsheets, and disconnected tools. BeeHired consolidates announcements, applications, evaluations, and decisions in one secure platform.' },
+    { title: 'Why Organizations Use It', description: 'Faster processing, better visibility, and consistent candidate handling. Teams can collaborate efficiently while maintaining professional standards and audit-ready records.' },
+];
+
 const AboutOverview = () => {
     const content = useAboutContent();
+    const [panels, setPanels] = useState(DEFAULT_PANELS);
 
-    const missionTitle = content.missionTitle || 'Built to keep hiring clear, structured, and easy to manage';
-    const missionDesc  = content.missionDescription || 'Recruitment is often fragmented across email, spreadsheets, and disconnected tools. BeeHired consolidates announcements, applications, evaluations, and decisions in one secure platform.';
+    const missionTitle       = content.missionTitle       || 'Built to keep hiring clear, structured, and easy to manage';
+    const missionDescription = content.missionDescription || null;
+    const overviewEyebrow    = content.overviewEyebrow    || null;
+
+    useEffect(() => {
+        fetch('/api/home-page-content')
+            .then(r => r.json())
+            .then(payload => {
+                const section = (payload?.homeSections || []).find(s => s.key === 'about_overview');
+                if (section?.items?.length) setPanels(section.items);
+            })
+            .catch(() => {});
+    }, []);
 
     return (
         <section id="about-story" className="about-overview">
             <div className="about-container">
                 <div className="about-overview__intro" data-aos="fade-up">
-                    <span className="about-overview__eyebrow">Workflow</span>
+                    {overviewEyebrow && <span className="about-overview__eyebrow">{overviewEyebrow}</span>}
                     <h2>{missionTitle}</h2>
+                    {missionDescription && <p>{missionDescription}</p>}
                 </div>
 
                 <div className="about-overview__grid">
-                    <article className="about-overview__panel" data-aos="fade-up" data-aos-delay="100">
-                        <h3>What BeeHired Solves</h3>
-                        <p>{missionDesc}</p>
-                    </article>
-                    <article className="about-overview__panel" data-aos="fade-up" data-aos-delay="200">
-                        <h3>Why Organizations Use It</h3>
-                        <p>
-                            Faster processing, better visibility, and consistent candidate handling. Teams can
-                            collaborate efficiently while maintaining professional standards and audit-ready
-                            records.
-                        </p>
-                    </article>
+                    {panels.map((panel, i) => (
+                        <article key={i} className="about-overview__panel" data-aos="fade-up" data-aos-delay={100 + i * 100}>
+                            <h3>{panel.title}</h3>
+                            <p>{panel.description}</p>
+                        </article>
+                    ))}
                 </div>
             </div>
         </section>
