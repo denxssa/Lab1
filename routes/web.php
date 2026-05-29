@@ -8,6 +8,7 @@ use App\Http\Controllers\HomePageSectionItemController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\CandidateProfileController;
+use App\Http\Controllers\HiresController;
 use App\Http\Controllers\CvProfileController;
 use App\Http\Controllers\ResumeController;
 use App\Http\Controllers\PricingPlanController;
@@ -125,6 +126,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/api/interviews/{interview}', [InterviewController::class, 'show']);
     Route::put('/api/interviews/{interview}', [InterviewController::class, 'update']);
     Route::delete('/api/interviews/{interview}', [InterviewController::class, 'destroy']);
+
+    Route::get('/api/hires', [HiresController::class, 'index']);
+    Route::delete('/api/hires/{application}', [HiresController::class, 'destroy']);
 
     Route::get('/api/conversations', [ConversationController::class, 'index']);
     Route::get('/api/conversations/messageable-candidates', [ConversationController::class, 'messageableCandidates']);

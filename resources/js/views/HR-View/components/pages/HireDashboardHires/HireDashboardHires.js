@@ -79,6 +79,7 @@ const HireDashboardHires = () => {
     <section className="hire-dashboard-hires-section">
       <div className="hire-hires-wrapper">
 
+        {/* ── Header ── */}
         <div className="hire-hires-header">
           <div>
             <h2>Hires</h2>
@@ -124,18 +125,22 @@ const HireDashboardHires = () => {
             const doneCount = hireSteps.filter((s) => s.done).length;
             const progress  = hireSteps.length > 0 ? Math.round((doneCount / hireSteps.length) * 100) : 0;
 
-            return (
-              <div key={hire.id} className="hire-hire-card">
+              return (
+                <div key={hire.id} className="hire-hire-card">
 
                 <div className="hire-hire-banner">
                   <div className="hire-hire-avatar">{hire.initials}</div>
                 </div>
 
-                <div className="hire-hire-card-body">
-                  <div className="hire-hire-card-top">
-                    <div className="hire-hire-identity">
-                      <div className="hire-hire-name">{hire.name}</div>
-                      <div className="hire-hire-role">{hire.role}</div>
+                  <div className="hire-hire-card-body">
+                    <div className="hire-hire-card-top">
+                      <div className="hire-hire-identity">
+                        <div className="hire-hire-name">{hire.name}</div>
+                        <div className="hire-hire-role">{hire.role}</div>
+                      </div>
+                      <div className={`hire-hire-status status-${hire.status.toLowerCase().replace(' ', '-')}`}>
+                        {hire.status}
+                      </div>
                     </div>
                     <div className="hire-hire-status status-active">{hire.status}</div>
                   </div>
@@ -160,15 +165,37 @@ const HireDashboardHires = () => {
                     </ul>
                   </div>
 
-                  <div className="hire-hire-divider" />
+                    <div className="hire-hire-divider" />
 
                   <div className="hire-hire-section">
                     <div className="hire-hire-section-title-row">
                       <span className="hire-hire-section-title">Next Steps</span>
                       <span className="hire-hire-progress-label">{doneCount}/{hireSteps.length}</span>
                     </div>
-                    <div className="hire-hire-progress-bar">
-                      <div className="hire-hire-progress-fill" style={{ width: `${progress}%` }} />
+
+                    <div className="hire-hire-actions">
+                      <button
+                        className="hire-hire-action-btn"
+                        type="button"
+                        onClick={() => openProfile(hire)}
+                      >
+                        <FaUserCircle aria-hidden="true" /> View profile
+                      </button>
+                      <button
+                        className="hire-hire-action-btn"
+                        type="button"
+                        onClick={() => window.location.href = `mailto:${hire.email}`}
+                      >
+                        <FaEnvelope aria-hidden="true" /> Email
+                      </button>
+                      <button
+                        className="hire-hire-action-btn danger"
+                        type="button"
+                        disabled={removing === hire.id}
+                        onClick={() => removeHire(hire)}
+                      >
+                        <FaTrash aria-hidden="true" />
+                      </button>
                     </div>
                     <ul className="hire-hire-steps-list">
                       {hireSteps.map((step) => (
@@ -196,11 +223,18 @@ const HireDashboardHires = () => {
                     </button>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
 
-              </div>
-            );
-          })}
-        </div>
+        {/* ── Hiring History ── */}
+        {historyGroups.length > 0 && (
+          <div className="hire-history">
+            <div className="hire-history-header">
+              <h3>Hiring History</h3>
+              <p>Record of all hires grouped by month</p>
+            </div>
 
         {/* ── Hiring History (grouped by month from real data) ── */}
         {hires.length > 0 && (
@@ -265,6 +299,13 @@ const HireDashboardHires = () => {
         )}
 
       </div>
+
+      {profileFor && (
+        <CandidateProfileModal
+          candidate={profileFor}
+          onClose={() => setProfileFor(null)}
+        />
+      )}
     </section>
 
     {profileHire && (
