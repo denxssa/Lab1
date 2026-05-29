@@ -5741,16 +5741,20 @@ function getRoomAccess(token) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   JOB_LISTING_TYPES: () => (/* reexport safe */ _utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_1__.JOB_LISTING_TYPES),
+/* harmony export */   applyToJob: () => (/* binding */ applyToJob),
 /* harmony export */   createJobListing: () => (/* binding */ createJobListing),
 /* harmony export */   deleteJobListing: () => (/* binding */ deleteJobListing),
 /* harmony export */   filterJobListings: () => (/* binding */ filterJobListings),
 /* harmony export */   getJobListing: () => (/* binding */ getJobListing),
+/* harmony export */   getSavedJobIds: () => (/* binding */ getSavedJobIds),
 /* harmony export */   jobMatchesAllTypeFilters: () => (/* binding */ jobMatchesAllTypeFilters),
 /* harmony export */   jobMatchesTypeFilter: () => (/* binding */ jobMatchesTypeFilter),
 /* harmony export */   listJobListings: () => (/* binding */ listJobListings),
 /* harmony export */   listJobListingsForHr: () => (/* binding */ listJobListingsForHr),
 /* harmony export */   mapJobListing: () => (/* binding */ mapJobListing),
 /* harmony export */   mapJobListingForHr: () => (/* binding */ mapJobListingForHr),
+/* harmony export */   saveJob: () => (/* binding */ saveJob),
+/* harmony export */   unsaveJob: () => (/* binding */ unsaveJob),
 /* harmony export */   updateJobListing: () => (/* binding */ updateJobListing),
 /* harmony export */   updateJobListingStatus: () => (/* binding */ updateJobListingStatus)
 /* harmony export */ });
@@ -5835,6 +5839,28 @@ function filterJobListings(jobs) {
 }
 function getJobListing(id) {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get("/api/job-listings/".concat(id)).then(function (response) {
+    return response.data;
+  });
+}
+function applyToJob(jobListingId) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post("/api/job-listings/".concat(jobListingId, "/apply")).then(function (response) {
+    return response.data;
+  });
+}
+function getSavedJobIds() {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/saved-jobs').then(function (response) {
+    return response.data.saved_job_ids || [];
+  });
+}
+function saveJob(jobListingId) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/api/saved-jobs', {
+    job_listing_id: jobListingId
+  }).then(function (response) {
+    return response.data;
+  });
+}
+function unsaveJob(jobListingId) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"]["delete"]("/api/saved-jobs/".concat(jobListingId)).then(function (response) {
     return response.data;
   });
 }
@@ -15935,9 +15961,444 @@ var HireDashboardHeader = function HireDashboardHeader() {
 /*!**********************************************************************************************!*\
   !*** ./resources/js/views/HR-View/components/pages/HireDashboardHires/HireDashboardHires.js ***!
   \**********************************************************************************************/
-() {
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-throw new Error("Module build failed (from ./node_modules/babel-loader/lib/index.js):\nSyntaxError: /Users/vesas/Desktop/Lab1/resources/js/views/HR-View/components/pages/HireDashboardHires/HireDashboardHires.js: Unexpected token, expected \",\" (303:6)\n\n\u001b[0m \u001b[90m 301 |\u001b[39m       \u001b[33m<\u001b[39m\u001b[33m/\u001b[39m\u001b[33mdiv\u001b[39m\u001b[33m>\u001b[39m\n \u001b[90m 302 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 303 |\u001b[39m       {profileFor \u001b[33m&&\u001b[39m (\n \u001b[90m     |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 304 |\u001b[39m         \u001b[33m<\u001b[39m\u001b[33mCandidateProfileModal\u001b[39m\n \u001b[90m 305 |\u001b[39m           candidate\u001b[33m=\u001b[39m{profileFor}\n \u001b[90m 306 |\u001b[39m           onClose\u001b[33m=\u001b[39m{() \u001b[33m=>\u001b[39m setProfileFor(\u001b[36mnull\u001b[39m)}\u001b[0m\n    at constructor (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:365:19)\n    at JSXParserMixin.raise (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:6599:19)\n    at JSXParserMixin.unexpected (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:6619:16)\n    at JSXParserMixin.expect (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:6899:12)\n    at JSXParserMixin.parseParenAndDistinguishExpression (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11661:14)\n    at JSXParserMixin.parseExprAtom (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11331:23)\n    at JSXParserMixin.parseExprAtom (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:4764:20)\n    at JSXParserMixin.parseExprSubscripts (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11081:23)\n    at JSXParserMixin.parseUpdate (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11066:21)\n    at JSXParserMixin.parseMaybeUnary (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11046:23)\n    at JSXParserMixin.parseMaybeUnaryOrPrivate (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10899:61)\n    at JSXParserMixin.parseExprOpBaseRightExpr (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10986:34)\n    at JSXParserMixin.parseExprOpRightExpr (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10981:21)\n    at JSXParserMixin.parseExprOp (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10947:27)\n    at JSXParserMixin.parseExprOp (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10953:21)\n    at JSXParserMixin.parseExprOps (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10908:17)\n    at JSXParserMixin.parseMaybeConditional (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10881:23)\n    at JSXParserMixin.parseMaybeAssign (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10831:21)\n    at JSXParserMixin.parseExpressionBase (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10784:23)\n    at /Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10780:39\n    at JSXParserMixin.allowInAnd (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:12426:12)\n    at JSXParserMixin.parseExpression (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10780:17)\n    at JSXParserMixin.jsxParseExpressionContainer (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:4632:31)\n    at JSXParserMixin.jsxParseElementAt (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:4711:36)\n    at JSXParserMixin.jsxParseElementAt (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:4698:32)\n    at JSXParserMixin.jsxParseElementAt (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:4698:32)\n    at JSXParserMixin.jsxParseElement (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:4749:17)\n    at JSXParserMixin.parseExprAtom (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:4759:19)\n    at JSXParserMixin.parseExprSubscripts (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11081:23)\n    at JSXParserMixin.parseUpdate (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11066:21)\n    at JSXParserMixin.parseMaybeUnary (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11046:23)\n    at JSXParserMixin.parseMaybeUnaryOrPrivate (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10899:61)\n    at JSXParserMixin.parseExprOps (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10904:23)\n    at JSXParserMixin.parseMaybeConditional (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10881:23)\n    at JSXParserMixin.parseMaybeAssign (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10831:21)\n    at /Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10800:39\n    at JSXParserMixin.allowInAnd (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:12426:12)\n    at JSXParserMixin.parseMaybeAssignAllowIn (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10800:17)\n    at JSXParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:12493:17)\n    at JSXParserMixin.parseParenAndDistinguishExpression (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11675:28)\n    at JSXParserMixin.parseExprAtom (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11331:23)\n    at JSXParserMixin.parseExprAtom (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:4764:20)\n    at JSXParserMixin.parseExprSubscripts (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11081:23)\n    at JSXParserMixin.parseUpdate (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11066:21)\n    at JSXParserMixin.parseMaybeUnary (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:11046:23)\n    at JSXParserMixin.parseMaybeUnaryOrPrivate (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10899:61)\n    at JSXParserMixin.parseExprOps (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10904:23)\n    at JSXParserMixin.parseMaybeConditional (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10881:23)\n    at JSXParserMixin.parseMaybeAssign (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10831:21)\n    at JSXParserMixin.parseExpressionBase (/Users/vesas/Desktop/Lab1/node_modules/@babel/parser/lib/index.js:10784:23)");
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _HireDashboardContext__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../HireDashboardContext */ "./resources/js/views/HR-View/HireDashboardContext.js");
+/* harmony import */ var _CandidateProfileModal_CandidateProfileModal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../CandidateProfileModal/CandidateProfileModal */ "./resources/js/views/HR-View/components/pages/CandidateProfileModal/CandidateProfileModal.js");
+/* harmony import */ var react_icons_fa__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-icons/fa */ "./node_modules/react-icons/fa/index.mjs");
+/* harmony import */ var _api_hrApi__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../../api/hrApi */ "./resources/js/api/hrApi.js");
+/* harmony import */ var _HireDashboardHires_scss__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./HireDashboardHires.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardHires/HireDashboardHires.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+
+
+
+
+
+
+
+var DEFAULT_NEXT_STEPS = [{
+  id: 'a',
+  label: 'Send onboarding email',
+  done: false
+}, {
+  id: 'b',
+  label: 'Set up equipment',
+  done: false
+}, {
+  id: 'c',
+  label: 'Schedule team intro',
+  done: false
+}];
+var HireDashboardHires = function HireDashboardHires() {
+  var _profileHire$skills, _profileHire$history, _profileHire$hiredDat, _profileHire$summary, _profileHire$experien, _profileHire$email;
+  var _useHireDashboard = (0,_HireDashboardContext__WEBPACK_IMPORTED_MODULE_1__.useHireDashboard)(),
+    hiresVersion = _useHireDashboard.hiresVersion;
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState2 = _slicedToArray(_useState, 2),
+    hires = _useState2[0],
+    setHires = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+    _useState4 = _slicedToArray(_useState3, 2),
+    loading = _useState4[0],
+    setLoading = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    _useState6 = _slicedToArray(_useState5, 2),
+    openMonth = _useState6[0],
+    setOpenMonth = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState8 = _slicedToArray(_useState7, 2),
+    search = _useState8[0],
+    setSearch = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({}),
+    _useState0 = _slicedToArray(_useState9, 2),
+    steps = _useState0[0],
+    setSteps = _useState0[1];
+  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    _useState10 = _slicedToArray(_useState1, 2),
+    profileHire = _useState10[0],
+    setProfileHire = _useState10[1];
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    setLoading(true);
+    (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_4__.fetchHrHires)().then(function (data) {
+      setHires(data);
+      var init = {};
+      data.forEach(function (h) {
+        init[h.id] = steps[h.id] || DEFAULT_NEXT_STEPS.map(function (s) {
+          return _objectSpread(_objectSpread({}, s), {}, {
+            id: "".concat(h.id, "-").concat(s.id)
+          });
+        });
+      });
+      setSteps(init);
+    })["catch"](function () {
+      return setHires([]);
+    })["finally"](function () {
+      return setLoading(false);
+    });
+  }, [hiresVersion]);
+  var toggleStep = function toggleStep(hireId, stepId) {
+    setSteps(function (prev) {
+      return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, hireId, (prev[hireId] || []).map(function (s) {
+        return s.id === stepId ? _objectSpread(_objectSpread({}, s), {}, {
+          done: !s.done
+        }) : s;
+      })));
+    });
+  };
+  var filteredHires = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
+    var q = search.trim().toLowerCase();
+    if (!q) return hires;
+    return hires.filter(function (h) {
+      var _h$name, _h$role, _h$dept;
+      return ((_h$name = h.name) === null || _h$name === void 0 ? void 0 : _h$name.toLowerCase().includes(q)) || ((_h$role = h.role) === null || _h$role === void 0 ? void 0 : _h$role.toLowerCase().includes(q)) || ((_h$dept = h.dept) === null || _h$dept === void 0 ? void 0 : _h$dept.toLowerCase().includes(q));
+    });
+  }, [hires, search]);
+  var totalHired = hires.length;
+  var startingSoon = 0; // not tracked yet
+  var active = hires.length;
+  if (loading) {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("section", {
+      className: "hire-dashboard-hires-section",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+        className: "hire-hires-wrapper",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+          className: "hire-hires-empty",
+          children: "Loading hires\u2026"
+        })
+      })
+    });
+  }
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.Fragment, {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("section", {
+      className: "hire-dashboard-hires-section",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+        className: "hire-hires-wrapper",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+          className: "hire-hires-header",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("h2", {
+              children: "Hires"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
+              children: [totalHired, " candidate", totalHired !== 1 ? 's' : '', " successfully hired"]
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+            className: "hire-hires-stats",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+              className: "hire-hires-stat",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                className: "hire-hires-stat-num",
+                children: totalHired
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                className: "hire-hires-stat-label",
+                children: "Total hired"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+              className: "hire-hires-stat-divider"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+              className: "hire-hires-stat",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                className: "hire-hires-stat-num active",
+                children: active
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                className: "hire-hires-stat-label",
+                children: "Active"
+              })]
+            })]
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+          className: "hire-list-search",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaSearch, {
+            className: "hire-search-icon",
+            "aria-hidden": "true"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("input", {
+            type: "text",
+            placeholder: "Search by name, role, or department\u2026",
+            value: search,
+            onChange: function onChange(e) {
+              return setSearch(e.target.value);
+            }
+          }), search && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+            type: "button",
+            className: "hire-search-clear",
+            onClick: function onClick() {
+              return setSearch('');
+            },
+            children: "\u2715"
+          })]
+        }), hires.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+          className: "hire-hires-empty",
+          children: "No hires yet. Candidates marked as hired will appear here."
+        }), hires.length > 0 && filteredHires.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+          className: "hire-hires-empty",
+          children: "No hires match your search."
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+          className: "hire-hires-list",
+          children: filteredHires.map(function (hire) {
+            var hireSteps = steps[hire.id] || [];
+            var doneCount = hireSteps.filter(function (s) {
+              return s.done;
+            }).length;
+            var progress = hireSteps.length > 0 ? Math.round(doneCount / hireSteps.length * 100) : 0;
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+              className: "hire-hire-card",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                className: "hire-hire-banner",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                  className: "hire-hire-avatar",
+                  children: hire.initials
+                })
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                className: "hire-hire-card-body",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                  className: "hire-hire-card-top",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                    className: "hire-hire-identity",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                      className: "hire-hire-name",
+                      children: hire.name
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                      className: "hire-hire-role",
+                      children: hire.role
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                    className: "hire-hire-status status-".concat(hire.status.toLowerCase().replace(' ', '-')),
+                    children: hire.status
+                  })]
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                  className: "hire-hire-status status-active",
+                  children: hire.status
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                className: "hire-hire-divider"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                className: "hire-hire-section",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                  className: "hire-hire-section-title",
+                  children: "Role Details"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("ul", {
+                  className: "hire-hire-detail-list",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaBuilding, {
+                      className: "hire-hire-detail-icon",
+                      "aria-hidden": "true"
+                    }), " ", hire.dept]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaMapMarkerAlt, {
+                      className: "hire-hire-detail-icon",
+                      "aria-hidden": "true"
+                    }), " ", hire.location]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaDollarSign, {
+                      className: "hire-hire-detail-icon",
+                      "aria-hidden": "true"
+                    }), " ", hire.salary]
+                  })]
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                className: "hire-hire-divider"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                className: "hire-hire-section",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                  className: "hire-hire-section-title",
+                  children: "Hire Info"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("ul", {
+                  className: "hire-hire-detail-list",
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaCalendarAlt, {
+                      className: "hire-hire-detail-icon",
+                      "aria-hidden": "true"
+                    }), " Hired: ", hire.hiredDate]
+                  })
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                className: "hire-hire-divider"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                className: "hire-hire-section",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                  className: "hire-hire-section-title-row",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                    className: "hire-hire-section-title",
+                    children: "Next Steps"
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
+                    className: "hire-hire-progress-label",
+                    children: [doneCount, "/", hireSteps.length]
+                  })]
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                  className: "hire-hire-actions",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
+                    className: "hire-hire-action-btn",
+                    type: "button",
+                    onClick: function onClick() {
+                      return setProfileHire(hire);
+                    },
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaUserCircle, {
+                      "aria-hidden": "true"
+                    }), " View profile"]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
+                    className: "hire-hire-action-btn",
+                    type: "button",
+                    onClick: function onClick() {
+                      return window.location.href = "mailto:".concat(hire.email);
+                    },
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaEnvelope, {
+                      "aria-hidden": "true"
+                    }), " Email"]
+                  })]
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("ul", {
+                  className: "hire-hire-steps-list",
+                  children: hireSteps.map(function (step) {
+                    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
+                      className: step.done ? 'done' : '',
+                      onClick: function onClick() {
+                        return toggleStep(hire.id, step.id);
+                      },
+                      children: [step.done ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaCheckCircle, {
+                        className: "step-icon checked",
+                        "aria-hidden": "true"
+                      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaRegCircle, {
+                        className: "step-icon",
+                        "aria-hidden": "true"
+                      }), step.label]
+                    }, step.id);
+                  })
+                })]
+              })]
+            }, hire.id);
+          })
+        }), hires.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+          className: "hire-history",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+            className: "hire-history-header",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("h3", {
+              children: "Hiring History"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+              children: "Record of all hired candidates"
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+            className: "hire-history-list",
+            children: Object.entries(hires.reduce(function (acc, h) {
+              var month = h.hiredDate ? new Date(h.hiredDate).toLocaleString('en-US', {
+                month: 'long',
+                year: 'numeric'
+              }) : 'Unknown';
+              if (!acc[month]) acc[month] = [];
+              acc[month].push(h);
+              return acc;
+            }, {})).map(function (_ref) {
+              var _ref2 = _slicedToArray(_ref, 2),
+                month = _ref2[0],
+                monthHires = _ref2[1];
+              var isOpen = openMonth === month;
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                className: "hire-history-group ".concat(isOpen ? 'open' : ''),
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("button", {
+                  className: "hire-history-month-row",
+                  type: "button",
+                  onClick: function onClick() {
+                    return setOpenMonth(isOpen ? null : month);
+                  },
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                    className: "hire-history-month-left",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                      className: "hire-history-month-name",
+                      children: month
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
+                      className: "hire-history-month-count",
+                      children: [monthHires.length, " ", monthHires.length === 1 ? 'hire' : 'hires']
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaChevronDown, {
+                    className: "hire-history-chevron",
+                    "aria-hidden": "true"
+                  })]
+                }), isOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                  className: "hire-history-rows",
+                  children: monthHires.map(function (h) {
+                    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                      className: "hire-history-row",
+                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                        className: "hire-history-initials",
+                        children: h.initials
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                        className: "hire-history-info",
+                        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                          className: "hire-history-name",
+                          children: h.name
+                        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                          className: "hire-history-role",
+                          children: h.role
+                        })]
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+                        className: "hire-history-meta",
+                        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
+                          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaBuilding, {
+                            "aria-hidden": "true"
+                          }), " ", h.dept]
+                        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
+                          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaDollarSign, {
+                            "aria-hidden": "true"
+                          }), " ", h.salary]
+                        })]
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                        className: "hire-history-meta",
+                        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("span", {
+                          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_3__.FaCalendarAlt, {
+                            "aria-hidden": "true"
+                          }), " ", h.hiredDate]
+                        })
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                        className: "hire-history-status",
+                        children: "Active"
+                      })]
+                    }, h.id);
+                  })
+                })]
+              }, month);
+            })
+          })]
+        })]
+      })
+    }), profileHire && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_CandidateProfileModal_CandidateProfileModal__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      candidate: _objectSpread(_objectSpread({}, profileHire), {}, {
+        company: profileHire.dept,
+        status: 'Hired',
+        skills: (_profileHire$skills = profileHire.skills) !== null && _profileHire$skills !== void 0 ? _profileHire$skills : [],
+        history: (_profileHire$history = profileHire.history) !== null && _profileHire$history !== void 0 ? _profileHire$history : [{
+          stage: 'Applied',
+          date: '—'
+        }, {
+          stage: 'Hired',
+          date: (_profileHire$hiredDat = profileHire.hiredDate) !== null && _profileHire$hiredDat !== void 0 ? _profileHire$hiredDat : '—'
+        }],
+        summary: (_profileHire$summary = profileHire.summary) !== null && _profileHire$summary !== void 0 ? _profileHire$summary : '',
+        experience: (_profileHire$experien = profileHire.experience) !== null && _profileHire$experien !== void 0 ? _profileHire$experien : '—',
+        email: (_profileHire$email = profileHire.email) !== null && _profileHire$email !== void 0 ? _profileHire$email : '—'
+      }),
+      onClose: function onClose() {
+        return setProfileHire(null);
+      }
+    })]
+  });
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (HireDashboardHires);
 
 /***/ },
 
@@ -20660,13 +21121,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_pages_HireDashboardHires_HireDashboardHires__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../components/pages/HireDashboardHires/HireDashboardHires */ "./resources/js/views/HR-View/components/pages/HireDashboardHires/HireDashboardHires.js");
-/* harmony import */ var _components_pages_HireDashboardHires_HireDashboardHires__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_components_pages_HireDashboardHires_HireDashboardHires__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 
 
 
 var HireDashboardHiresPage = function HireDashboardHiresPage() {
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)((_components_pages_HireDashboardHires_HireDashboardHires__WEBPACK_IMPORTED_MODULE_1___default()), {});
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_components_pages_HireDashboardHires_HireDashboardHires__WEBPACK_IMPORTED_MODULE_1__["default"], {});
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (HireDashboardHiresPage);
 
@@ -32802,6 +33262,30 @@ __webpack_require__.r(__webpack_exports__);
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
 ___CSS_LOADER_EXPORT___.push([module.id, ".hire-dashboard-header-section {\n  width: 100%;\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 40px 32px 0;\n}\n@media (max-width: 768px) {\n  .hire-dashboard-header-section {\n    padding: 24px 16px 0;\n  }\n}\n.hire-dashboard-header-section .hire-header-text h1 {\n  margin: 0 0 8px;\n  font-size: 30px;\n  font-weight: 700;\n  color: #111111;\n  line-height: 1.25;\n}\n@media (max-width: 768px) {\n  .hire-dashboard-header-section .hire-header-text h1 {\n    font-size: 22px;\n  }\n}\n.hire-dashboard-header-section .hire-header-text p {\n  margin: 0;\n  font-size: 15px;\n  color: #7a746d;\n}\n.hire-dashboard-header-section .hire-accent {\n  color: #fdd535;\n}", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ },
+
+/***/ "./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./resources/js/views/HR-View/components/pages/HireDashboardHires/HireDashboardHires.scss"
+/*!**************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./resources/js/views/HR-View/components/pages/HireDashboardHires/HireDashboardHires.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, ".hire-dashboard-hires-section {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-dashboard-hires-section {\n    padding: 24px 16px 48px;\n  }\n}\n\n.hire-hires-wrapper {\n  display: flex;\n  flex-direction: column;\n  gap: 28px;\n}\n\n.hire-list-search {\n  position: relative;\n  display: flex;\n  align-items: center;\n}\n.hire-list-search input {\n  width: 100%;\n  height: 40px;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 0 36px 0 36px;\n  font-size: 13.5px;\n  font-family: inherit;\n  color: #111111;\n  background: #ffffff;\n  outline: none;\n  transition: border-color 0.2s, box-shadow 0.2s;\n}\n.hire-list-search input::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-list-search input::placeholder {\n  color: #b0a89e;\n}\n.hire-list-search input:focus {\n  border-color: #c8c2bb;\n  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);\n}\n\n.hire-hires-empty {\n  text-align: center;\n  color: #7a746d;\n  font-size: 14px;\n  padding: 16px 0;\n}\n\n.hire-hires-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 16px;\n}\n.hire-hires-header h2 {\n  margin: 0 0 4px;\n  font-size: 24px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-hires-header p {\n  margin: 0;\n  font-size: 14px;\n  color: #7a746d;\n}\n\n.hire-hires-stats {\n  display: flex;\n  align-items: center;\n  gap: 20px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  padding: 14px 22px;\n}\n\n.hire-hires-stat {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 2px;\n}\n\n.hire-hires-stat-num {\n  font-size: 22px;\n  font-weight: 800;\n  color: #111111;\n  line-height: 1;\n}\n.hire-hires-stat-num.starting {\n  color: #c58a00;\n}\n.hire-hires-stat-num.active {\n  color: #18a87a;\n}\n\n.hire-hires-stat-label {\n  font-size: 11px;\n  color: #7a746d;\n  white-space: nowrap;\n}\n\n.hire-hires-stat-divider {\n  width: 1px;\n  height: 32px;\n  background: #e7dfd4;\n}\n\n.hire-hires-toolbar {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n}\n\n.hire-hires-sort {\n  height: 40px;\n  padding: 0 14px;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  font-size: 13px;\n  font-family: inherit;\n  color: #555050;\n  background: #ffffff;\n  cursor: pointer;\n  outline: none;\n}\n.hire-hires-sort:focus {\n  border-color: #bbb5ae;\n}\n\n.hire-hires-empty {\n  font-size: 14px;\n  color: #7a746d;\n  padding: 8px 0;\n}\n\n.hire-hires-list {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 18px;\n  align-items: start;\n}\n@media (max-width: 960px) {\n  .hire-hires-list {\n    grid-template-columns: repeat(2, 1fr);\n  }\n}\n@media (max-width: 560px) {\n  .hire-hires-list {\n    grid-template-columns: 1fr;\n  }\n}\n\n.hire-hire-card {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  transition: box-shadow 0.2s, border-color 0.2s, transform 0.18s;\n}\n.hire-hire-card:hover {\n  border-color: #d4cdc5;\n  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.09);\n  transform: translateY(-2px);\n}\n\n.hire-hire-banner {\n  position: relative;\n  height: 88px;\n  flex-shrink: 0;\n  background: repeating-linear-gradient(-52deg, transparent 0px, transparent 9px, rgba(255, 255, 255, 0.18) 9px, rgba(255, 255, 255, 0.18) 10px), linear-gradient(135deg, #cfc8be 0%, #e7dfd4 60%, #f2efea 100%);\n}\n\n.hire-hire-avatar {\n  position: absolute;\n  bottom: -20px;\n  left: 20px;\n  width: 52px;\n  height: 52px;\n  background: #ffffff;\n  border: 3px solid #fdd535;\n  border-radius: 14px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 17px;\n  font-weight: 800;\n  color: #111111;\n  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);\n}\n\n.hire-hire-card-body {\n  padding: 28px 18px 18px;\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  flex: 1;\n}\n\n.hire-hire-card-top {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 10px;\n}\n\n.hire-hire-identity {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n  min-width: 0;\n}\n\n.hire-hire-name {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-hire-role {\n  font-size: 12px;\n  color: #7a746d;\n}\n\n.hire-hire-status {\n  border-radius: 999px;\n  padding: 4px 11px;\n  font-size: 11px;\n  font-weight: 700;\n  white-space: nowrap;\n  flex-shrink: 0;\n}\n.hire-hire-status.status-active {\n  background: #e6f4ec;\n  color: #18a87a;\n  border: 1px solid #b3e6ce;\n}\n.hire-hire-status.status-starting-soon {\n  background: #fff8e1;\n  color: #b88a00;\n  border: 1px solid #f5d87a;\n}\n\n.hire-hire-divider {\n  height: 1px;\n  background: #f0ece6;\n}\n\n.hire-hire-section {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.hire-hire-section-title {\n  font-size: 10px;\n  font-weight: 700;\n  color: #111111;\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n}\n\n.hire-hire-section-title-row {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n}\n\n.hire-hire-progress-label {\n  font-size: 11px;\n  font-weight: 700;\n  color: #7a746d;\n}\n\n.hire-hire-detail-list {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n.hire-hire-detail-list li {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  font-size: 12.5px;\n  color: #444444;\n}\n\n.hire-hire-detail-icon {\n  color: #bbb5ae;\n  font-size: 12px;\n  flex-shrink: 0;\n}\n\n.hire-hire-progress-bar {\n  height: 5px;\n  background: #f0ece6;\n  border-radius: 99px;\n  overflow: hidden;\n}\n\n.hire-hire-progress-fill {\n  height: 100%;\n  border-radius: 99px;\n  background: #fdd535;\n  transition: width 0.4s ease;\n}\n\n.hire-hire-steps-list {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n.hire-hire-steps-list li {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  font-size: 12.5px;\n  color: #444444;\n  cursor: pointer;\n  border-radius: 6px;\n  padding: 4px 6px;\n  margin: 0 -6px;\n  transition: background 0.15s;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.hire-hire-steps-list li:hover {\n  background: #f7f4f0;\n}\n.hire-hire-steps-list li.done {\n  color: #9e9890;\n  text-decoration: line-through;\n}\n\n.step-icon {\n  font-size: 13px;\n  flex-shrink: 0;\n  color: #ccc7c0;\n}\n.step-icon.checked {\n  color: #18a87a;\n}\n\n.hire-history {\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n}\n\n.hire-history-header h3 {\n  margin: 0 0 4px;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-history-header p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.hire-history-list {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.hire-history-group {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  overflow: hidden;\n  transition: border-color 0.2s;\n}\n.hire-history-group.open {\n  border-color: #d4cdc5;\n}\n\n.hire-history-month-row {\n  width: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: 16px 20px;\n  background: none;\n  border: none;\n  cursor: pointer;\n  font-family: inherit;\n  transition: background 0.15s;\n}\n.hire-history-month-row:hover {\n  background: #fafaf8;\n}\n\n.hire-history-month-left {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n}\n\n.hire-history-month-name {\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n\n.hire-history-month-count {\n  font-size: 12px;\n  font-weight: 600;\n  color: #7a746d;\n  background: #f2efea;\n  border-radius: 999px;\n  padding: 3px 10px;\n}\n\n.hire-history-chevron {\n  font-size: 12px;\n  color: #7a746d;\n  transition: transform 0.2s;\n}\n.open .hire-history-chevron {\n  transform: rotate(180deg);\n}\n\n.hire-history-rows {\n  border-top: 1px solid #f0ece6;\n  display: flex;\n  flex-direction: column;\n}\n\n.hire-history-row {\n  display: flex;\n  align-items: center;\n  gap: 16px;\n  padding: 14px 20px;\n  border-bottom: 1px solid #f0ece6;\n  flex-wrap: wrap;\n  transition: background 0.15s;\n}\n.hire-history-row:last-child {\n  border-bottom: none;\n}\n.hire-history-row:hover {\n  background: #fafaf8;\n}\n\n.hire-history-initials {\n  width: 38px;\n  height: 38px;\n  background: #f2efea;\n  border-radius: 10px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 700;\n  color: #111111;\n  flex-shrink: 0;\n}\n\n.hire-history-info {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 160px;\n  flex: 1;\n}\n\n.hire-history-name {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111111;\n}\n\n.hire-history-role {\n  font-size: 12px;\n  color: #7a746d;\n}\n\n.hire-history-meta {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  flex-shrink: 0;\n}\n.hire-history-meta span {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  font-size: 12px;\n  color: #7a746d;\n}\n.hire-history-meta span svg {\n  color: #bbb5ae;\n  font-size: 11px;\n}\n\n.hire-history-status {\n  margin-left: auto;\n  font-size: 11px;\n  font-weight: 700;\n  padding: 4px 11px;\n  border-radius: 999px;\n  flex-shrink: 0;\n}\n.hire-history-status.status-active {\n  background: #e6f4ec;\n  color: #18a87a;\n  border: 1px solid #b3e6ce;\n}\n.hire-history-status.status-starting-soon {\n  background: #fff8e1;\n  color: #b88a00;\n  border: 1px solid #f5d87a;\n}\n@media (max-width: 600px) {\n  .hire-history-status {\n    margin-left: 0;\n  }\n}\n\n.hire-hire-actions {\n  display: flex;\n  gap: 8px;\n  margin-top: 4px;\n}\n\n.hire-hire-action-btn {\n  flex: 1;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 6px;\n  height: 36px;\n  border-radius: 8px;\n  font-size: 12.5px;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  transition: background 0.2s, box-shadow 0.2s;\n  border: 1px solid #e7dfd4;\n  background: #fafaf8;\n  color: #444444;\n}\n.hire-hire-action-btn:hover {\n  background: #f2efea;\n  border-color: #d4cdc5;\n}\n.hire-hire-action-btn.primary {\n  background: #111111;\n  border-color: #111111;\n  color: #ffffff;\n}\n.hire-hire-action-btn.primary:hover {\n  background: #2e2e2e;\n}\n.hire-hire-action-btn.danger {\n  flex: 0 0 36px;\n  color: #c0392b;\n  border-color: #f5c6c2;\n}\n.hire-hire-action-btn.danger:hover {\n  background: #fdf0ef;\n  border-color: #e8a09a;\n}\n.hire-hire-action-btn.danger:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -73348,6 +73832,36 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_2_node_modules_sass_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_3_HireDashboardHeader_scss__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ },
+
+/***/ "./resources/js/views/HR-View/components/pages/HireDashboardHires/HireDashboardHires.scss"
+/*!************************************************************************************************!*\
+  !*** ./resources/js/views/HR-View/components/pages/HireDashboardHires/HireDashboardHires.scss ***!
+  \************************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../../../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_2_node_modules_sass_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_3_HireDashboardHires_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../../../../../../node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!../../../../../../../node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!../../../../../../../node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./HireDashboardHires.scss */ "./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[7].oneOf[1].use[3]!./resources/js/views/HR-View/components/pages/HireDashboardHires/HireDashboardHires.scss");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_2_node_modules_sass_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_3_HireDashboardHires_scss__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_2_node_modules_sass_loader_dist_cjs_js_ruleSet_1_rules_7_oneOf_1_use_3_HireDashboardHires_scss__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
 
 /***/ },
 

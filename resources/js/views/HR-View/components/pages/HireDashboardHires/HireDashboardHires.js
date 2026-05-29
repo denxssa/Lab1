@@ -125,7 +125,7 @@ const HireDashboardHires = () => {
             const doneCount = hireSteps.filter((s) => s.done).length;
             const progress  = hireSteps.length > 0 ? Math.round((doneCount / hireSteps.length) * 100) : 0;
 
-              return (
+            return (
                 <div key={hire.id} className="hire-hire-card">
 
                 <div className="hire-hire-banner">
@@ -177,7 +177,7 @@ const HireDashboardHires = () => {
                       <button
                         className="hire-hire-action-btn"
                         type="button"
-                        onClick={() => openProfile(hire)}
+                        onClick={() => setProfileHire(hire)}
                       >
                         <FaUserCircle aria-hidden="true" /> View profile
                       </button>
@@ -187,14 +187,6 @@ const HireDashboardHires = () => {
                         onClick={() => window.location.href = `mailto:${hire.email}`}
                       >
                         <FaEnvelope aria-hidden="true" /> Email
-                      </button>
-                      <button
-                        className="hire-hire-action-btn danger"
-                        type="button"
-                        disabled={removing === hire.id}
-                        onClick={() => removeHire(hire)}
-                      >
-                        <FaTrash aria-hidden="true" />
                       </button>
                     </div>
                     <ul className="hire-hire-steps-list">
@@ -214,27 +206,10 @@ const HireDashboardHires = () => {
                     </ul>
                   </div>
 
-                  <div className="hire-hire-actions">
-                    <button className="hire-hire-action-btn" type="button">
-                      <FaEnvelope aria-hidden="true" /> Email
-                    </button>
-                    <button className="hire-hire-action-btn primary" type="button" onClick={() => setProfileHire(hire)}>
-                      <FaUserCircle aria-hidden="true" /> View profile
-                    </button>
-                  </div>
                 </div>
               );
             })}
           </div>
-        )}
-
-        {/* ── Hiring History ── */}
-        {historyGroups.length > 0 && (
-          <div className="hire-history">
-            <div className="hire-history-header">
-              <h3>Hiring History</h3>
-              <p>Record of all hires grouped by month</p>
-            </div>
 
         {/* ── Hiring History (grouped by month from real data) ── */}
         {hires.length > 0 && (
@@ -300,12 +275,6 @@ const HireDashboardHires = () => {
 
       </div>
 
-      {profileFor && (
-        <CandidateProfileModal
-          candidate={profileFor}
-          onClose={() => setProfileFor(null)}
-        />
-      )}
     </section>
 
     {profileHire && (

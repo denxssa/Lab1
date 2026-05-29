@@ -9,9 +9,11 @@ use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\HiresController;
+use App\Http\Controllers\HrController;
 use App\Http\Controllers\CvProfileController;
 use App\Http\Controllers\ResumeController;
 use App\Http\Controllers\PricingPlanController;
+use App\Http\Controllers\SavedJobController;
 use App\Http\Controllers\TeamMemberController;
 use Illuminate\Support\Facades\Route;
 
@@ -102,6 +104,10 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/api/job-listings', [JobListingController::class, 'store']);
     Route::put('/api/job-listings/{jobListing}', [JobListingController::class, 'update']);
     Route::delete('/api/job-listings/{jobListing}', [JobListingController::class, 'destroy']);
+    Route::post('/api/job-listings/{jobListing}/apply', [HrController::class, 'apply']);
+    Route::get('/api/saved-jobs', [SavedJobController::class, 'index']);
+    Route::post('/api/saved-jobs', [SavedJobController::class, 'store']);
+    Route::delete('/api/saved-jobs/{jobListingId}', [SavedJobController::class, 'destroy']);
 
     Route::get('/api/resume', [ResumeController::class, 'show']);
     Route::post('/api/resume/upload', [ResumeController::class, 'upload']);
@@ -129,6 +135,11 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/api/hires', [HiresController::class, 'index']);
     Route::delete('/api/hires/{application}', [HiresController::class, 'destroy']);
+
+    Route::get('/api/hr/applications', [HrController::class, 'applications']);
+    Route::put('/api/hr/applications/{id}', [HrController::class, 'updateApplication']);
+    Route::get('/api/hr/analytics', [HrController::class, 'analytics']);
+    Route::get('/api/hr/hires', [HrController::class, 'hires']);
 
     Route::get('/api/conversations', [ConversationController::class, 'index']);
     Route::get('/api/conversations/messageable-candidates', [ConversationController::class, 'messageableCandidates']);
