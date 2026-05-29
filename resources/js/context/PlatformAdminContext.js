@@ -259,7 +259,7 @@ export const PlatformAdminProvider = ({ children }) => {
     };
     persist(optimisticState);
 
-    if (pageKey === 'about' || pageKey === 'pricing' || pageKey === 'companies') {
+    if (pageKey === 'about' || pageKey === 'pricing' || pageKey === 'companies' || pageKey === 'contact') {
       try {
         const payload = await homeApi.putHomePageContent(nextPageContent[pageKey], pageKey);
         if (!payload?.pageContent?.[pageKey]) return;
