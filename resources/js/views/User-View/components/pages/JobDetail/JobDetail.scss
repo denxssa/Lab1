@@ -157,41 +157,82 @@ ul {
   flex-wrap: wrap;
   gap: 16px;
   margin-top: 36px;
+  align-items: center;
+  align-self: flex-start;
 }
 
 
 .apply-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  width: fit-content;
   gap: 8px;
   background: #f2bc1b;
   color: #111;
   border: none;
   border-radius: 14px;
-  padding: 16px 32px;
-  font-size: 16px;
+  padding: 16px 24px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: #e0ac10;
+  }
+
+  &.is-applied, &.is-error {
+    opacity: 0.85;
+    cursor: default;
+  }
+
+  &.is-applied {
+    background: #4caf50;
+    color: #fff;
+  }
+
+  &.is-error {
+    background: #e53935;
+    color: #fff;
+  }
+
+  &:disabled {
+    cursor: default;
   }
 }
 
 
 .save-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  width: fit-content;
   background: #fff;
   color: #111;
   border: 1px solid #ddd;
   border-radius: 14px;
-  padding: 16px 32px;
-  font-size: 16px;
+  padding: 16px 24px;
+  font-size: 15px;
   cursor: pointer;
+  white-space: nowrap;
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: #111;
+  }
+
+  &.saved {
+    background: #f2bc1b;
+    border-color: #f2bc1b;
+    color: #111;
+    font-weight: 600;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.8;
   }
 }
 

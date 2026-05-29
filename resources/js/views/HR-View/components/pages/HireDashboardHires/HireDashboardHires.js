@@ -1,150 +1,93 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useHireDashboard } from '../../../HireDashboardContext';
+import CandidateProfileModal from '../CandidateProfileModal/CandidateProfileModal';
 import {
-  FaBuilding, FaMapMarkerAlt, FaClock, FaDollarSign,
-  FaCalendarAlt, FaUserTie, FaStar,
+  FaBuilding, FaMapMarkerAlt, FaDollarSign,
+  FaCalendarAlt,
   FaEnvelope, FaUserCircle, FaCheckCircle, FaRegCircle,
-  FaChevronDown,
+  FaChevronDown, FaSearch,
 } from 'react-icons/fa';
+import { fetchHrHires } from '../../../../../api/hrApi';
 import './HireDashboardHires.scss';
 
-const historyData = [
-  {
-    month: 'April 2026',
-    count: 2,
-    hires: [
-      { id: 'h1', initials: 'MC', name: 'Marcus Chen',   role: 'DevOps Engineer',            hiredBy: 'Sarah K.', date: 'Apr 18, 2026', dept: 'Engineering dept.', salary: '$128k / yr' },
-      { id: 'h2', initials: 'SI', name: 'Sofia Iannone', role: 'Digital Marketing Manager',  hiredBy: 'James R.', date: 'Apr 7, 2026',  dept: 'Marketing dept.',   salary: '$95k / yr'  },
-    ],
-  },
-  {
-    month: 'March 2026',
-    count: 3,
-    hires: [
-      { id: 'h3', initials: 'PW', name: 'Patrick Walsh',   role: 'Backend Engineer',     hiredBy: 'Mike T.',   date: 'Mar 24, 2026', dept: 'Engineering dept.', salary: '$132k / yr' },
-      { id: 'h4', initials: 'YK', name: 'Yuki Kobayashi',  role: 'Product Designer',     hiredBy: 'Sarah K.',  date: 'Mar 14, 2026', dept: 'Design dept.',      salary: '$110k / yr' },
-      { id: 'h5', initials: 'OA', name: 'Olivia Adams',    role: 'Data Analyst',          hiredBy: 'James R.',  date: 'Mar 3, 2026',  dept: 'Data dept.',        salary: '$98k / yr'  },
-    ],
-  },
-  {
-    month: 'February 2026',
-    count: 1,
-    hires: [
-      { id: 'h6', initials: 'RB', name: 'Rafael Branco', role: 'iOS Developer', hiredBy: 'Mike T.', date: 'Feb 19, 2026', dept: 'Engineering dept.', salary: '$120k / yr' },
-    ],
-  },
-];
-
-const initialHires = [
-  {
-    id: 1,
-    name: 'Alex Rivera',
-    role: 'Senior Frontend Developer',
-    initials: 'AR',
-    status: 'Starting Soon',
-    details: [
-      { icon: FaBuilding,      label: 'Engineering dept.' },
-      { icon: FaMapMarkerAlt,  label: 'Remote' },
-      { icon: FaClock,         label: 'Full-time' },
-      { icon: FaDollarSign,    label: '$140k / yr' },
-    ],
-    offer: [
-      { icon: FaCalendarAlt,  label: 'Start date: May 5, 2026' },
-      { icon: FaUserTie,      label: 'Hired by Sarah K.' },
-      { icon: FaStar,         label: '6 years experience' },
-    ],
-    nextSteps: [
-      { id: 'a1', label: 'Send onboarding email',  done: false },
-      { id: 'a2', label: 'Set up equipment',        done: false },
-      { id: 'a3', label: 'Schedule team intro',     done: false },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Fatima Al-Zahra',
-    role: 'Data Scientist',
-    initials: 'FA',
-    status: 'Starting Soon',
-    details: [
-      { icon: FaBuilding,      label: 'Data dept.' },
-      { icon: FaMapMarkerAlt,  label: 'New York, NY' },
-      { icon: FaClock,         label: 'Full-time' },
-      { icon: FaDollarSign,    label: '$148k / yr' },
-    ],
-    offer: [
-      { icon: FaCalendarAlt,  label: 'Start date: May 12, 2026' },
-      { icon: FaUserTie,      label: 'Hired by Mike T.' },
-      { icon: FaStar,         label: '4 years experience' },
-    ],
-    nextSteps: [
-      { id: 'b1', label: 'Send onboarding email',  done: false },
-      { id: 'b2', label: 'Arrange office access',  done: false },
-      { id: 'b3', label: 'Assign mentor',           done: false },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Liam Nguyen',
-    role: 'Mobile App Developer',
-    initials: 'LN',
-    status: 'Active',
-    details: [
-      { icon: FaBuilding,      label: 'Engineering dept.' },
-      { icon: FaMapMarkerAlt,  label: 'Austin, TX' },
-      { icon: FaClock,         label: 'Full-time' },
-      { icon: FaDollarSign,    label: '$115k / yr' },
-    ],
-    offer: [
-      { icon: FaCalendarAlt,  label: 'Started: Apr 14, 2026' },
-      { icon: FaUserTie,      label: 'Hired by Sarah K.' },
-      { icon: FaStar,         label: '3 years experience' },
-    ],
-    nextSteps: [
-      { id: 'c1', label: 'Complete onboarding docs', done: true },
-      { id: 'c2', label: 'First sprint assigned',    done: true },
-      { id: 'c3', label: 'Meet the team',             done: true },
-    ],
-  },
+const DEFAULT_NEXT_STEPS = [
+  { id: 'a', label: 'Send onboarding email',  done: false },
+  { id: 'b', label: 'Set up equipment',        done: false },
+  { id: 'c', label: 'Schedule team intro',     done: false },
 ];
 
 const HireDashboardHires = () => {
-  const [hires, setHires] = useState(initialHires);
-  const [openMonth, setOpenMonth] = useState('April 2026');
+  const { hiresVersion } = useHireDashboard();
+  const [hires,        setHires]        = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [openMonth,    setOpenMonth]    = useState(null);
+  const [search,       setSearch]       = useState('');
+  const [steps,        setSteps]        = useState({});
+  const [profileHire,  setProfileHire]  = useState(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchHrHires()
+      .then((data) => {
+        setHires(data);
+        const init = {};
+        data.forEach((h) => {
+          init[h.id] = (steps[h.id] || DEFAULT_NEXT_STEPS.map((s) => ({ ...s, id: `${h.id}-${s.id}` })));
+        });
+        setSteps(init);
+      })
+      .catch(() => setHires([]))
+      .finally(() => setLoading(false));
+  }, [hiresVersion]);
 
   const toggleStep = (hireId, stepId) => {
-    setHires((prev) =>
-      prev.map((h) =>
-        h.id !== hireId ? h : {
-          ...h,
-          nextSteps: h.nextSteps.map((s) =>
-            s.id === stepId ? { ...s, done: !s.done } : s
-          ),
-        }
-      )
-    );
+    setSteps((prev) => ({
+      ...prev,
+      [hireId]: (prev[hireId] || []).map((s) =>
+        s.id === stepId ? { ...s, done: !s.done } : s
+      ),
+    }));
   };
 
-  const totalHired    = hires.length;
-  const startingSoon  = hires.filter((h) => h.status === 'Starting Soon').length;
-  const active        = hires.filter((h) => h.status === 'Active').length;
+  const filteredHires = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return hires;
+    return hires.filter(
+      (h) =>
+        h.name?.toLowerCase().includes(q) ||
+        h.role?.toLowerCase().includes(q) ||
+        h.dept?.toLowerCase().includes(q)
+    );
+  }, [hires, search]);
+
+  const totalHired   = hires.length;
+  const startingSoon = 0; // not tracked yet
+  const active       = hires.length;
+
+  if (loading) {
+    return (
+      <section className="hire-dashboard-hires-section">
+        <div className="hire-hires-wrapper">
+          <p className="hire-hires-empty">Loading hires…</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
+    <>
     <section className="hire-dashboard-hires-section">
       <div className="hire-hires-wrapper">
 
         <div className="hire-hires-header">
           <div>
-            <h2>Hires This Month</h2>
-            <p>{totalHired} candidates successfully hired</p>
+            <h2>Hires</h2>
+            <p>{totalHired} candidate{totalHired !== 1 ? 's' : ''} successfully hired</p>
           </div>
           <div className="hire-hires-stats">
             <div className="hire-hires-stat">
               <span className="hire-hires-stat-num">{totalHired}</span>
               <span className="hire-hires-stat-label">Total hired</span>
-            </div>
-            <div className="hire-hires-stat-divider" />
-            <div className="hire-hires-stat">
-              <span className="hire-hires-stat-num starting">{startingSoon}</span>
-              <span className="hire-hires-stat-label">Starting soon</span>
             </div>
             <div className="hire-hires-stat-divider" />
             <div className="hire-hires-stat">
@@ -154,18 +97,38 @@ const HireDashboardHires = () => {
           </div>
         </div>
 
+        <div className="hire-list-search">
+          <FaSearch className="hire-search-icon" aria-hidden="true" />
+          <input
+            type="text"
+            placeholder="Search by name, role, or department…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button type="button" className="hire-search-clear" onClick={() => setSearch('')}>✕</button>
+          )}
+        </div>
+
+        {hires.length === 0 && (
+          <p className="hire-hires-empty">No hires yet. Candidates marked as hired will appear here.</p>
+        )}
+
+        {hires.length > 0 && filteredHires.length === 0 && (
+          <p className="hire-hires-empty">No hires match your search.</p>
+        )}
+
         <div className="hire-hires-list">
-          {hires.map((hire) => {
-            const doneCount = hire.nextSteps.filter((s) => s.done).length;
-            const progress  = Math.round((doneCount / hire.nextSteps.length) * 100);
+          {filteredHires.map((hire) => {
+            const hireSteps = steps[hire.id] || [];
+            const doneCount = hireSteps.filter((s) => s.done).length;
+            const progress  = hireSteps.length > 0 ? Math.round((doneCount / hireSteps.length) * 100) : 0;
 
             return (
               <div key={hire.id} className="hire-hire-card">
 
                 <div className="hire-hire-banner">
-                  <div className="hire-hire-avatar">
-                    {hire.initials}
-                  </div>
+                  <div className="hire-hire-avatar">{hire.initials}</div>
                 </div>
 
                 <div className="hire-hire-card-body">
@@ -174,9 +137,7 @@ const HireDashboardHires = () => {
                       <div className="hire-hire-name">{hire.name}</div>
                       <div className="hire-hire-role">{hire.role}</div>
                     </div>
-                    <div className={`hire-hire-status status-${hire.status.toLowerCase().replace(' ', '-')}`}>
-                      {hire.status}
-                    </div>
+                    <div className="hire-hire-status status-active">{hire.status}</div>
                   </div>
 
                   <div className="hire-hire-divider" />
@@ -184,12 +145,9 @@ const HireDashboardHires = () => {
                   <div className="hire-hire-section">
                     <div className="hire-hire-section-title">Role Details</div>
                     <ul className="hire-hire-detail-list">
-                      {hire.details.map((item, i) => (
-                        <li key={i}>
-                          <item.icon className="hire-hire-detail-icon" aria-hidden="true" />
-                          {item.label}
-                        </li>
-                      ))}
+                      <li><FaBuilding     className="hire-hire-detail-icon" aria-hidden="true" /> {hire.dept}</li>
+                      <li><FaMapMarkerAlt className="hire-hire-detail-icon" aria-hidden="true" /> {hire.location}</li>
+                      <li><FaDollarSign   className="hire-hire-detail-icon" aria-hidden="true" /> {hire.salary}</li>
                     </ul>
                   </div>
 
@@ -198,12 +156,7 @@ const HireDashboardHires = () => {
                   <div className="hire-hire-section">
                     <div className="hire-hire-section-title">Hire Info</div>
                     <ul className="hire-hire-detail-list">
-                      {hire.offer.map((item, i) => (
-                        <li key={i}>
-                          <item.icon className="hire-hire-detail-icon" aria-hidden="true" />
-                          {item.label}
-                        </li>
-                      ))}
+                      <li><FaCalendarAlt className="hire-hire-detail-icon" aria-hidden="true" /> Hired: {hire.hiredDate}</li>
                     </ul>
                   </div>
 
@@ -212,13 +165,13 @@ const HireDashboardHires = () => {
                   <div className="hire-hire-section">
                     <div className="hire-hire-section-title-row">
                       <span className="hire-hire-section-title">Next Steps</span>
-                      <span className="hire-hire-progress-label">{doneCount}/{hire.nextSteps.length}</span>
+                      <span className="hire-hire-progress-label">{doneCount}/{hireSteps.length}</span>
                     </div>
                     <div className="hire-hire-progress-bar">
                       <div className="hire-hire-progress-fill" style={{ width: `${progress}%` }} />
                     </div>
                     <ul className="hire-hire-steps-list">
-                      {hire.nextSteps.map((step) => (
+                      {hireSteps.map((step) => (
                         <li
                           key={step.id}
                           className={step.done ? 'done' : ''}
@@ -238,7 +191,7 @@ const HireDashboardHires = () => {
                     <button className="hire-hire-action-btn" type="button">
                       <FaEnvelope aria-hidden="true" /> Email
                     </button>
-                    <button className="hire-hire-action-btn primary" type="button">
+                    <button className="hire-hire-action-btn primary" type="button" onClick={() => setProfileHire(hire)}>
                       <FaUserCircle aria-hidden="true" /> View profile
                     </button>
                   </div>
@@ -249,59 +202,87 @@ const HireDashboardHires = () => {
           })}
         </div>
 
-        <div className="hire-history">
-          <div className="hire-history-header">
-            <h3>Hiring History</h3>
-            <p>Record of all past hires by month</p>
+        {/* ── Hiring History (grouped by month from real data) ── */}
+        {hires.length > 0 && (
+          <div className="hire-history">
+            <div className="hire-history-header">
+              <h3>Hiring History</h3>
+              <p>Record of all hired candidates</p>
+            </div>
+            <div className="hire-history-list">
+              {Object.entries(
+                hires.reduce((acc, h) => {
+                  const month = h.hiredDate
+                    ? new Date(h.hiredDate).toLocaleString('en-US', { month: 'long', year: 'numeric' })
+                    : 'Unknown';
+                  if (!acc[month]) acc[month] = [];
+                  acc[month].push(h);
+                  return acc;
+                }, {})
+              ).map(([month, monthHires]) => {
+                const isOpen = openMonth === month;
+                return (
+                  <div key={month} className={`hire-history-group ${isOpen ? 'open' : ''}`}>
+                    <button
+                      className="hire-history-month-row"
+                      type="button"
+                      onClick={() => setOpenMonth(isOpen ? null : month)}
+                    >
+                      <div className="hire-history-month-left">
+                        <span className="hire-history-month-name">{month}</span>
+                        <span className="hire-history-month-count">
+                          {monthHires.length} {monthHires.length === 1 ? 'hire' : 'hires'}
+                        </span>
+                      </div>
+                      <FaChevronDown className="hire-history-chevron" aria-hidden="true" />
+                    </button>
+                    {isOpen && (
+                      <div className="hire-history-rows">
+                        {monthHires.map((h) => (
+                          <div key={h.id} className="hire-history-row">
+                            <div className="hire-history-initials">{h.initials}</div>
+                            <div className="hire-history-info">
+                              <span className="hire-history-name">{h.name}</span>
+                              <span className="hire-history-role">{h.role}</span>
+                            </div>
+                            <div className="hire-history-meta">
+                              <span><FaBuilding aria-hidden="true" /> {h.dept}</span>
+                              <span><FaDollarSign aria-hidden="true" /> {h.salary}</span>
+                            </div>
+                            <div className="hire-history-meta">
+                              <span><FaCalendarAlt aria-hidden="true" /> {h.hiredDate}</span>
+                            </div>
+                            <span className="hire-history-status">Active</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-
-          <div className="hire-history-list">
-            {historyData.map((month) => {
-              const isOpen = openMonth === month.month;
-              return (
-                <div key={month.month} className={`hire-history-group ${isOpen ? 'open' : ''}`}>
-                  <button
-                    className="hire-history-month-row"
-                    type="button"
-                    onClick={() => setOpenMonth(isOpen ? null : month.month)}
-                  >
-                    <div className="hire-history-month-left">
-                      <span className="hire-history-month-name">{month.month}</span>
-                      <span className="hire-history-month-count">{month.count} {month.count === 1 ? 'hire' : 'hires'}</span>
-                    </div>
-                    <FaChevronDown className="hire-history-chevron" aria-hidden="true" />
-                  </button>
-
-                  {isOpen && (
-                    <div className="hire-history-rows">
-                      {month.hires.map((hire) => (
-                        <div key={hire.id} className="hire-history-row">
-                          <div className="hire-history-initials">{hire.initials}</div>
-                          <div className="hire-history-info">
-                            <span className="hire-history-name">{hire.name}</span>
-                            <span className="hire-history-role">{hire.role}</span>
-                          </div>
-                          <div className="hire-history-meta">
-                            <span><FaBuilding aria-hidden="true" /> {hire.dept}</span>
-                            <span><FaDollarSign aria-hidden="true" /> {hire.salary}</span>
-                          </div>
-                          <div className="hire-history-meta">
-                            <span><FaCalendarAlt aria-hidden="true" /> {hire.date}</span>
-                            <span><FaUserTie aria-hidden="true" /> {hire.hiredBy}</span>
-                          </div>
-                          <span className="hire-history-status">Active</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        )}
 
       </div>
     </section>
+
+    {profileHire && (
+      <CandidateProfileModal
+        candidate={{
+          ...profileHire,
+          company:    profileHire.dept,
+          status:     'Hired',
+          skills:     profileHire.skills     ?? [],
+          history:    profileHire.history    ?? [{ stage: 'Applied', date: '—' }, { stage: 'Hired', date: profileHire.hiredDate ?? '—' }],
+          summary:    profileHire.summary    ?? '',
+          experience: profileHire.experience ?? '—',
+          email:      profileHire.email      ?? '—',
+        }}
+        onClose={() => setProfileHire(null)}
+      />
+    )}
+    </>
   );
 };
 

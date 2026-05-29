@@ -10,7 +10,7 @@ const tabs     = ['All', 'Reviewing', 'Shortlisted', 'Hired', 'Rejected'];
 const statuses = ['Reviewing', 'Shortlisted', 'Hired', 'Rejected'];
 
 const HireDashboardApplications = ({ activeTab: propTab, setActiveTab: propSetTab }) => {
-  const { apps, setApps } = useHireDashboard();
+  const { apps, setApps, changeAppStatus } = useHireDashboard();
 
   const [internalTab, setInternalTab] = useState('All');
   const activeTab    = propTab    !== undefined ? propTab    : internalTab;
@@ -38,12 +38,11 @@ const HireDashboardApplications = ({ activeTab: propTab, setActiveTab: propSetTa
   }, [openDropdown]);
 
   const changeStatus = (id, status) => {
-    setApps((prev) => prev.map((a) => a.id === id ? { ...a, status } : a));
+    changeAppStatus(id, status);
     setOpenDropdown(null);
     setSelected((prev) => {
       if (prev?.id !== id) return prev;
       const updated = { ...prev, status };
-      // auto-open offer or rejection modal when status changes
       if (status === 'Hired')    setTimeout(() => setOfferModal('offer'),     50);
       if (status === 'Rejected') setTimeout(() => setOfferModal('rejection'), 50);
       return updated;
