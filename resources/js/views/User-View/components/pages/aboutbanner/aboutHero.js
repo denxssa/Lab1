@@ -19,7 +19,6 @@ const AboutHero = () => {
         <section className="about-hero" data-aos="fade-up">
             <div className="about-hero__wrap" style={wrapStyle}>
                 <div className="about-hero__copy">
-                    {heroEyebrow && <span className="about-hero__eyebrow" data-aos="fade-up">{heroEyebrow}</span>}
                     <h1 data-aos="fade-up">{heroTitle}</h1>
                     <p data-aos="fade-up">{heroDesc}</p>
                     <a className="about-hero__cta" href="#about-story" data-aos="fade-up">

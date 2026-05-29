@@ -5,6 +5,10 @@ use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomePageContentController;
 use App\Http\Controllers\HomePageSectionItemController;
+use App\Http\Controllers\HrController;
+use App\Http\Controllers\HrSettingsController;
+use App\Http\Controllers\HrTeamController;
+use App\Http\Controllers\SavedJobController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\CandidateProfileController;
@@ -125,6 +129,25 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/api/interviews/{interview}', [InterviewController::class, 'show']);
     Route::put('/api/interviews/{interview}', [InterviewController::class, 'update']);
     Route::delete('/api/interviews/{interview}', [InterviewController::class, 'destroy']);
+
+    // ── HR dashboard ──────────────────────────────────────────────────────
+    Route::get('/api/hr/analytics',             [HrController::class,       'analytics']);
+    Route::get('/api/hr/applications',          [HrController::class,       'applications']);
+    Route::put('/api/hr/applications/{id}',     [HrController::class,       'updateApplication']);
+    Route::get('/api/hr/hires',                 [HrController::class,       'hires']);
+    Route::post('/api/job-listings/{id}/apply', [HrController::class,       'apply']);
+    Route::get('/api/hr/team',                  [HrTeamController::class,   'index']);
+    Route::post('/api/hr/team',                 [HrTeamController::class,   'store']);
+    Route::delete('/api/hr/team/{id}',          [HrTeamController::class,   'destroy']);
+    Route::get('/api/hr/settings',              [HrSettingsController::class, 'show']);
+    Route::put('/api/hr/settings',              [HrSettingsController::class, 'update']);
+    Route::put('/api/hr/account',               [HrSettingsController::class, 'updateAccount']);
+    Route::put('/api/hr/notifications',         [HrSettingsController::class, 'updateNotifications']);
+
+    // ── Saved jobs ────────────────────────────────────────────────────────
+    Route::get('/api/saved-jobs',         [SavedJobController::class, 'index']);
+    Route::post('/api/saved-jobs',        [SavedJobController::class, 'store']);
+    Route::delete('/api/saved-jobs/{id}', [SavedJobController::class, 'destroy']);
 
     Route::get('/api/conversations', [ConversationController::class, 'index']);
     Route::get('/api/conversations/messageable-candidates', [ConversationController::class, 'messageableCandidates']);

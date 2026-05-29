@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './HireDashboardSidebar.scss';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../../../context/AuthContext';
+import { useHireDashboard } from '../../../HireDashboardContext';
 
 const mainNav = [
   {
@@ -9,7 +10,7 @@ const mainNav = [
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>,
   },
   {
-    label: 'Applications', path: '/hire-dashboard/applications', badge: 3,
+    label: 'Applications', path: '/hire-dashboard/applications', badgeKey: 'applications',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
   },
   {
@@ -29,7 +30,7 @@ const mainNav = [
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
   },
   {
-    label: 'Messages', path: '/hire-dashboard/messages', badge: 3,
+    label: 'Messages', path: '/hire-dashboard/messages', badgeKey: 'messages',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
   },
 ];
@@ -49,7 +50,15 @@ const HireDashboardSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
-  const company = user?.name || localStorage.getItem('user_company') || 'Your Company';
+  const { apps } = useHireDashboard();
+  const company = localStorage.getItem('user_company') || user?.company || 'Your Company';
+
+  // Real badge counts
+  const reviewingCount = apps.filter((a) => a.status === 'Reviewing').length;
+  const badges = {
+    applications: reviewingCount || null,
+    messages:     null,
+  };
   const initials = company.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
   const handleSignOut = async () => {
@@ -95,7 +104,7 @@ const HireDashboardSidebar = () => {
               >
                 <span className="hire-nav-icon">{item.icon}</span>
                 <span className="hire-nav-label">{item.label}</span>
-                {item.badge && <span className="hire-nav-badge">{item.badge}</span>}
+                {item.badgeKey && badges[item.badgeKey] ? <span className="hire-nav-badge">{badges[item.badgeKey]}</span> : null}
               </button>
             ))}
           </nav>
@@ -129,8 +138,8 @@ const HireDashboardSidebar = () => {
           <div className="hire-sidebar-user">
             <div className="hire-sidebar-avatar">{initials}</div>
             <div className="hire-sidebar-user-info">
-              <span className="hire-sidebar-user-name">{user?.name || company}</span>
-              <span className="hire-sidebar-user-role">{user?.email || 'Hiring Team'}</span>
+              <span className="hire-sidebar-user-name">{user?.name || 'Hiring Team'}</span>
+              <span className="hire-sidebar-user-role">{user?.email || ''}</span>
             </div>
           </div>
           <button className="hire-sidebar-signout" type="button" onClick={handleSignOut}>

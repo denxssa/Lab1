@@ -6,6 +6,7 @@ import {
   FaExternalLinkAlt,
   FaMapMarkerAlt,
   FaPlus,
+  FaSearch,
   FaTrash,
   FaVideo,
 } from 'react-icons/fa';
@@ -42,6 +43,7 @@ const HireDashboardInterviews = () => {
   const [showModal, setShowModal] = useState(false);
   const [copyState, setCopyState] = useState('');
   const [detailsId, setDetailsId] = useState(null);
+  const [search, setSearch] = useState('');
 
   const loadInterviews = useCallback(async () => {
     setLoading(true);
@@ -60,7 +62,16 @@ const HireDashboardInterviews = () => {
     loadInterviews();
   }, [loadInterviews]);
 
-  const filtered = useMemo(() => interviews, [interviews]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return interviews;
+    return interviews.filter(
+      (i) =>
+        i.candidate_user?.name?.toLowerCase().includes(q) ||
+        i.title?.toLowerCase().includes(q) ||
+        i.interviewer_name?.toLowerCase().includes(q)
+    );
+  }, [interviews, search]);
 
   const detailsInterview = useMemo(
     () => interviews.find((i) => i.id === detailsId) || null,
@@ -163,10 +174,23 @@ const HireDashboardInterviews = () => {
             </div>
           </div>
 
+          <div className="hire-list-search">
+            <FaSearch className="hire-search-icon" aria-hidden="true" />
+            <input
+              type="text"
+              placeholder="Search by candidate, role, or interviewer…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button type="button" className="hire-search-clear" onClick={() => setSearch('')}>✕</button>
+            )}
+          </div>
+
           {loading && <p className="hire-interviews-empty">Loading interviews…</p>}
 
           {!loading && filtered.length === 0 && (
-            <p className="hire-interviews-empty">No interviews found.</p>
+            <p className="hire-interviews-empty">{search ? 'No interviews match your search.' : 'No interviews found.'}</p>
           )}
 
           <div className="hire-interviews-list">

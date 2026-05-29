@@ -101,6 +101,22 @@ export function deleteJobListing(id) {
     return axios.delete(`/api/job-listings/${id}`).then((response) => response.data);
 }
 
+export function applyToJob(jobListingId) {
+    return axios.post(`/api/job-listings/${jobListingId}/apply`).then((r) => r.data);
+}
+
+export function getSavedJobIds() {
+    return axios.get('/api/saved-jobs').then((r) => r.data.saved_job_ids || []);
+}
+
+export function saveJob(jobListingId) {
+    return axios.post('/api/saved-jobs', { job_listing_id: jobListingId }).then((r) => r.data);
+}
+
+export function unsaveJob(jobListingId) {
+    return axios.delete(`/api/saved-jobs/${jobListingId}`).then((r) => r.data);
+}
+
 export function mapJobListing(job, index = 0) {
     const company = job.company || '';
     const initials = company
@@ -148,9 +164,9 @@ export function mapJobListingForHr(job) {
     return {
         ...base,
         status,
-        applications: 0,
-        reviewing: 0,
-        shortlisted: 0,
+        applications: job.applications_count   ?? 0,
+        reviewing:    job.reviewing_count       ?? 0,
+        shortlisted:  job.shortlisted_count     ?? 0,
         daysLeft: status === 'active' ? 30 : 0,
         postedDays,
         featured: false,
