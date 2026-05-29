@@ -9,6 +9,8 @@ import {
   FindJobFields,
   TestimonialsFields,
   FooterFields,
+  AboutStatsFields,
+  AboutOverviewFields,
 } from './homeSections/HomeSectionEditorBlocks';
 
 const GROUPS = [
@@ -186,6 +188,12 @@ const AdminHomeSectionsPanel = ({
     }
     if (key === 'footer') {
       return <FooterFields key={key} section={section} setHomeSectionsForm={setHomeSectionsForm} />;
+    }
+    if (key === 'about_stats') {
+      return <AboutStatsFields key={key} section={section} updateSectionTitle={updateSectionTitle} updateItemField={updateItemField} onAddItem={onAddItem} onDeleteItem={onDeleteItem} />;
+    }
+    if (key === 'about_overview') {
+      return <AboutOverviewFields key={key} section={section} updateItemField={updateItemField} onAddItem={onAddItem} onDeleteItem={onDeleteItem} />;
     }
 
     return (
