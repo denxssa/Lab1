@@ -13,11 +13,9 @@ use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\HiresController;
-use App\Http\Controllers\HrController;
 use App\Http\Controllers\CvProfileController;
 use App\Http\Controllers\ResumeController;
 use App\Http\Controllers\PricingPlanController;
-use App\Http\Controllers\SavedJobController;
 use App\Http\Controllers\TeamMemberController;
 use Illuminate\Support\Facades\Route;
 
@@ -121,6 +119,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/api/candidate/profile', [CandidateProfileController::class, 'show']);
     Route::put('/api/candidate/profile', [CandidateProfileController::class, 'update']);
+    Route::post('/api/candidate/profile/avatar', [CandidateProfileController::class, 'uploadAvatar']);
     Route::delete('/api/candidate/profile', [CandidateProfileController::class, 'destroy']);
 
     Route::get('/api/cv/profile', [CvProfileController::class, 'show']);

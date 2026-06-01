@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateCandidateProfileRequest;
+use App\Http\Requests\UploadCandidateAvatarRequest;
 use App\Models\User;
 use App\Services\CvProfileService;
 use Illuminate\Http\JsonResponse;
@@ -36,6 +37,19 @@ class CandidateProfileController extends Controller
 
         return response()->json([
             'message' => 'Profile saved successfully.',
+            'profile' => $this->cvProfileService->toDashboardPayload($user->fresh(), $profile),
+        ]);
+    }
+
+    public function uploadAvatar(UploadCandidateAvatarRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $this->ensureCandidate($user);
+
+        $profile = $this->cvProfileService->updateAvatar($user, $request->file('avatar'));
+
+        return response()->json([
+            'message' => 'Profile photo updated.',
             'profile' => $this->cvProfileService->toDashboardPayload($user->fresh(), $profile),
         ]);
     }

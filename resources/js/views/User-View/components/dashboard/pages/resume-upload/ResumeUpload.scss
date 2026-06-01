@@ -173,6 +173,22 @@
   }
 }
 
+@media (max-width: 640px) {
+  .resume-upload {
+    &__header {
+      padding: 1rem;
+    }
+
+    &__body {
+      padding: 1rem;
+    }
+
+    &__drop {
+      padding: 1.5rem 1rem;
+    }
+  }
+}
+
 @keyframes resume-upload-spin {
   to {
     transform: rotate(360deg);

@@ -2,7 +2,7 @@
   position: absolute;
   width: 220px; 
   height: 220px; 
-  background: #f2bc1b;
+  background: #fdd535;
   border-radius: 50%;
   filter: blur(100px); 
   z-index: 0;
@@ -20,13 +20,14 @@
 
 
 .jobs-hero {
-position: relative;
+  position: relative;
   overflow: visible;
-  padding-top: 140px; 
-  padding-bottom: 80px; 
-  min-height: 500px; 
-  display: flex; 
-  justify-content: center; 
+  padding-top: 140px;
+  padding-bottom: 80px;
+  min-height: 500px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 
@@ -100,12 +101,29 @@ position: relative;
 
 @media (max-width: 768px) {
   .jobs-hero {
-    padding-top: 110px;
-    padding-bottom: 60px;
+    padding-top: 7.5rem;
+    padding-bottom: 2rem;
+    min-height: unset;
+  }
+
+  .jobs-hero-content {
+    padding: 0 1.25rem;
   }
 
   .jobs-hero-content h1 {
     font-size: 36px;
+    line-height: 1.15;
+  }
+
+  .jobs-hero-content p {
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+
+  .blur-circle.left {
+    top: 12rem;
+    width: 160px;
+    height: 160px;
   }
 
   .blur-circle.right {
@@ -115,37 +133,48 @@ position: relative;
 
 @media (max-width: 480px) {
   .jobs-hero {
-    padding-top: 90px;
-    padding-bottom: 40px;
+    padding-top: 6.75rem;
+    padding-bottom: 1.25rem;
+    min-height: unset;
+  }
+
+  .jobs-hero-content {
+    padding: 0 1rem;
   }
 
   .jobs-hero-content h1 {
-    font-size: 28px;
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
   }
 
   .jobs-hero-content p {
-    font-size: 14px;
+    font-size: 0.9375rem;
+    margin-bottom: 1.25rem;
   }
 
   .jobs-hero-search-row {
     flex-direction: column;
-    gap: 12px;
-    padding: 0 16px;
+    gap: 0.75rem;
+    padding: 0;
   }
 
   .jobs-search-box {
     width: 100%;
     max-width: 100%;
-    padding: 14px 18px;
+    padding: 0.875rem 1.125rem;
+    border-radius: 999px;
   }
 
   .jobs-search-box input {
-    font-size: 15px;
+    font-size: 1rem;
   }
 
   .jobs-count-box {
     width: 100%;
+    max-width: 12rem;
+    margin: 0 auto;
     text-align: center;
-    padding: 14px 18px;
+    padding: 0.75rem 1.125rem;
+    border-radius: 999px;
   }
 }

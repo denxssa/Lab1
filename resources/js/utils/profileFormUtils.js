@@ -26,6 +26,7 @@ export const emptyProfileForm = {
   expectedSalary: '',
   availability: 'Immediately',
   about: '',
+  avatarUrl: null,
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -57,6 +58,7 @@ export function profileToForm(profile) {
     expectedSalary: profile.expectedSalary ?? '',
     availability: profile.availability ?? 'Immediately',
     about: profile.about ?? '',
+    avatarUrl: profile.avatarUrl ?? null,
   };
 }
 

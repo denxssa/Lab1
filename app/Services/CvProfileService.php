@@ -367,7 +367,9 @@ class CvProfileService
             'expectedSalary' => $profile->expected_salary !== null ? (string) $profile->expected_salary : '',
             'availability' => $profile->availability ?? 'Immediately',
             'about' => $profile->summary ?? '',
-            'avatarUrl' => $profile->avatar_path ? url('storage/'.$profile->avatar_path) : null,
+            'avatarUrl' => $profile->avatar_path
+                ? '/storage/'.ltrim($profile->avatar_path, '/')
+                : null,
         ];
     }
 
@@ -419,6 +421,20 @@ class CvProfileService
         });
     }
 
+    public function updateAvatar(User $user, \Illuminate\Http\UploadedFile $file): CvProfile
+    {
+        $profile = $this->getOrCreateForUser($user);
+
+        if ($profile->avatar_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($profile->avatar_path);
+        }
+
+        $path = $file->store("avatars/{$user->id}", 'public');
+        $profile->update(['avatar_path' => $path]);
+
+        return $profile->fresh();
+    }
+
     public function resetDashboard(User $user): void
     {
         $profile = $this->loadForUser($user);
@@ -428,6 +444,10 @@ class CvProfileService
         }
 
         DB::transaction(function () use ($profile) {
+            if ($profile->avatar_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($profile->avatar_path);
+            }
+
             $profile->update([
                 'first_name' => null,
                 'last_name' => null,

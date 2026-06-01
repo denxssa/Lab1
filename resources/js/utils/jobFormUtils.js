@@ -24,6 +24,17 @@ export function normalizeJobTypes(types, fallbackType = '') {
   return normalized;
 }
 
+/** Location text like "remote, germany" implies remote work when the type was not set. */
+export function typesIncludingRemoteFromLocation(types, fallbackType = '', location = '') {
+  const normalized = normalizeJobTypes(types, fallbackType);
+
+  if (!normalized.includes('Remote') && /remote/i.test(location || '')) {
+    return [...normalized, 'Remote'];
+  }
+
+  return normalized;
+}
+
 export function jobTypesLabel(types, fallbackType = 'Full-time') {
   const normalized = normalizeJobTypes(types, fallbackType);
 
