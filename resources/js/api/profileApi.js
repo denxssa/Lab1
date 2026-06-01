@@ -11,3 +11,14 @@ export function saveCandidateProfile(payload) {
 export function clearCandidateProfile() {
   return axios.delete('/api/candidate/profile').then((r) => r.data);
 }
+
+export function uploadCandidateAvatar(file) {
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  return axios
+    .post('/api/candidate/profile/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    .then((r) => r.data);
+}

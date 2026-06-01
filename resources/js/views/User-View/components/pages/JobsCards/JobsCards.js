@@ -55,7 +55,7 @@ const JobsCards = ({
           <div
             key={job.id}
             className={job.featured ? 'job-card featured' : 'job-card'}
-            onClick={() => navigate(`/jobs/${job.id}`)}
+            onClick={() => navigate(`/jobs/${job.id}`, { state: { job } })}
             style={{ cursor: 'pointer' }}
             data-aos="fade-up"
             data-aos-delay={index * 80}

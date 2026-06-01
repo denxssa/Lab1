@@ -9,6 +9,7 @@ import {
   clearCandidateProfile,
   getCandidateProfile,
   saveCandidateProfile,
+  uploadCandidateAvatar,
 } from '../../../../../api/profileApi';
 import {
   emptyProfileForm,
@@ -29,6 +30,8 @@ const ProfilePage = () => {
   const [clearing, setClearing] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
 
   const applyProfile = useCallback((profile) => {
     const next = profileToForm(profile);
@@ -63,6 +66,37 @@ const ProfilePage = () => {
     setErrors(validateProfileForm(next));
     setMessage('');
     setError('');
+  };
+
+  const handleAvatarSelect = async (file, clientError) => {
+    if (clientError) {
+      setAvatarError(clientError);
+      return;
+    }
+
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+    setForm((prev) => ({ ...prev, avatarUrl: previewUrl }));
+    setAvatarUploading(true);
+    setAvatarError('');
+    setMessage('');
+    setError('');
+
+    try {
+      const data = await uploadCandidateAvatar(file);
+      applyProfile(data?.profile);
+      setMessage(data?.message || 'Profile photo updated.');
+    } catch (err) {
+      setForm((prev) => ({ ...prev, avatarUrl: savedForm.avatarUrl ?? null }));
+      const apiMessage = err?.response?.data?.errors?.avatar?.[0]
+        || err?.response?.data?.message
+        || 'Failed to upload profile photo.';
+      setAvatarError(apiMessage);
+    } finally {
+      URL.revokeObjectURL(previewUrl);
+      setAvatarUploading(false);
+    }
   };
 
   const handleSave = async (e) => {
@@ -139,7 +173,16 @@ const ProfilePage = () => {
   return (
     <UserDashboardLayout>
       <form className="profile-page" onSubmit={handleSave} noValidate>
-        <ProfileHero form={form} />
+        <ProfileHero
+          form={form}
+          onAvatarSelect={handleAvatarSelect}
+          onAvatarImageError={() => {
+            setForm((prev) => ({ ...prev, avatarUrl: null }));
+            setAvatarError('Could not load profile photo. Try uploading again.');
+          }}
+          avatarUploading={avatarUploading}
+          avatarError={avatarError}
+        />
         <div className="profile-page__body">
           <div className="profile-page__left">
             <SocialLinks form={form} errors={errors} onChange={handleChange} />

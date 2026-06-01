@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { FiSend, FiMessageSquare } from 'react-icons/fi';
+import { FiArrowLeft, FiSend, FiMessageSquare } from 'react-icons/fi';
 import { listMessages, sendMessage, MESSAGES_POLL_MS } from '../../../../../../api/messagesApi';
 import './ChatWindow.scss';
 
-export default function ChatWindow({ conversation, onMessageSent, inboxEmpty = false }) {
+export default function ChatWindow({
+    conversation,
+    onMessageSent,
+    inboxEmpty = false,
+    onBack,
+    showBackButton = false,
+}) {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -94,8 +100,18 @@ export default function ChatWindow({ conversation, onMessageSent, inboxEmpty = f
     return (
         <div className="chat-window">
             <div className="chat-window__header">
+                {showBackButton && (
+                    <button
+                        type="button"
+                        className="chat-window__back"
+                        onClick={onBack}
+                        aria-label="Back to conversations"
+                    >
+                        <FiArrowLeft size={20} />
+                    </button>
+                )}
                 <div className="chat-window__avatar">{conversation.initials}</div>
-                <div>
+                <div className="chat-window__header-text">
                     <h3 className="chat-window__name">{conversation.name}</h3>
                     <p className="chat-window__status">Messages with HR</p>
                 </div>

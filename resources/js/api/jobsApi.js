@@ -2,7 +2,7 @@ import axios from 'axios';
 import {
   JOB_LISTING_TYPES,
   jobTypesLabel,
-  normalizeJobTypes,
+  typesIncludingRemoteFromLocation,
 } from '../utils/jobFormUtils';
 
 export { JOB_LISTING_TYPES };
@@ -24,11 +24,7 @@ function normalizeTags(tags) {
 
 /** True if the job is tagged with this type (it may also have other types). */
 export function jobMatchesTypeFilter(job, filter) {
-    const types = normalizeJobTypes(job.types, job.type);
-
-    if (filter === 'Remote') {
-        return types.includes('Remote') || /remote/i.test(job.location || '');
-    }
+    const types = typesIncludingRemoteFromLocation(job.types, job.type, job.location);
 
     return types.includes(filter);
 }
@@ -117,22 +113,6 @@ export function deleteJobListing(id) {
     return axios.delete(`/api/job-listings/${id}`).then((response) => response.data);
 }
 
-export function applyToJob(jobListingId) {
-    return axios.post(`/api/job-listings/${jobListingId}/apply`).then((r) => r.data);
-}
-
-export function getSavedJobIds() {
-    return axios.get('/api/saved-jobs').then((r) => r.data.saved_job_ids || []);
-}
-
-export function saveJob(jobListingId) {
-    return axios.post('/api/saved-jobs', { job_listing_id: jobListingId }).then((r) => r.data);
-}
-
-export function unsaveJob(jobListingId) {
-    return axios.delete(`/api/saved-jobs/${jobListingId}`).then((r) => r.data);
-}
-
 export function mapJobListing(job, index = 0) {
     const company = job.company || '';
     const initials = company
@@ -152,7 +132,7 @@ export function mapJobListing(job, index = 0) {
         else time = `${days} days ago`;
     }
 
-    const types = normalizeJobTypes(job.types, job.type);
+    const types = typesIncludingRemoteFromLocation(job.types, job.type, job.location);
     const type = jobTypesLabel(types);
 
     return {

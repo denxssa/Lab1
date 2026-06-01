@@ -128,8 +128,17 @@
   
   @media (max-width: 480px) {
     .job-preferences {
+      &__header {
+        padding: 1rem;
+      }
+
+      &__body {
+        padding: 1rem;
+      }
+
       &__field {
         flex: 1 1 100%;
+        min-width: 0;
       }
     }
   }
