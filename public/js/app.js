@@ -5754,6 +5754,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   mapJobListing: () => (/* binding */ mapJobListing),
 /* harmony export */   mapJobListingForHr: () => (/* binding */ mapJobListingForHr),
 /* harmony export */   saveJob: () => (/* binding */ saveJob),
+/* harmony export */   splitJobText: () => (/* binding */ splitJobText),
 /* harmony export */   unsaveJob: () => (/* binding */ unsaveJob),
 /* harmony export */   updateJobListing: () => (/* binding */ updateJobListing),
 /* harmony export */   updateJobListingStatus: () => (/* binding */ updateJobListingStatus)
@@ -5888,8 +5889,15 @@ function deleteJobListing(id) {
     return response.data;
   });
 }
+function splitJobText(text) {
+  if (!text || typeof text !== 'string') {
+    return [];
+  }
+  return text.split(/\r?\n/).map(function (line) {
+    return line.trim();
+  }).filter(Boolean);
+}
 function mapJobListing(job) {
-  var index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
   var company = job.company || '';
   var initials = company.split(' ').filter(Boolean).map(function (word) {
     return word[0];
@@ -5912,9 +5920,12 @@ function mapJobListing(job) {
     time: time,
     types: types,
     type: type,
-    featured: index < 2,
+    featured: Boolean(job.is_featured),
     tags: normalizeTags(job.tags),
-    description: job.description || ''
+    description: job.description || '',
+    benefits: job.benefits || '',
+    benefitLines: splitJobText(job.benefits || ''),
+    descriptionParagraphs: splitJobText(job.description || '')
   };
 }
 function mapJobListingForHr(job) {
@@ -5930,7 +5941,7 @@ function mapJobListingForHr(job) {
     shortlisted: (_job$shortlisted_coun = job.shortlisted_count) !== null && _job$shortlisted_coun !== void 0 ? _job$shortlisted_coun : 0,
     daysLeft: status === 'active' ? 30 : 0,
     postedDays: postedDays,
-    featured: false
+    featured: Boolean(job.is_featured)
   });
 }
 
@@ -7003,7 +7014,7 @@ var PlatformAdminProvider = function PlatformAdminProvider(_ref) {
             _context9.n = 1;
             return updateHomeContent(updates);
           case 1:
-            return _context9.a(2);
+            return _context9.a(2, true);
           case 2:
             nextPageContent = _objectSpread(_objectSpread({}, data.pageContent), {}, _defineProperty({}, pageKey, _objectSpread(_objectSpread({}, ((_data$pageContent = data.pageContent) === null || _data$pageContent === void 0 ? void 0 : _data$pageContent[pageKey]) || {}), updates)));
             optimisticState = _objectSpread(_objectSpread({}, data), {}, {
@@ -7011,7 +7022,7 @@ var PlatformAdminProvider = function PlatformAdminProvider(_ref) {
               homeContent: pageKey === 'home' ? nextPageContent.home : data.homeContent
             });
             persist(optimisticState);
-            if (!(pageKey === 'about' || pageKey === 'pricing' || pageKey === 'companies' || pageKey === 'contact')) {
+            if (!(pageKey === 'about' || pageKey === 'pricing' || pageKey === 'companies' || pageKey === 'contact' || pageKey === 'jobs')) {
               _context9.n = 7;
               break;
             }
@@ -7024,20 +7035,20 @@ var PlatformAdminProvider = function PlatformAdminProvider(_ref) {
               _context9.n = 5;
               break;
             }
-            return _context9.a(2);
+            return _context9.a(2, true);
           case 5:
             persist(_objectSpread(_objectSpread({}, optimisticState), {}, {
               pageContent: _objectSpread(_objectSpread({}, optimisticState.pageContent), payload.pageContent)
             }, payload.homeContent ? {
               homeContent: payload.homeContent
             } : {}));
-            _context9.n = 7;
-            break;
+            return _context9.a(2, true);
           case 6:
             _context9.p = 6;
             _t9 = _context9.v;
+            return _context9.a(2, false);
           case 7:
-            return _context9.a(2);
+            return _context9.a(2, true);
         }
       }, _callee9, null, [[3, 6]]);
     }));
@@ -7151,7 +7162,6 @@ var initialPageContent = {
     primaryCta: 'Browse companies'
   },
   jobs: {
-    heroEyebrow: 'Open roles',
     heroTitle: 'Find the right job for your next step',
     heroDescription: 'Search roles across design, engineering, marketing, business, and more.',
     filterTitle: 'Search jobs',
@@ -7922,8 +7932,6 @@ function normalizeJobTypes(types) {
   });
   return normalized;
 }
-
-/** Location text like "remote, germany" implies remote work when the type was not set. */
 function typesIncludingRemoteFromLocation(types) {
   var fallbackType = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
   var location = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
@@ -7939,7 +7947,7 @@ function jobTypesLabel(types) {
   return normalized.length > 0 ? normalized.join(', ') : fallbackType;
 }
 function validateJobForm(form) {
-  var _form$title, _form$company, _form$location, _form$salary;
+  var _form$title, _form$company, _form$location, _form$salary, _form$description;
   var errors = {};
   var title = ((_form$title = form.title) !== null && _form$title !== void 0 ? _form$title : '').trim();
   var company = ((_form$company = form.company) !== null && _form$company !== void 0 ? _form$company : '').trim();
@@ -7968,6 +7976,12 @@ function validateJobForm(form) {
   }
   if (types.length === 0) {
     errors.types = 'Select at least one job type.';
+  }
+  var description = ((_form$description = form.description) !== null && _form$description !== void 0 ? _form$description : '').trim();
+  if (!description) {
+    errors.description = 'Job description is required.';
+  } else if (description.length < 20) {
+    errors.description = 'Description must be at least 20 characters.';
   }
   return errors;
 }
@@ -8222,6 +8236,69 @@ function mapApiErrorsToForm(apiErrors) {
 }
 function hasProfileErrors(errors) {
   return Object.keys(errors).length > 0;
+}
+
+/***/ },
+
+/***/ "./resources/js/utils/publicPageAccess.js"
+/*!************************************************!*\
+  !*** ./resources/js/utils/publicPageAccess.js ***!
+  \************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getPublicPageIdForPath: () => (/* binding */ getPublicPageIdForPath),
+/* harmony export */   isPublicPageEnabled: () => (/* binding */ isPublicPageEnabled)
+/* harmony export */ });
+var PUBLIC_PAGES = [{
+  id: 'home',
+  match: function match(path) {
+    return path === '/';
+  }
+}, {
+  id: 'about',
+  match: function match(path) {
+    return path === '/about-us';
+  }
+}, {
+  id: 'jobs',
+  match: function match(path) {
+    return path === '/jobs' || path.startsWith('/jobs/');
+  }
+}, {
+  id: 'companies',
+  match: function match(path) {
+    return path === '/companies' || path.startsWith('/companies/');
+  }
+}, {
+  id: 'pricing',
+  match: function match(path) {
+    return path === '/pricing';
+  }
+}, {
+  id: 'contact',
+  match: function match(path) {
+    return path === '/contact-us';
+  }
+}];
+function getPublicPageIdForPath(pathname) {
+  var _page$id;
+  var page = PUBLIC_PAGES.find(function (entry) {
+    return entry.match(pathname);
+  });
+  return (_page$id = page === null || page === void 0 ? void 0 : page.id) !== null && _page$id !== void 0 ? _page$id : null;
+}
+function isPublicPageEnabled(pathname) {
+  var userViewPages = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+  var pageId = getPublicPageIdForPath(pathname);
+  if (!pageId) return true;
+  var config = userViewPages.find(function (p) {
+    return p.id === pageId;
+  });
+  if (!config) return true;
+  return config.enabled !== false;
 }
 
 /***/ },
@@ -9172,9 +9249,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _AdminHomeSectionsPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./AdminHomeSectionsPanel */ "./resources/js/views/Admin-View/components/pages/AdminDashboardContent/AdminHomeSectionsPanel.js");
 /* harmony import */ var _AdminAboutPanel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./AdminAboutPanel */ "./resources/js/views/Admin-View/components/pages/AdminDashboardContent/AdminAboutPanel.js");
 /* harmony import */ var _AdminPricingPanel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./AdminPricingPanel */ "./resources/js/views/Admin-View/components/pages/AdminDashboardContent/AdminPricingPanel.js");
-/* harmony import */ var _shared_AdminShared_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../shared/AdminShared.scss */ "./resources/js/views/Admin-View/components/shared/AdminShared.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _LinksTable_LinksTable__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../LinksTable/LinksTable */ "./resources/js/views/Admin-View/components/pages/LinksTable/LinksTable.js");
+/* harmony import */ var _shared_AdminShared_scss__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../shared/AdminShared.scss */ "./resources/js/views/Admin-View/components/shared/AdminShared.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
@@ -9190,6 +9272,7 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) 
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+
 
 
 
@@ -9297,9 +9380,6 @@ var pageFields = {
     label: 'Primary CTA'
   }],
   jobs: [{
-    key: 'heroEyebrow',
-    label: 'Hero eyebrow'
-  }, {
     key: 'heroTitle',
     label: 'Hero title'
   }, {
@@ -9402,6 +9482,10 @@ var AdminDashboardContent = function AdminDashboardContent() {
     _useState6 = _slicedToArray(_useState5, 2),
     homeSectionsForm = _useState6[0],
     setHomeSectionsForm = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    savingPage = _useState8[0],
+    setSavingPage = _useState8[1];
   var activePageMeta = pages.find(function (page) {
     return page.id === activePage;
   }) || pages[0];
@@ -9418,54 +9502,79 @@ var AdminDashboardContent = function AdminDashboardContent() {
       return _objectSpread(_objectSpread({}, current), {}, _defineProperty({}, key, value));
     });
   };
-  var submitContent = function submitContent(e) {
-    e.preventDefault();
-    updatePageContent(activePage, form);
-  };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("main", {
+  var submitContent = /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(e) {
+      return _regenerator().w(function (_context) {
+        while (1) switch (_context.p = _context.n) {
+          case 0:
+            e.preventDefault();
+            if (!savingPage) {
+              _context.n = 1;
+              break;
+            }
+            return _context.a(2);
+          case 1:
+            setSavingPage(true);
+            _context.p = 2;
+            _context.n = 3;
+            return updatePageContent(activePage, form);
+          case 3:
+            _context.p = 3;
+            setSavingPage(false);
+            return _context.f(3);
+          case 4:
+            return _context.a(2);
+        }
+      }, _callee, null, [[2,, 3, 4]]);
+    }));
+    return function submitContent(_x) {
+      return _ref.apply(this, arguments);
+    };
+  }();
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("main", {
     className: "admin-page",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("section", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("section", {
       className: "admin-card",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
         className: "admin-card-head",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("h2", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("h2", {
             children: "Content editor"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
-            children: "Select a page and update copy. Home page body text for category/company headers is edited here; cards and lists are under Home page sections."
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
+            children: "Select a page and edit its text. Home page cards and lists are under Home page sections."
           })]
-        }), (activePageMeta === null || activePageMeta === void 0 ? void 0 : activePageMeta.path) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("a", {
+        }), (activePageMeta === null || activePageMeta === void 0 ? void 0 : activePageMeta.path) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("a", {
           className: "admin-btn admin-btn-light",
           href: activePageMeta.path,
           target: "_blank",
           rel: "noreferrer",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiExternalLink, {}), "Preview"]
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiExternalLink, {}), "Preview"]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
         className: "admin-content-picker",
         children: pages.map(function (page) {
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("button", {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("button", {
             type: "button",
             className: "admin-content-tab".concat(activePage === page.id ? ' active' : ''),
             onClick: function onClick() {
               return setActivePage(page.id);
             },
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("span", {
               children: page.title
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("small", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("small", {
               children: page.path
             })]
           }, page.id);
         })
       })]
-    }), activePage === 'home' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_AdminHomeSectionsPanel__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    }), activePage === 'home' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_AdminHomeSectionsPanel__WEBPACK_IMPORTED_MODULE_3__["default"], {
       homeSectionsForm: homeSectionsForm,
       setHomeSectionsForm: setHomeSectionsForm,
       persistHomeSections: updateHomeSections,
       uploadHomeSectionImage: uploadHomeSectionImage,
       createHomeSectionItem: createHomeSectionItem,
       deleteHomeSectionItem: deleteHomeSectionItem
-    }), activePage === 'companies' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_AdminHomeSectionsPanel__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    }), activePage === 'companies' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_AdminHomeSectionsPanel__WEBPACK_IMPORTED_MODULE_3__["default"], {
       homeSectionsForm: homeSectionsForm,
       setHomeSectionsForm: setHomeSectionsForm,
       persistHomeSections: updateHomeSections,
@@ -9475,7 +9584,7 @@ var AdminDashboardContent = function AdminDashboardContent() {
       groups: COMPANIES_SECTION_GROUPS,
       heading: "Companies database",
       description: "Manage company listing cards and each company details page from the same database records."
-    }), activePage === 'about' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_AdminAboutPanel__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    }), activePage === 'about' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_AdminAboutPanel__WEBPACK_IMPORTED_MODULE_4__["default"], {
       pageContent: form,
       updatePageContent: updatePageContent,
       homeSectionsForm: homeSectionsForm,
@@ -9484,50 +9593,55 @@ var AdminDashboardContent = function AdminDashboardContent() {
       uploadHomeSectionImage: uploadHomeSectionImage,
       createHomeSectionItem: createHomeSectionItem,
       deleteHomeSectionItem: deleteHomeSectionItem
-    }), activePage === 'pricing' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_AdminPricingPanel__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    }), activePage === 'pricing' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_AdminPricingPanel__WEBPACK_IMPORTED_MODULE_5__["default"], {
       pageContent: form,
       updatePageContent: updatePageContent
-    }), fields.length > 0 && activePage !== 'about' && activePage !== 'pricing' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("section", {
-      className: "admin-card",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+    }), fields.length > 0 && activePage !== 'about' && activePage !== 'pricing' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("section", {
+      className: "admin-card admin-page-content-card",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
         className: "admin-card-head",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("h2", {
-            children: [(activePageMeta === null || activePageMeta === void 0 ? void 0 : activePageMeta.title) || 'Page', " copy"]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
-            children: "Update the editable text for this public page."
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("h2", {
+            children: [(activePageMeta === null || activePageMeta === void 0 ? void 0 : activePageMeta.title) || 'Page', " content"]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("p", {
+            children: ["Update the editable text for this public page.", activePage === 'jobs' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.Fragment, {
+              children: " The job count badge (for example, \"13 jobs\") is calculated automatically from published listings, not set here."
+            })]
           })]
-        })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("form", {
-        className: "admin-form-grid",
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("button", {
+          type: "submit",
+          form: "admin-page-content-form-".concat(activePage),
+          className: "admin-btn admin-btn-accent",
+          disabled: savingPage,
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiEdit2, {}), savingPage ? 'Saving…' : 'Save changes']
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("form", {
+        id: "admin-page-content-form-".concat(activePage),
+        className: "admin-form-grid admin-form-grid--single-column admin-page-content-form",
         onSubmit: submitContent,
-        children: [fields.map(function (field) {
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+        children: fields.map(function (field) {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
             className: "admin-field",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("label", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("label", {
+              htmlFor: "".concat(activePage, "-").concat(field.key),
               children: field.label
-            }), field.type === 'textarea' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("textarea", {
+            }), field.type === 'textarea' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("textarea", {
+              id: "".concat(activePage, "-").concat(field.key),
               value: form[field.key] || '',
               onChange: function onChange(e) {
                 return updateField(field.key, e.target.value);
               }
-            }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("input", {
+            }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("input", {
+              id: "".concat(activePage, "-").concat(field.key),
               value: form[field.key] || '',
               onChange: function onChange(e) {
                 return updateField(field.key, e.target.value);
               }
             })]
           }, field.key);
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
-          className: "admin-actions",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("button", {
-            type: "submit",
-            className: "admin-btn admin-btn-accent",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiEdit2, {}), "Save Page Copy"]
-          })
-        })]
+        })
       })]
-    })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_LinksTable_LinksTable__WEBPACK_IMPORTED_MODULE_6__["default"], {})]
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (AdminDashboardContent);
@@ -12671,90 +12785,87 @@ var LinksTable = function LinksTable() {
       return a.navOrder - b.navOrder;
     });
   }, [data.userViewPages]);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("main", {
-    className: "admin-page",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("section", {
-      className: "admin-card",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
-        className: "admin-card-head",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h2", {
-            children: "Navigation and page visibility"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
-            children: "Control which pages are visible in the public navigation and in what order they appear."
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("section", {
+    className: "admin-card admin-nav-visibility-card",
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+      className: "admin-card-head",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h2", {
+          children: "Navigation and page visibility"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
+          children: "Control which pages appear in the site navigation, their order, and whether visitors can open them directly. Changes apply on this browser immediately (stored locally until a server setting is added)."
+        })]
+      })
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("table", {
+      className: "admin-table",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("thead", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("tr", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("th", {
+            children: "Page"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("th", {
+            children: "Path"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("th", {
+            children: "Page enabled"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("th", {
+            children: "Show in nav"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("th", {
+            children: "Nav order"
           })]
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("table", {
-        className: "admin-table",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("thead", {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("tr", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("th", {
-              children: "Page"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("th", {
-              children: "Path"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("th", {
-              children: "Page enabled"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("th", {
-              children: "Show in nav"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("th", {
-              children: "Nav order"
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("tbody", {
+        children: pages.map(function (page) {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("tr", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("td", {
+              children: page.title
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("td", {
+              children: page.path
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("td", {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("select", {
+                value: String(page.enabled),
+                onChange: function onChange(e) {
+                  return updateRecord('userViewPages', page.id, {
+                    enabled: e.target.value === 'true'
+                  });
+                },
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
+                  value: "true",
+                  children: "Enabled"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
+                  value: "false",
+                  children: "Disabled"
+                })]
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("td", {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("select", {
+                value: String(page.showInNav),
+                onChange: function onChange(e) {
+                  return updateRecord('userViewPages', page.id, {
+                    showInNav: e.target.value === 'true'
+                  });
+                },
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
+                  value: "true",
+                  children: "Visible"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
+                  value: "false",
+                  children: "Hidden"
+                })]
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("td", {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
+                type: "number",
+                value: page.navOrder,
+                onChange: function onChange(e) {
+                  return updateRecord('userViewPages', page.id, {
+                    navOrder: Number(e.target.value)
+                  });
+                }
+              })
             })]
-          })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("tbody", {
-          children: pages.map(function (page) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("tr", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("td", {
-                children: page.title
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("td", {
-                children: page.path
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("td", {
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("select", {
-                  value: String(page.enabled),
-                  onChange: function onChange(e) {
-                    return updateRecord('userViewPages', page.id, {
-                      enabled: e.target.value === 'true'
-                    });
-                  },
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
-                    value: "true",
-                    children: "Enabled"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
-                    value: "false",
-                    children: "Disabled"
-                  })]
-                })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("td", {
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("select", {
-                  value: String(page.showInNav),
-                  onChange: function onChange(e) {
-                    return updateRecord('userViewPages', page.id, {
-                      showInNav: e.target.value === 'true'
-                    });
-                  },
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
-                    value: "true",
-                    children: "Visible"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("option", {
-                    value: "false",
-                    children: "Hidden"
-                  })]
-                })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("td", {
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
-                  type: "number",
-                  value: page.navOrder,
-                  onChange: function onChange(e) {
-                    return updateRecord('userViewPages', page.id, {
-                      navOrder: Number(e.target.value)
-                    });
-                  }
-                })
-              })]
-            }, page.id);
-          })
-        })]
+          }, page.id);
+        })
       })]
-    })
+    })]
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (LinksTable);
@@ -13389,18 +13500,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_pages_AdminDashboardContent_AdminDashboardContent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../components/pages/AdminDashboardContent/AdminDashboardContent */ "./resources/js/views/Admin-View/components/pages/AdminDashboardContent/AdminDashboardContent.js");
-/* harmony import */ var _components_shared_Sidebar_AdminSidebar__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../components/shared/Sidebar/AdminSidebar */ "./resources/js/views/Admin-View/components/shared/Sidebar/AdminSidebar.js");
-/* harmony import */ var _components_pages_LinksTable_LinksTable__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../components/pages/LinksTable/LinksTable */ "./resources/js/views/Admin-View/components/pages/LinksTable/LinksTable.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-
-
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 
 
 
 var AdminDashboardContentPage = function AdminDashboardContentPage() {
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_shared_Sidebar_AdminSidebar__WEBPACK_IMPORTED_MODULE_2__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_pages_AdminDashboardContent_AdminDashboardContent__WEBPACK_IMPORTED_MODULE_1__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_pages_LinksTable_LinksTable__WEBPACK_IMPORTED_MODULE_3__["default"], {})]
-  });
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_components_pages_AdminDashboardContent_AdminDashboardContent__WEBPACK_IMPORTED_MODULE_1__["default"], {});
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (AdminDashboardContentPage);
 
@@ -20639,7 +20744,9 @@ var emptyForm = {
   types: ['Full-time'],
   salary: '',
   tags: '',
-  description: ''
+  description: '',
+  benefits: '',
+  is_featured: false
 };
 function tagsToString(tags) {
   if (Array.isArray(tags)) {
@@ -20673,6 +20780,7 @@ var PostJobModal = function PostJobModal(_ref) {
     setForm = _useState8[1];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     if (isEdit) {
+      var _job$is_featured;
       setForm({
         title: job.title || '',
         company: job.company || defaultCompany,
@@ -20680,7 +20788,9 @@ var PostJobModal = function PostJobModal(_ref) {
         types: (0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.normalizeJobTypes)(job.types, job.type),
         salary: job.salary === '—' ? '' : job.salary || '',
         tags: tagsToString(job.tags),
-        description: job.description || ''
+        description: job.description || '',
+        benefits: job.benefits || '',
+        is_featured: Boolean((_job$is_featured = job.is_featured) !== null && _job$is_featured !== void 0 ? _job$is_featured : job.featured)
       });
       setFieldErrors({});
       return;
@@ -20694,9 +20804,13 @@ var PostJobModal = function PostJobModal(_ref) {
   var initials = company.split(' ').map(function (w) {
     return w[0];
   }).join('').slice(0, 2).toUpperCase();
-  var typesLabel = (0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.jobTypesLabel)(form.types);
   var handleChange = function handleChange(e) {
-    var next = _objectSpread(_objectSpread({}, form), {}, _defineProperty({}, e.target.name, e.target.value));
+    var _e$target = e.target,
+      name = _e$target.name,
+      value = _e$target.value,
+      type = _e$target.type,
+      checked = _e$target.checked;
+    var next = _objectSpread(_objectSpread({}, form), {}, _defineProperty({}, name, type === 'checkbox' ? checked : value));
     setForm(next);
     setFieldErrors((0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_3__.validateJobForm)(next));
     setError('');
@@ -20743,7 +20857,9 @@ var PostJobModal = function PostJobModal(_ref) {
               types: types,
               salary: form.salary.trim(),
               tags: tags,
-              description: form.description.trim() || undefined
+              description: form.description.trim(),
+              benefits: form.benefits.trim() || undefined,
+              is_featured: Boolean(form.is_featured)
             };
             _context.p = 2;
             if (!isEdit) {
@@ -20917,18 +21033,43 @@ var PostJobModal = function PostJobModal(_ref) {
             })]
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "pjm-field",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("label", {
-              children: ["Description ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-                className: "pjm-hint",
-                children: "(optional)"
-              })]
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("label", {
+              children: "About the role"
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("textarea", {
               name: "description",
               value: form.description,
               onChange: handleChange,
-              rows: 4,
-              placeholder: "Describe the role, requirements, and benefits\u2026"
+              rows: 5,
+              placeholder: "Describe the role (one paragraph per line)\u2026",
+              "aria-invalid": Boolean(fieldErrors.description)
+            }), fieldErrors.description && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+              className: "pjm-field-error",
+              children: fieldErrors.description
             })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            className: "pjm-field",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("label", {
+              children: ["What we offer ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+                className: "pjm-hint",
+                children: "(one benefit per line)"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("textarea", {
+              name: "benefits",
+              value: form.benefits,
+              onChange: handleChange,
+              rows: 4,
+              placeholder: "Competitive salary\nHealth insurance\nRemote-friendly"
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+            className: "pjm-field pjm-field--checkbox",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("input", {
+                type: "checkbox",
+                name: "is_featured",
+                checked: form.is_featured,
+                onChange: handleChange
+              }), "Feature this job on the jobs page"]
+            })
           }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
             className: "pjm-error",
             children: error
@@ -20984,13 +21125,24 @@ var PostJobModal = function PostJobModal(_ref) {
                 children: tag
               }, tag);
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+          }), form.description.trim() && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "pjm-preview-section",
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
               children: "About the Role"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
-              children: form.description || /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
-                children: ["We're looking for a talented ", form.title || '...', " to join ", company, ". This is a ", typesLabel, " position based in ", form.location || '...', "."]
+            }), form.description.trim().split(/\r?\n/).filter(Boolean).map(function (line) {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+                children: line
+              }, line);
+            })]
+          }), form.benefits.trim() && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+            className: "pjm-preview-section",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h4", {
+              children: "What We Offer"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("ul", {
+              children: form.benefits.trim().split(/\r?\n/).filter(Boolean).map(function (line) {
+                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("li", {
+                  children: line
+                }, line);
               })
             })]
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
@@ -21564,19 +21716,32 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/development/chunk-UVKPFVEO.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _context_PlatformAdminContext__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../context/PlatformAdminContext */ "./resources/js/context/PlatformAdminContext.js");
+/* harmony import */ var _utils_publicPageAccess__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../utils/publicPageAccess */ "./resources/js/utils/publicPageAccess.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
 
 
 
 var UserViewLayout = function UserViewLayout() {
   var _useLocation = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_1__.useLocation)(),
     pathname = _useLocation.pathname;
+  var _usePlatformAdmin = (0,_context_PlatformAdminContext__WEBPACK_IMPORTED_MODULE_2__.usePlatformAdmin)(),
+    data = _usePlatformAdmin.data;
+  var pageAllowed = (0,_utils_publicPageAccess__WEBPACK_IMPORTED_MODULE_3__.isPublicPageEnabled)(pathname, data.userViewPages);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     window.scrollTo(0, 0);
   }, [pathname]);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+  if (!pageAllowed) {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Navigate, {
+      to: "/",
+      replace: true
+    });
+  }
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
     className: "user-view",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Outlet, {})
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Outlet, {})
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (UserViewLayout);
@@ -25595,7 +25760,7 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 var JobDetail = function JobDetail(_ref) {
-  var _job$types, _job$types2;
+  var _job$descriptionParag, _job$benefitLines, _job$tags, _job$types, _job$tags2;
   var job = _ref.job,
     onBack = _ref.onBack,
     relatedJobs = _ref.relatedJobs,
@@ -25603,8 +25768,6 @@ var JobDetail = function JobDetail(_ref) {
   var _useAuth = (0,_context_AuthContext__WEBPACK_IMPORTED_MODULE_3__.useAuth)(),
     user = _useAuth.user;
   var navigate = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_2__.useNavigate)();
-
-  // 'idle' | 'loading' | 'applied' | 'already' | 'error'
   var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('idle'),
     _useState2 = _slicedToArray(_useState, 2),
     applyState = _useState2[0],
@@ -25617,12 +25780,11 @@ var JobDetail = function JobDetail(_ref) {
     _useState6 = _slicedToArray(_useState5, 2),
     saveLoading = _useState6[0],
     setSaveLoading = _useState6[1];
-
-  // Check if the user has already applied / saved this job
+  var descriptionParagraphs = (_job$descriptionParag = job.descriptionParagraphs) !== null && _job$descriptionParag !== void 0 && _job$descriptionParag.length ? job.descriptionParagraphs : job.description ? [job.description] : [];
+  var benefitLines = (_job$benefitLines = job.benefitLines) !== null && _job$benefitLines !== void 0 && _job$benefitLines.length ? job.benefitLines : [];
+  var requirementItems = (_job$tags = job.tags) !== null && _job$tags !== void 0 && _job$tags.length ? job.tags : [];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     if (!user || !(job !== null && job !== void 0 && job.id)) return;
-
-    // Check saved status
     (0,_api_jobsApi__WEBPACK_IMPORTED_MODULE_4__.getSavedJobIds)().then(function (ids) {
       return setSaved(ids.includes(job.id));
     })["catch"](function () {});
@@ -25777,7 +25939,7 @@ var JobDetail = function JobDetail(_ref) {
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
         children: ["Posted: ", job.time]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+    }), ((_job$tags2 = job.tags) === null || _job$tags2 === void 0 ? void 0 : _job$tags2.length) > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
       className: "job-detail-tags",
       "data-aos": "fade-up",
       "data-aos-delay": "150",
@@ -25787,39 +25949,39 @@ var JobDetail = function JobDetail(_ref) {
           children: tag
         }, tag);
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h2", {
-      "data-aos": "fade-up",
-      children: "About the Role"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("p", {
-      "data-aos": "fade-up",
-      children: ["We're looking for a talented ", job.title, " to join ", job.company, ". This is a ", ((_job$types2 = job.types) !== null && _job$types2 !== void 0 && _job$types2.length ? job.types : [job.type]).join(', '), " position based in ", job.location, ". You'll work alongside a passionate team building products that make a real impact."]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h2", {
-      "data-aos": "fade-up",
-      children: "Requirements"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("ul", {
-      "data-aos": "fade-up",
-      children: [job.tags.map(function (tag) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
-          children: ["Experience with ", tag]
-        }, tag);
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("li", {
-        children: "Strong communication and collaboration skills"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("li", {
-        children: "Passion for continuous learning and growth"
+    }), descriptionParagraphs.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h2", {
+        "data-aos": "fade-up",
+        children: "About the Role"
+      }), descriptionParagraphs.map(function (paragraph) {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+          "data-aos": "fade-up",
+          children: paragraph
+        }, paragraph);
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h2", {
-      "data-aos": "fade-up",
-      children: "What We Offer"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("ul", {
-      "data-aos": "fade-up",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("li", {
-        children: ["Competitive salary: ", job.salary]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("li", {
-        children: "Comprehensive health, dental, and vision benefits"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("li", {
-        children: "Flexible work arrangements"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("li", {
-        children: "Professional development budget"
+    }), requirementItems.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h2", {
+        "data-aos": "fade-up",
+        children: "Requirements"
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("ul", {
+        "data-aos": "fade-up",
+        children: requirementItems.map(function (tag) {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("li", {
+            children: tag
+          }, tag);
+        })
+      })]
+    }), benefitLines.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h2", {
+        "data-aos": "fade-up",
+        children: "What We Offer"
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("ul", {
+        "data-aos": "fade-up",
+        children: benefitLines.map(function (line) {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("li", {
+            children: line
+          }, line);
+        })
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "job-detail-actions",
@@ -25835,7 +25997,7 @@ var JobDetail = function JobDetail(_ref) {
         disabled: saveLoading,
         children: saveLabel()
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+    }), relatedJobs.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "job-detail-related",
       "data-aos": "fade-up",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h2", {
@@ -25843,6 +26005,7 @@ var JobDetail = function JobDetail(_ref) {
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
         className: "related-cards",
         children: relatedJobs.map(function (related, index) {
+          var _related$tags;
           return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "related-card",
             onClick: function onClick() {
@@ -25869,7 +26032,7 @@ var JobDetail = function JobDetail(_ref) {
               children: related.salary
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
               children: related.time
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+            }), ((_related$tags = related.tags) === null || _related$tags === void 0 ? void 0 : _related$tags.length) > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
               className: "related-tags",
               children: related.tags.map(function (tag) {
                 return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
@@ -25903,12 +26066,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _JobsCards_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./JobsCards.scss */ "./resources/js/views/User-View/components/pages/JobsCards/JobsCards.scss");
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/development/chunk-UVKPFVEO.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _context_PlatformAdminContext__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../context/PlatformAdminContext */ "./resources/js/context/PlatformAdminContext.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
 
 
 
 
 var JobsCards = function JobsCards(_ref) {
+  var _data$pageContent;
   var jobs = _ref.jobs,
     loading = _ref.loading,
     error = _ref.error,
@@ -25916,49 +26082,55 @@ var JobsCards = function JobsCards(_ref) {
     onPageChange = _ref.onPageChange,
     jobsPerPage = _ref.jobsPerPage;
   var navigate = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_2__.useNavigate)();
+  var _usePlatformAdmin = (0,_context_PlatformAdminContext__WEBPACK_IMPORTED_MODULE_3__.usePlatformAdmin)(),
+    data = _usePlatformAdmin.data;
+  var listingsTitle = ((_data$pageContent = data.pageContent) === null || _data$pageContent === void 0 || (_data$pageContent = _data$pageContent.jobs) === null || _data$pageContent === void 0 ? void 0 : _data$pageContent.listingsTitle) || 'Latest opportunities';
   var start = (page - 1) * jobsPerPage;
   var visibleJobs = jobs.slice(start, start + jobsPerPage);
   var totalPages = Math.ceil(jobs.length / jobsPerPage) || 1;
   if (loading) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("section", {
       className: "jobs-cards-section",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         className: "jobs-cards-wrapper",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
           children: "Loading jobs\u2026"
         })
       })
     });
   }
   if (error) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("section", {
       className: "jobs-cards-section",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         className: "jobs-cards-wrapper",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
           children: error
         })
       })
     });
   }
   if (jobs.length === 0) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("section", {
       className: "jobs-cards-section",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         className: "jobs-cards-wrapper",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
           children: "No jobs match your filters. Selected types must all appear on a job (a job can have other types too). Try fewer filters or a different search."
         })
       })
     });
   }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("section", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
     className: "jobs-cards-section",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "jobs-cards-wrapper",
-      children: visibleJobs.map(function (job, index) {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h2", {
+        className: "jobs-listings-heading",
+        children: listingsTitle
+      }), visibleJobs.map(function (job, index) {
         var _job$types;
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: job.featured ? 'job-card featured' : 'job-card',
           onClick: function onClick() {
             return navigate("/jobs/".concat(job.id), {
@@ -25972,64 +26144,64 @@ var JobsCards = function JobsCards(_ref) {
           },
           "data-aos": "fade-up",
           "data-aos-delay": index * 80,
-          children: [job.featured && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          children: [job.featured && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             className: "featured-badge",
             children: "Featured"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "job-card-header",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
               className: "job-initials",
               children: job.initials
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "job-title-block",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
                 className: "job-title",
                 children: job.title
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
                 className: "job-company",
                 children: job.company
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
               className: "job-types",
               children: ((_job$types = job.types) !== null && _job$types !== void 0 && _job$types.length ? job.types : [job.type]).map(function (type) {
-                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                   className: "job-type",
                   children: type
                 }, type);
               })
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "job-card-meta",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "job-meta-item",
               children: job.location
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "job-meta-divider",
               "aria-hidden": "true"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "job-meta-item",
               children: job.salary
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "job-meta-divider",
               "aria-hidden": "true"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
               className: "job-meta-item",
               children: job.time
             })]
-          }), job.tags.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          }), job.tags.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             className: "job-tags",
             children: job.tags.map(function (tag) {
-              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "job-tag",
                 children: tag
               }, tag);
             })
           })]
         }, job.id);
-      })
-    }), jobs.length > jobsPerPage && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      })]
+    }), jobs.length > jobsPerPage && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "jobs-pagination",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
         type: "button",
         onClick: function onClick() {
           return onPageChange(page - 1);
@@ -26041,7 +26213,7 @@ var JobsCards = function JobsCards(_ref) {
       }, function (_, i) {
         return i + 1;
       }).map(function (pageNum) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
           type: "button",
           className: page === pageNum ? 'active-page' : '',
           onClick: function onClick() {
@@ -26049,7 +26221,7 @@ var JobsCards = function JobsCards(_ref) {
           },
           children: pageNum
         }, pageNum);
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
         type: "button",
         onClick: function onClick() {
           return onPageChange(page + 1);
@@ -26078,8 +26250,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _api_jobsApi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../api/jobsApi */ "./resources/js/api/jobsApi.js");
-/* harmony import */ var _JobsFilters_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./JobsFilters.scss */ "./resources/js/views/User-View/components/pages/JobsFilters/JobsFilters.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _context_PlatformAdminContext__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../context/PlatformAdminContext */ "./resources/js/context/PlatformAdminContext.js");
+/* harmony import */ var _JobsFilters_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./JobsFilters.scss */ "./resources/js/views/User-View/components/pages/JobsFilters/JobsFilters.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -26090,7 +26263,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 
 
 
+
 var JobsFilters = function JobsFilters(_ref) {
+  var _data$pageContent;
   var activeFilters = _ref.activeFilters,
     onFilterToggle = _ref.onFilterToggle,
     onFilterSelect = _ref.onFilterSelect,
@@ -26099,37 +26274,43 @@ var JobsFilters = function JobsFilters(_ref) {
     page = _ref.page,
     totalPages = _ref.totalPages,
     jobsPerPage = _ref.jobsPerPage;
+  var _usePlatformAdmin = (0,_context_PlatformAdminContext__WEBPACK_IMPORTED_MODULE_2__.usePlatformAdmin)(),
+    data = _usePlatformAdmin.data;
+  var filterTitle = ((_data$pageContent = data.pageContent) === null || _data$pageContent === void 0 || (_data$pageContent = _data$pageContent.jobs) === null || _data$pageContent === void 0 ? void 0 : _data$pageContent.filterTitle) || 'Search jobs';
   var filterButtons = ['All Types'].concat(_toConsumableArray(_api_jobsApi__WEBPACK_IMPORTED_MODULE_1__.JOB_LISTING_TYPES));
   var start = filteredCount === 0 ? 0 : (page - 1) * jobsPerPage + 1;
   var end = Math.min(page * jobsPerPage, filteredCount);
   var activeLabel = activeFilters.length === 0 ? 'All Types' : activeFilters.join(', ');
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("section", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("section", {
     className: "jobs-filters",
     "data-aos": "fade-up",
     "data-aos-delay": "100",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h2", {
+      className: "jobs-filters-heading",
+      children: filterTitle
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
       className: "jobs-filters-top",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("select", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("select", {
         className: "jobs-select",
         value: activeLabel,
         onChange: function onChange(e) {
           return onFilterSelect(e.target.value);
         },
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("option", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("option", {
           value: "All Types",
           children: ["All Types (", totalJobs, ")"]
         }), _api_jobsApi__WEBPACK_IMPORTED_MODULE_1__.JOB_LISTING_TYPES.map(function (button) {
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("option", {
             value: button,
             children: button
           }, button);
         })]
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
       className: "jobs-filter-buttons",
       children: filterButtons.map(function (button) {
         var isActive = button === 'All Types' ? activeFilters.length === 0 : activeFilters.includes(button);
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
           type: "button",
           className: isActive ? 'filter-btn active' : 'filter-btn',
           onClick: function onClick() {
@@ -26138,17 +26319,17 @@ var JobsFilters = function JobsFilters(_ref) {
           children: button
         }, button);
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "jobs-filters-info",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("p", {
-        children: ["Showing ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
+        children: ["Showing ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
           children: filteredCount === 0 ? 0 : "".concat(start, "\u2013").concat(end)
-        }), " of ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+        }), " of ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
           children: filteredCount
-        }), " jobs", filteredCount !== totalJobs && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.Fragment, {
+        }), " jobs", filteredCount !== totalJobs && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.Fragment, {
           children: [" (from ", totalJobs, " total)"]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("p", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
         children: [activeFilters.length > 0 ? "Matching all: ".concat(activeFilters.join(', '), " \xB7 ") : '', "Page ", filteredCount === 0 ? 0 : page, " of ", totalPages]
       })]
     })]
@@ -26171,37 +26352,48 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _JobsHero_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./JobsHero.scss */ "./resources/js/views/User-View/components/pages/JobsHero/JobsHero.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _context_PlatformAdminContext__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../context/PlatformAdminContext */ "./resources/js/context/PlatformAdminContext.js");
+/* harmony import */ var _JobsHero_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./JobsHero.scss */ "./resources/js/views/User-View/components/pages/JobsHero/JobsHero.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 
 
 
+
+function applyJobCount(description, count) {
+  var _description$match;
+  if (!description) return description;
+  return description.replace(/\{count\}/gi, String(count)).replace(/\d+\+/g, count > 0 ? "".concat(count, "+") : ((_description$match = description.match(/\d+\+/)) === null || _description$match === void 0 ? void 0 : _description$match[0]) || '');
+}
 var JobsHero = function JobsHero(_ref) {
+  var _data$pageContent;
   var searchQuery = _ref.searchQuery,
     onSearchChange = _ref.onSearchChange,
     totalJobs = _ref.totalJobs,
     filteredCount = _ref.filteredCount;
+  var _usePlatformAdmin = (0,_context_PlatformAdminContext__WEBPACK_IMPORTED_MODULE_1__.usePlatformAdmin)(),
+    data = _usePlatformAdmin.data;
+  var jobsCopy = ((_data$pageContent = data.pageContent) === null || _data$pageContent === void 0 ? void 0 : _data$pageContent.jobs) || {};
+  var count = filteredCount > 0 ? filteredCount : totalJobs;
+  var description = applyJobCount(jobsCopy.heroDescription || 'Search roles across design, engineering, marketing, business, and more.', count);
   var countLabel = filteredCount === totalJobs ? "".concat(totalJobs, " job").concat(totalJobs === 1 ? '' : 's') : "".concat(filteredCount, " of ").concat(totalJobs);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("section", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("section", {
     className: "jobs-hero",
     "data-aos": "fade-up",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
       className: "blur-circle left"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
       className: "blur-circle right"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
       className: "jobs-hero-content",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("h1", {
-        children: ["Find Your Next", ' ', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
-          children: "Opportunity"
-        })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("p", {
-        children: ["Browse ", totalJobs > 0 ? "".concat(totalJobs, "+") : '', " open positions across top companies. Your dream job is one search away."]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h1", {
+        children: jobsCopy.heroTitle || 'Find the right job for your next step'
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        children: description
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
         className: "jobs-hero-search-row",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
           className: "jobs-search-box",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
             type: "text",
             placeholder: "Search jobs, companies, or skills...",
             value: searchQuery,
@@ -26209,9 +26401,9 @@ var JobsHero = function JobsHero(_ref) {
               return onSearchChange(e.target.value);
             }
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
           className: "jobs-count-box",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
             children: countLabel
           })
         })]
@@ -33562,7 +33754,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".admin-layout {\n  display: flex;\n  min-height: 100vh;\n  background: #fafaf8;\n}\n\n.admin-layout-content {\n  margin-left: 260px;\n  flex: 1;\n  min-width: 0;\n  padding-bottom: 60px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n@media (max-width: 768px) {\n  .admin-layout-content {\n    margin-left: 0;\n    padding-top: 80px;\n  }\n}\n\n.admin-page {\n  width: 100%;\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 32px 32px 0;\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n}\n@media (max-width: 768px) {\n  .admin-page {\n    padding: 20px 16px 0;\n  }\n}\n\n.admin-card {\n  background: #fff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 24px;\n}\n\n.admin-card-head {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 10px;\n  margin-bottom: 12px;\n}\n.admin-card-head h2 {\n  margin: 0;\n  font-size: 19px;\n  color: #111;\n}\n.admin-card-head p {\n  margin: 4px 0 0;\n  color: #6f685d;\n  font-size: 13px;\n}\n\n.admin-kpi-grid {\n  display: grid;\n  grid-template-columns: repeat(4, minmax(0, 1fr));\n  gap: 10px;\n}\n@media (max-width: 900px) {\n  .admin-kpi-grid {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n}\n\n.admin-kpi {\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 24px;\n  background: #ffffff;\n}\n.admin-kpi span {\n  font-size: 12px;\n  color: #6f685d;\n}\n.admin-kpi strong {\n  display: block;\n  margin-top: 6px;\n  font-size: 24px;\n  color: #111;\n}\n\n.admin-table {\n  width: 100%;\n  border-collapse: collapse;\n}\n.admin-table th,\n.admin-table td {\n  text-align: left;\n  padding: 11px 8px;\n  border-top: 1px solid #f4f1ea;\n  font-size: 13px;\n  color: #2f2f2f;\n}\n.admin-table th {\n  border-top: none;\n  font-size: 12px;\n  color: #7c7468;\n}\n.admin-table input,\n.admin-table select {\n  border: 1px solid #e7e1d5;\n  border-radius: 10px;\n  height: 34px;\n  padding: 0 9px;\n  font-size: 13px;\n  font-family: inherit;\n  background: #ffffff;\n}\n.admin-table input[type=number] {\n  width: 78px;\n}\n\n.admin-actions {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.admin-btn {\n  border: none;\n  border-radius: 10px;\n  height: 36px;\n  padding: 0 12px;\n  font-size: 12px;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n}\n\n.admin-btn-dark {\n  background: #111;\n  color: #fff;\n}\n\n.admin-btn-accent {\n  background: #fdd535;\n  color: #111;\n}\n\n.admin-btn-light {\n  background: #f4f1ea;\n  color: #111;\n}\n\n.admin-form-grid {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 10px;\n}\n@media (max-width: 900px) {\n  .admin-form-grid {\n    grid-template-columns: 1fr;\n  }\n}\n\n.admin-form-grid--single-column {\n  grid-template-columns: 1fr;\n}\n\n.admin-field {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n}\n.admin-field label {\n  font-size: 12px;\n  color: #7c7468;\n  font-weight: 600;\n}\n.admin-field input,\n.admin-field select,\n.admin-field textarea {\n  border: 1px solid #e7e1d5;\n  border-radius: 10px;\n  padding: 0 10px;\n  font-size: 13px;\n  font-family: inherit;\n  background: #ffffff;\n  color: #111111;\n  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;\n}\n.admin-field input:focus,\n.admin-field select:focus,\n.admin-field textarea:focus {\n  outline: none;\n  border-color: #111111;\n  box-shadow: 0 0 0 3px rgba(253, 213, 53, 0.24);\n}\n.admin-field input,\n.admin-field select {\n  height: 38px;\n}\n.admin-field textarea {\n  min-height: 92px;\n  padding: 10px;\n  resize: vertical;\n}\n.admin-field input[type=file] {\n  height: auto;\n  min-height: 38px;\n  padding: 6px;\n  color: #6f685d;\n}\n.admin-field input[type=file]::file-selector-button {\n  border: 0;\n  border-radius: 8px;\n  background: #111111;\n  color: #ffffff;\n  padding: 7px 10px;\n  margin-right: 10px;\n  font-family: inherit;\n  font-size: 12px;\n  font-weight: 700;\n  cursor: pointer;\n}\n.admin-field small {\n  color: #7c7468;\n  font-size: 12px;\n}\n\n.admin-input-with-icon {\n  position: relative;\n}\n.admin-input-with-icon svg {\n  position: absolute;\n  left: 11px;\n  top: 50%;\n  transform: translateY(-50%);\n  color: #7a746d;\n  pointer-events: none;\n}\n.admin-input-with-icon input {\n  width: 100%;\n  padding-left: 34px;\n}\n\n.admin-content-picker {\n  display: grid;\n  grid-template-columns: repeat(6, minmax(0, 1fr));\n  gap: 10px;\n}\n@media (max-width: 1000px) {\n  .admin-content-picker {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n@media (max-width: 640px) {\n  .admin-content-picker {\n    grid-template-columns: 1fr;\n  }\n}\n\n.admin-content-tab {\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  background: #ffffff;\n  color: #111111;\n  min-height: 76px;\n  padding: 14px;\n  cursor: pointer;\n  display: flex;\n  flex-direction: column;\n  align-items: flex-start;\n  justify-content: center;\n  gap: 5px;\n  font-family: inherit;\n  text-align: left;\n  transition: 0.2s ease;\n}\n.admin-content-tab span {\n  font-size: 14px;\n  font-weight: 700;\n}\n.admin-content-tab small {\n  color: #7a746d;\n  font-size: 12px;\n}\n.admin-content-tab:hover, .admin-content-tab.active {\n  background: #f2efea;\n  border-color: #d4cdc5;\n}\n.admin-content-tab.active {\n  box-shadow: inset 0 0 0 2px #fdd535;\n}\n\n.admin-icon-badge {\n  width: 32px;\n  height: 32px;\n  border-radius: 9px;\n  background: #fdd535;\n  color: #fff;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 15px;\n}\n\n.admin-home-sections-card {\n  padding: 28px;\n}\n\n.admin-home-tabs {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 10px;\n  margin: 18px 0;\n}\n\n.admin-home-tab {\n  min-height: 72px;\n  padding: 13px 14px;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  background: #fafaf8;\n  color: #111111;\n  cursor: pointer;\n  font-family: inherit;\n  text-align: left;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  gap: 5px;\n  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;\n}\n.admin-home-tab span {\n  font-size: 14px;\n  font-weight: 800;\n  line-height: 1.25;\n}\n.admin-home-tab small {\n  color: #6f685d;\n  font-size: 12px;\n  line-height: 1.3;\n}\n.admin-home-tab:hover {\n  border-color: #d5cabd;\n  background: #ffffff;\n  transform: translateY(-1px);\n}\n.admin-home-tab.active {\n  border-color: #111111;\n  background: #ffffff;\n  box-shadow: inset 0 0 0 2px #fdd535, 0 10px 22px rgba(38, 32, 22, 0.06);\n}\n\n.admin-home-sections-form {\n  gap: 18px;\n}\n\n.admin-home-save-row {\n  position: sticky;\n  bottom: 16px;\n  z-index: 2;\n  justify-content: flex-end;\n  padding: 14px;\n  margin-top: 2px;\n  background: rgba(255, 255, 255, 0.88);\n  border: 1px solid #eee6da;\n  border-radius: 16px;\n  backdrop-filter: blur(10px);\n}\n\n.admin-home-section-block {\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  padding: 20px;\n  background: linear-gradient(180deg, #fffdfa 0%, #fafaf8 100%);\n  box-shadow: 0 14px 30px rgba(38, 32, 22, 0.04);\n}\n\n.admin-home-section-block__head {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n  padding-bottom: 14px;\n  margin-bottom: 16px;\n  border-bottom: 1px solid #eee6da;\n}\n.admin-home-section-block__head h3 {\n  margin: 0;\n  font-size: 18px;\n  color: #111;\n}\n.admin-home-section-block__head p {\n  margin: 0;\n  font-size: 13px;\n  color: #6f685d;\n}\n\n.admin-home-section-block__body {\n  display: flex;\n  flex-direction: column;\n  gap: 14px;\n}\n\n.admin-home-subblock {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  margin-top: 0;\n  padding-top: 0;\n  border-top: 0;\n}\n.admin-home-subblock + .admin-home-subblock {\n  padding-top: 18px;\n  border-top: 1px solid #eee6da;\n}\n\n.admin-home-subheading {\n  margin: 0;\n  font-size: 15px;\n  color: #111;\n}\n\n.admin-home-row {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 8px;\n  margin-bottom: 0;\n}\n.admin-home-row label {\n  color: #111111;\n  font-size: 14px;\n}\n\n.admin-field--tight {\n  margin-top: 8px;\n  padding-top: 8px;\n  border-top: 1px solid #eee9e0;\n}\n\n.admin-home-item-card {\n  padding: 16px;\n  border: 1px solid #ede6dc;\n  border-radius: 14px;\n  background: #ffffff;\n  box-shadow: 0 8px 18px rgba(38, 32, 22, 0.035);\n}\n\n.admin-home-item-card__head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 12px;\n}\n.admin-home-item-card__head strong {\n  min-width: 0;\n  color: #111111;\n  font-size: 14px;\n  line-height: 1.3;\n  overflow-wrap: anywhere;\n}\n.admin-home-item-card__head small {\n  color: #6f685d;\n  font-size: 12px;\n}\n\n.admin-home-field-grid {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 12px;\n}\n.admin-home-field-grid .admin-field--full {\n  grid-column: 1/-1;\n}\n\n.admin-btn-danger {\n  color: #9f1d1d;\n  background: #fbf1ed;\n}\n.admin-btn-danger:hover {\n  background: #f7e3dd;\n}\n\n@media (max-width: 720px) {\n  .admin-home-sections-card {\n    padding: 18px;\n  }\n  .admin-home-tabs {\n    grid-template-columns: 1fr;\n  }\n  .admin-home-section-block {\n    padding: 16px;\n  }\n  .admin-home-field-grid {\n    grid-template-columns: 1fr;\n  }\n  .admin-home-row,\n  .admin-home-item-card__head {\n    align-items: flex-start;\n    flex-direction: column;\n  }\n  .admin-home-row .admin-btn,\n  .admin-home-item-card__head .admin-btn {\n    width: 100%;\n    justify-content: center;\n  }\n  .admin-home-save-row {\n    bottom: 8px;\n  }\n}\n.admin-badge {\n  padding: 4px 12px;\n  border-radius: 999px;\n  background: #fef9e7;\n  border: 1px solid #fdd535;\n  color: #92700a;\n  font-size: 13px;\n  font-weight: 600;\n}\n\n.admin-empty {\n  padding: 24px 0;\n  text-align: center;\n  color: #9a9080;\n  font-size: 14px;\n}\n\n.admin-empty-state {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 10px;\n  padding: 48px 0;\n  color: #b8ae9f;\n}\n.admin-empty-state svg {\n  font-size: 36px;\n}\n.admin-empty-state p {\n  margin: 0;\n  font-size: 15px;\n}\n\n.admin-messages-list {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  margin-top: 16px;\n}\n\n.admin-message-item {\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  overflow: hidden;\n  transition: border-color 0.15s ease;\n}\n.admin-message-item.open {\n  border-color: #fdd535;\n}\n\n.admin-message-header {\n  width: 100%;\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 14px 18px;\n  background: none;\n  border: none;\n  cursor: pointer;\n  text-align: left;\n}\n.admin-message-header:hover {\n  background: #fafaf8;\n}\n\n.admin-message-icon {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 32px;\n  height: 32px;\n  border-radius: 8px;\n  background: #fef9e7;\n  color: #f0bf22;\n  font-size: 15px;\n  flex-shrink: 0;\n}\n\n.admin-message-name {\n  font-size: 14px;\n  font-weight: 600;\n  color: #11141a;\n  min-width: 140px;\n}\n\n.admin-message-email {\n  font-size: 13px;\n  color: #6f685d;\n  flex: 1;\n}\n\n.admin-message-date {\n  font-size: 12px;\n  color: #b8ae9f;\n  white-space: nowrap;\n}\n\n.admin-message-body {\n  padding: 0 18px 18px 62px;\n  font-size: 14px;\n  color: #3f4652;\n  line-height: 1.7;\n  white-space: pre-wrap;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".admin-layout {\n  display: flex;\n  min-height: 100vh;\n  background: #fafaf8;\n}\n\n.admin-layout-content {\n  margin-left: 260px;\n  flex: 1;\n  min-width: 0;\n  padding-bottom: 60px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n@media (max-width: 768px) {\n  .admin-layout-content {\n    margin-left: 0;\n    padding-top: 80px;\n  }\n}\n\n.admin-page {\n  width: 100%;\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 32px 32px 0;\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n}\n@media (max-width: 768px) {\n  .admin-page {\n    padding: 20px 16px 0;\n  }\n}\n\n.admin-card {\n  background: #fff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 24px;\n}\n\n.admin-card-head {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 10px;\n  margin-bottom: 12px;\n}\n.admin-card-head h2 {\n  margin: 0;\n  font-size: 19px;\n  color: #111;\n}\n.admin-card-head p {\n  margin: 4px 0 0;\n  color: #6f685d;\n  font-size: 13px;\n}\n\n.admin-kpi-grid {\n  display: grid;\n  grid-template-columns: repeat(4, minmax(0, 1fr));\n  gap: 10px;\n}\n@media (max-width: 900px) {\n  .admin-kpi-grid {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n}\n\n.admin-kpi {\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 24px;\n  background: #ffffff;\n}\n.admin-kpi span {\n  font-size: 12px;\n  color: #6f685d;\n}\n.admin-kpi strong {\n  display: block;\n  margin-top: 6px;\n  font-size: 24px;\n  color: #111;\n}\n\n.admin-table {\n  width: 100%;\n  border-collapse: collapse;\n}\n.admin-table th,\n.admin-table td {\n  text-align: left;\n  padding: 11px 8px;\n  border-top: 1px solid #f4f1ea;\n  font-size: 13px;\n  color: #2f2f2f;\n}\n.admin-table th {\n  border-top: none;\n  font-size: 12px;\n  color: #7c7468;\n}\n.admin-table input,\n.admin-table select {\n  border: 1px solid #e7e1d5;\n  border-radius: 10px;\n  height: 34px;\n  padding: 0 9px;\n  font-size: 13px;\n  font-family: inherit;\n  background: #ffffff;\n}\n.admin-table input[type=number] {\n  width: 78px;\n}\n\n.admin-actions {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.admin-form-grid .admin-actions {\n  grid-column: 1/-1;\n  position: relative;\n  z-index: 5;\n}\n\n.admin-page-content-card {\n  position: relative;\n  z-index: 2;\n  margin-bottom: 8px;\n}\n\n.admin-page-content-form {\n  gap: 12px;\n  padding-bottom: 8px;\n}\n\n.admin-nav-visibility-card {\n  position: relative;\n  z-index: 1;\n  margin-top: 8px;\n}\n\n.admin-btn {\n  border: none;\n  border-radius: 10px;\n  height: 36px;\n  padding: 0 12px;\n  font-size: 12px;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n}\n\n.admin-btn-dark {\n  background: #111;\n  color: #fff;\n}\n\n.admin-btn-accent {\n  background: #fdd535;\n  color: #111;\n}\n\n.admin-btn-light {\n  background: #f4f1ea;\n  color: #111;\n}\n\n.admin-form-grid {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 10px;\n}\n@media (max-width: 900px) {\n  .admin-form-grid {\n    grid-template-columns: 1fr;\n  }\n}\n\n.admin-form-grid--single-column {\n  grid-template-columns: 1fr;\n}\n\n.admin-field {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n}\n.admin-field label {\n  font-size: 12px;\n  color: #7c7468;\n  font-weight: 600;\n}\n.admin-field input,\n.admin-field select,\n.admin-field textarea {\n  border: 1px solid #e7e1d5;\n  border-radius: 10px;\n  padding: 0 10px;\n  font-size: 13px;\n  font-family: inherit;\n  background: #ffffff;\n  color: #111111;\n  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;\n}\n.admin-field input:focus,\n.admin-field select:focus,\n.admin-field textarea:focus {\n  outline: none;\n  border-color: #111111;\n  box-shadow: 0 0 0 3px rgba(253, 213, 53, 0.24);\n}\n.admin-field input,\n.admin-field select {\n  height: 38px;\n}\n.admin-field textarea {\n  min-height: 92px;\n  padding: 10px;\n  resize: vertical;\n}\n.admin-field input[type=file] {\n  height: auto;\n  min-height: 38px;\n  padding: 6px;\n  color: #6f685d;\n}\n.admin-field input[type=file]::file-selector-button {\n  border: 0;\n  border-radius: 8px;\n  background: #111111;\n  color: #ffffff;\n  padding: 7px 10px;\n  margin-right: 10px;\n  font-family: inherit;\n  font-size: 12px;\n  font-weight: 700;\n  cursor: pointer;\n}\n.admin-field small {\n  color: #7c7468;\n  font-size: 12px;\n}\n\n.admin-input-with-icon {\n  position: relative;\n}\n.admin-input-with-icon svg {\n  position: absolute;\n  left: 11px;\n  top: 50%;\n  transform: translateY(-50%);\n  color: #7a746d;\n  pointer-events: none;\n}\n.admin-input-with-icon input {\n  width: 100%;\n  padding-left: 34px;\n}\n\n.admin-content-picker {\n  display: grid;\n  grid-template-columns: repeat(6, minmax(0, 1fr));\n  gap: 10px;\n}\n@media (max-width: 1000px) {\n  .admin-content-picker {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n@media (max-width: 640px) {\n  .admin-content-picker {\n    grid-template-columns: 1fr;\n  }\n}\n\n.admin-content-tab {\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  background: #ffffff;\n  color: #111111;\n  min-height: 76px;\n  padding: 14px;\n  cursor: pointer;\n  display: flex;\n  flex-direction: column;\n  align-items: flex-start;\n  justify-content: center;\n  gap: 5px;\n  font-family: inherit;\n  text-align: left;\n  transition: 0.2s ease;\n}\n.admin-content-tab span {\n  font-size: 14px;\n  font-weight: 700;\n}\n.admin-content-tab small {\n  color: #7a746d;\n  font-size: 12px;\n}\n.admin-content-tab:hover, .admin-content-tab.active {\n  background: #f2efea;\n  border-color: #d4cdc5;\n}\n.admin-content-tab.active {\n  box-shadow: inset 0 0 0 2px #fdd535;\n}\n\n.admin-icon-badge {\n  width: 32px;\n  height: 32px;\n  border-radius: 9px;\n  background: #fdd535;\n  color: #fff;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 15px;\n}\n\n.admin-home-sections-card {\n  padding: 28px;\n}\n\n.admin-home-tabs {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 10px;\n  margin: 18px 0;\n}\n\n.admin-home-tab {\n  min-height: 72px;\n  padding: 13px 14px;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  background: #fafaf8;\n  color: #111111;\n  cursor: pointer;\n  font-family: inherit;\n  text-align: left;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  gap: 5px;\n  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;\n}\n.admin-home-tab span {\n  font-size: 14px;\n  font-weight: 800;\n  line-height: 1.25;\n}\n.admin-home-tab small {\n  color: #6f685d;\n  font-size: 12px;\n  line-height: 1.3;\n}\n.admin-home-tab:hover {\n  border-color: #d5cabd;\n  background: #ffffff;\n  transform: translateY(-1px);\n}\n.admin-home-tab.active {\n  border-color: #111111;\n  background: #ffffff;\n  box-shadow: inset 0 0 0 2px #fdd535, 0 10px 22px rgba(38, 32, 22, 0.06);\n}\n\n.admin-home-sections-form {\n  gap: 18px;\n}\n\n.admin-home-save-row {\n  position: sticky;\n  bottom: 16px;\n  z-index: 2;\n  justify-content: flex-end;\n  padding: 14px;\n  margin-top: 2px;\n  background: rgba(255, 255, 255, 0.88);\n  border: 1px solid #eee6da;\n  border-radius: 16px;\n  backdrop-filter: blur(10px);\n}\n\n.admin-home-section-block {\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  padding: 20px;\n  background: linear-gradient(180deg, #fffdfa 0%, #fafaf8 100%);\n  box-shadow: 0 14px 30px rgba(38, 32, 22, 0.04);\n}\n\n.admin-home-section-block__head {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n  padding-bottom: 14px;\n  margin-bottom: 16px;\n  border-bottom: 1px solid #eee6da;\n}\n.admin-home-section-block__head h3 {\n  margin: 0;\n  font-size: 18px;\n  color: #111;\n}\n.admin-home-section-block__head p {\n  margin: 0;\n  font-size: 13px;\n  color: #6f685d;\n}\n\n.admin-home-section-block__body {\n  display: flex;\n  flex-direction: column;\n  gap: 14px;\n}\n\n.admin-home-subblock {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  margin-top: 0;\n  padding-top: 0;\n  border-top: 0;\n}\n.admin-home-subblock + .admin-home-subblock {\n  padding-top: 18px;\n  border-top: 1px solid #eee6da;\n}\n\n.admin-home-subheading {\n  margin: 0;\n  font-size: 15px;\n  color: #111;\n}\n\n.admin-home-row {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 8px;\n  margin-bottom: 0;\n}\n.admin-home-row label {\n  color: #111111;\n  font-size: 14px;\n}\n\n.admin-field--tight {\n  margin-top: 8px;\n  padding-top: 8px;\n  border-top: 1px solid #eee9e0;\n}\n\n.admin-home-item-card {\n  padding: 16px;\n  border: 1px solid #ede6dc;\n  border-radius: 14px;\n  background: #ffffff;\n  box-shadow: 0 8px 18px rgba(38, 32, 22, 0.035);\n}\n\n.admin-home-item-card__head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 12px;\n}\n.admin-home-item-card__head strong {\n  min-width: 0;\n  color: #111111;\n  font-size: 14px;\n  line-height: 1.3;\n  overflow-wrap: anywhere;\n}\n.admin-home-item-card__head small {\n  color: #6f685d;\n  font-size: 12px;\n}\n\n.admin-home-field-grid {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 12px;\n}\n.admin-home-field-grid .admin-field--full {\n  grid-column: 1/-1;\n}\n\n.admin-btn-danger {\n  color: #9f1d1d;\n  background: #fbf1ed;\n}\n.admin-btn-danger:hover {\n  background: #f7e3dd;\n}\n\n@media (max-width: 720px) {\n  .admin-home-sections-card {\n    padding: 18px;\n  }\n  .admin-home-tabs {\n    grid-template-columns: 1fr;\n  }\n  .admin-home-section-block {\n    padding: 16px;\n  }\n  .admin-home-field-grid {\n    grid-template-columns: 1fr;\n  }\n  .admin-home-row,\n  .admin-home-item-card__head {\n    align-items: flex-start;\n    flex-direction: column;\n  }\n  .admin-home-row .admin-btn,\n  .admin-home-item-card__head .admin-btn {\n    width: 100%;\n    justify-content: center;\n  }\n  .admin-home-save-row {\n    bottom: 8px;\n  }\n}\n.admin-badge {\n  padding: 4px 12px;\n  border-radius: 999px;\n  background: #fef9e7;\n  border: 1px solid #fdd535;\n  color: #92700a;\n  font-size: 13px;\n  font-weight: 600;\n}\n\n.admin-empty {\n  padding: 24px 0;\n  text-align: center;\n  color: #9a9080;\n  font-size: 14px;\n}\n\n.admin-empty-state {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 10px;\n  padding: 48px 0;\n  color: #b8ae9f;\n}\n.admin-empty-state svg {\n  font-size: 36px;\n}\n.admin-empty-state p {\n  margin: 0;\n  font-size: 15px;\n}\n\n.admin-messages-list {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  margin-top: 16px;\n}\n\n.admin-message-item {\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  overflow: hidden;\n  transition: border-color 0.15s ease;\n}\n.admin-message-item.open {\n  border-color: #fdd535;\n}\n\n.admin-message-header {\n  width: 100%;\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 14px 18px;\n  background: none;\n  border: none;\n  cursor: pointer;\n  text-align: left;\n}\n.admin-message-header:hover {\n  background: #fafaf8;\n}\n\n.admin-message-icon {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 32px;\n  height: 32px;\n  border-radius: 8px;\n  background: #fef9e7;\n  color: #f0bf22;\n  font-size: 15px;\n  flex-shrink: 0;\n}\n\n.admin-message-name {\n  font-size: 14px;\n  font-weight: 600;\n  color: #11141a;\n  min-width: 140px;\n}\n\n.admin-message-email {\n  font-size: 13px;\n  color: #6f685d;\n  flex: 1;\n}\n\n.admin-message-date {\n  font-size: 12px;\n  color: #b8ae9f;\n  white-space: nowrap;\n}\n\n.admin-message-body {\n  padding: 0 18px 18px 62px;\n  font-size: 14px;\n  color: #3f4652;\n  line-height: 1.7;\n  white-space: pre-wrap;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -34666,7 +34858,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".jobs-cards-section {\n  width: 100%;\n  max-width: 1400px;\n  margin: 0 auto;\n  padding: 0 32px 60px;\n  text-align: left;\n}\n.jobs-cards-section .jobs-cards-wrapper {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 28px 20px;\n  padding-top: 12px;\n}\n.jobs-cards-section .job-card {\n  width: calc((100% - 40px) / 3);\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 28px 24px 24px;\n  position: relative;\n  transition: 0.25s ease;\n  display: flex;\n  flex-direction: column;\n  align-items: stretch;\n  gap: 16px;\n  text-align: left;\n}\n.jobs-cards-section .job-card:hover {\n  border: 1px solid #000;\n  transform: translateY(-4px);\n}\n.jobs-cards-section .job-card.featured {\n  border: 1px solid #fdd535;\n  background: #fffdf6;\n}\n.jobs-cards-section .job-card .featured-badge {\n  position: absolute;\n  top: -18px;\n  right: 24px;\n  background: #fff3cd;\n  color: #c58a00;\n  border: 1px solid #f2d27a;\n  border-radius: 999px;\n  padding: 8px 18px;\n  font-size: 14px;\n  font-weight: 600;\n  line-height: 1;\n  white-space: nowrap;\n  z-index: 2;\n}\n.jobs-cards-section .job-card .job-card-header {\n  display: flex;\n  align-items: flex-start;\n  gap: 16px;\n  width: 100%;\n}\n.jobs-cards-section .job-card .job-initials {\n  width: 76px;\n  height: 76px;\n  background: #f2efea;\n  border-radius: 18px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 26px;\n  font-weight: 600;\n  color: #111111;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card .job-title-block {\n  flex: 1;\n  min-width: 0;\n  padding-top: 4px;\n}\n.jobs-cards-section .job-card .job-title-block .job-title {\n  margin: 0 0 6px;\n  font-size: 18px;\n  font-weight: 700;\n  line-height: 1.35;\n  color: #111111;\n  word-break: break-word;\n}\n.jobs-cards-section .job-card .job-title-block .job-company {\n  margin: 0;\n  font-size: 16px;\n  color: #777777;\n  line-height: 1.4;\n}\n.jobs-cards-section .job-card .job-types {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n  justify-content: flex-end;\n  max-width: 48%;\n}\n.jobs-cards-section .job-card .job-type {\n  background: #fff3cd;\n  color: #111111;\n  border: 1px solid #fdd535;\n  border-radius: 999px;\n  padding: 10px 16px;\n  font-size: 14px;\n  white-space: nowrap;\n  line-height: 1;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card.featured .job-type {\n  margin-top: 6px;\n}\n.jobs-cards-section .job-card .job-card-meta {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  justify-content: flex-start;\n  gap: 8px 12px;\n  width: 100%;\n  padding-left: 92px;\n}\n.jobs-cards-section .job-card .job-card-meta .job-meta-item {\n  font-size: 15px;\n  color: #7a746d;\n  line-height: 1.4;\n  white-space: nowrap;\n}\n.jobs-cards-section .job-card .job-card-meta .job-meta-divider {\n  width: 4px;\n  height: 4px;\n  border-radius: 50%;\n  background: #c8c0b5;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card .job-tags {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: flex-start;\n  justify-content: flex-start;\n  gap: 10px;\n  width: 100%;\n  padding-left: 92px;\n}\n.jobs-cards-section .job-card .job-tags .job-tag {\n  background: #f2efea;\n  color: #7a746d;\n  border-radius: 999px;\n  padding: 7px 14px;\n  font-size: 14px;\n  line-height: 1;\n}\n.jobs-cards-section .jobs-pagination {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  gap: 10px;\n  margin-top: 40px;\n}\n.jobs-cards-section .jobs-pagination button {\n  width: 48px;\n  height: 48px;\n  border: 1px solid #dddddd;\n  background: #ffffff;\n  border-radius: 14px;\n  cursor: pointer;\n  font-size: 16px;\n}\n.jobs-cards-section .jobs-pagination .active-page {\n  background: #111111;\n  color: #ffffff;\n  border: 1px solid #111111;\n}\n.jobs-cards-section .jobs-pagination button:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n\n@media (max-width: 1024px) {\n  .jobs-cards-section .job-card {\n    width: calc((100% - 20px) / 2);\n  }\n}\n@media (max-width: 768px) {\n  .jobs-cards-section {\n    padding: 0 20px 60px;\n  }\n  .jobs-cards-section .job-card {\n    width: 100%;\n  }\n  .jobs-cards-section .job-card .job-card-meta,\n  .jobs-cards-section .job-card .job-tags {\n    padding-left: 0;\n  }\n}\n@media (max-width: 480px) {\n  .jobs-cards-section {\n    padding: 0 16px 40px;\n  }\n  .jobs-cards-section .job-card {\n    padding: 24px 16px 20px;\n  }\n  .jobs-cards-section .job-card .job-initials {\n    width: 56px;\n    height: 56px;\n    font-size: 20px;\n    border-radius: 14px;\n  }\n  .jobs-cards-section .job-card .job-title-block .job-title {\n    font-size: 16px;\n  }\n  .jobs-cards-section .job-card .job-title-block .job-company {\n    font-size: 14px;\n  }\n  .jobs-cards-section .job-card .job-type {\n    font-size: 12px;\n    padding: 8px 12px;\n  }\n  .jobs-cards-section .job-card .job-card-meta .job-meta-item {\n    font-size: 13px;\n  }\n  .jobs-cards-section .job-card .job-tags .job-tag {\n    font-size: 12px;\n    padding: 6px 12px;\n  }\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".jobs-cards-section {\n  width: 100%;\n  max-width: 1400px;\n  margin: 0 auto;\n  padding: 0 32px 60px;\n  text-align: left;\n}\n.jobs-cards-section .jobs-cards-wrapper {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 28px 20px;\n  padding-top: 12px;\n}\n.jobs-cards-section .jobs-listings-heading {\n  flex: 0 0 100%;\n  width: 100%;\n  font-size: 24px;\n  font-weight: 700;\n  color: #111;\n  margin: 0 0 8px;\n}\n.jobs-cards-section .job-card {\n  width: calc((100% - 40px) / 3);\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 28px 24px 24px;\n  position: relative;\n  transition: 0.25s ease;\n  display: flex;\n  flex-direction: column;\n  align-items: stretch;\n  gap: 16px;\n  text-align: left;\n}\n.jobs-cards-section .job-card:hover {\n  border: 1px solid #000;\n  transform: translateY(-4px);\n}\n.jobs-cards-section .job-card.featured {\n  border: 1px solid #fdd535;\n  background: #fffdf6;\n}\n.jobs-cards-section .job-card .featured-badge {\n  position: absolute;\n  top: -18px;\n  right: 24px;\n  background: #fff3cd;\n  color: #c58a00;\n  border: 1px solid #f2d27a;\n  border-radius: 999px;\n  padding: 8px 18px;\n  font-size: 14px;\n  font-weight: 600;\n  line-height: 1;\n  white-space: nowrap;\n  z-index: 2;\n}\n.jobs-cards-section .job-card .job-card-header {\n  display: flex;\n  align-items: flex-start;\n  gap: 16px;\n  width: 100%;\n}\n.jobs-cards-section .job-card .job-initials {\n  width: 76px;\n  height: 76px;\n  background: #f2efea;\n  border-radius: 18px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 26px;\n  font-weight: 600;\n  color: #111111;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card .job-title-block {\n  flex: 1;\n  min-width: 0;\n  padding-top: 4px;\n}\n.jobs-cards-section .job-card .job-title-block .job-title {\n  margin: 0 0 6px;\n  font-size: 18px;\n  font-weight: 700;\n  line-height: 1.35;\n  color: #111111;\n  word-break: break-word;\n}\n.jobs-cards-section .job-card .job-title-block .job-company {\n  margin: 0;\n  font-size: 16px;\n  color: #777777;\n  line-height: 1.4;\n}\n.jobs-cards-section .job-card .job-types {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n  justify-content: flex-end;\n  max-width: 48%;\n}\n.jobs-cards-section .job-card .job-type {\n  background: #fff3cd;\n  color: #111111;\n  border: 1px solid #fdd535;\n  border-radius: 999px;\n  padding: 10px 16px;\n  font-size: 14px;\n  white-space: nowrap;\n  line-height: 1;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card.featured .job-type {\n  margin-top: 6px;\n}\n.jobs-cards-section .job-card .job-card-meta {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  justify-content: flex-start;\n  gap: 8px 12px;\n  width: 100%;\n  padding-left: 92px;\n}\n.jobs-cards-section .job-card .job-card-meta .job-meta-item {\n  font-size: 15px;\n  color: #7a746d;\n  line-height: 1.4;\n  white-space: nowrap;\n}\n.jobs-cards-section .job-card .job-card-meta .job-meta-divider {\n  width: 4px;\n  height: 4px;\n  border-radius: 50%;\n  background: #c8c0b5;\n  flex-shrink: 0;\n}\n.jobs-cards-section .job-card .job-tags {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: flex-start;\n  justify-content: flex-start;\n  gap: 10px;\n  width: 100%;\n  padding-left: 92px;\n}\n.jobs-cards-section .job-card .job-tags .job-tag {\n  background: #f2efea;\n  color: #7a746d;\n  border-radius: 999px;\n  padding: 7px 14px;\n  font-size: 14px;\n  line-height: 1;\n}\n.jobs-cards-section .jobs-pagination {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  gap: 10px;\n  margin-top: 40px;\n}\n.jobs-cards-section .jobs-pagination button {\n  width: 48px;\n  height: 48px;\n  border: 1px solid #dddddd;\n  background: #ffffff;\n  border-radius: 14px;\n  cursor: pointer;\n  font-size: 16px;\n}\n.jobs-cards-section .jobs-pagination .active-page {\n  background: #111111;\n  color: #ffffff;\n  border: 1px solid #111111;\n}\n.jobs-cards-section .jobs-pagination button:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n\n@media (max-width: 1024px) {\n  .jobs-cards-section .job-card {\n    width: calc((100% - 20px) / 2);\n  }\n}\n@media (max-width: 768px) {\n  .jobs-cards-section {\n    padding: 0 20px 60px;\n  }\n  .jobs-cards-section .job-card {\n    width: 100%;\n  }\n  .jobs-cards-section .job-card .job-card-meta,\n  .jobs-cards-section .job-card .job-tags {\n    padding-left: 0;\n  }\n}\n@media (max-width: 480px) {\n  .jobs-cards-section {\n    padding: 0 16px 40px;\n  }\n  .jobs-cards-section .job-card {\n    padding: 24px 16px 20px;\n  }\n  .jobs-cards-section .job-card .job-initials {\n    width: 56px;\n    height: 56px;\n    font-size: 20px;\n    border-radius: 14px;\n  }\n  .jobs-cards-section .job-card .job-title-block .job-title {\n    font-size: 16px;\n  }\n  .jobs-cards-section .job-card .job-title-block .job-company {\n    font-size: 14px;\n  }\n  .jobs-cards-section .job-card .job-type {\n    font-size: 12px;\n    padding: 8px 12px;\n  }\n  .jobs-cards-section .job-card .job-card-meta .job-meta-item {\n    font-size: 13px;\n  }\n  .jobs-cards-section .job-card .job-tags .job-tag {\n    font-size: 12px;\n    padding: 6px 12px;\n  }\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -34690,7 +34882,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".jobs-filters {\n  width: 100%;\n  max-width: 1400px;\n  margin: 0 auto;\n  padding: 10px 32px 20px;\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n}\n.jobs-filters .jobs-filters-top {\n  display: flex;\n  align-items: center;\n}\n.jobs-filters .jobs-filters-top .jobs-select {\n  min-width: 220px;\n  height: 52px;\n  padding: 0 60px 0 18px;\n  border: 1px solid #ddd;\n}\n.jobs-filters .jobs-filters-top .jobs-select:focus {\n  border: 2px solid #fdd535;\n}\n.jobs-filters .jobs-filters-top .jobs-select {\n  border-radius: 16px;\n  background: #fff;\n  font-size: 16px;\n  color: #222;\n  outline: none;\n  cursor: pointer;\n}\n.jobs-filters .jobs-filter-buttons {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n.jobs-filters .jobs-filter-buttons .filter-btn {\n  border: none;\n  background: #f0eeeb;\n  color: #666;\n  padding: 10px 18px;\n  border-radius: 20px;\n  font-size: 15px;\n  cursor: pointer;\n  transition: 0.2s ease;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.jobs-filters .jobs-filter-buttons .filter-btn:hover {\n  background: #e7e2db;\n}\n.jobs-filters .jobs-filter-buttons .filter-btn.active {\n  background: #fff3cd;\n  color: #111;\n  border: 1px solid #fdd535;\n}\n.jobs-filters .jobs-filters-info {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n.jobs-filters .jobs-filters-info p {\n  margin: 0;\n  font-size: 16px;\n  color: #6b6b6b;\n}\n.jobs-filters .jobs-filters-info p strong {\n  color: #111;\n}\n\n@media (max-width: 768px) {\n  .jobs-filters {\n    padding: 0 1.25rem 1.25rem;\n    gap: 1rem;\n  }\n  .jobs-filters .jobs-filter-buttons {\n    flex-wrap: nowrap;\n    overflow-x: auto;\n    -webkit-overflow-scrolling: touch;\n    scrollbar-width: none;\n    padding-bottom: 0.25rem;\n    margin: 0 -0.25rem;\n    padding-left: 0.25rem;\n    padding-right: 0.25rem;\n  }\n  .jobs-filters .jobs-filter-buttons::-webkit-scrollbar {\n    display: none;\n  }\n  .jobs-filters .jobs-filter-buttons .filter-btn {\n    flex-shrink: 0;\n  }\n}\n@media (max-width: 480px) {\n  .jobs-filters {\n    padding: 0 1rem 1rem;\n    gap: 0.875rem;\n  }\n  .jobs-filters .jobs-filters-top .jobs-select {\n    width: 100%;\n    min-width: unset;\n    height: 3rem;\n    font-size: 0.9375rem;\n  }\n  .jobs-filters .jobs-filter-buttons {\n    gap: 0.5rem;\n  }\n  .jobs-filters .jobs-filter-buttons .filter-btn {\n    font-size: 0.8125rem;\n    padding: 0.5rem 0.875rem;\n  }\n  .jobs-filters .jobs-filters-info {\n    flex-direction: column;\n    align-items: flex-start;\n    gap: 0.375rem;\n  }\n  .jobs-filters .jobs-filters-info p {\n    font-size: 0.875rem;\n  }\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".jobs-filters {\n  width: 100%;\n  max-width: 1400px;\n  margin: 0 auto;\n  padding: 10px 32px 20px;\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n}\n.jobs-filters .jobs-filters-heading {\n  font-size: 24px;\n  font-weight: 700;\n  color: #111;\n  margin: 0;\n}\n.jobs-filters .jobs-filters-top {\n  display: flex;\n  align-items: center;\n}\n.jobs-filters .jobs-filters-top .jobs-select {\n  min-width: 220px;\n  height: 52px;\n  padding: 0 60px 0 18px;\n  border: 1px solid #ddd;\n}\n.jobs-filters .jobs-filters-top .jobs-select:focus {\n  border: 2px solid #fdd535;\n}\n.jobs-filters .jobs-filters-top .jobs-select {\n  border-radius: 16px;\n  background: #fff;\n  font-size: 16px;\n  color: #222;\n  outline: none;\n  cursor: pointer;\n}\n.jobs-filters .jobs-filter-buttons {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n.jobs-filters .jobs-filter-buttons .filter-btn {\n  border: none;\n  background: #f0eeeb;\n  color: #666;\n  padding: 10px 18px;\n  border-radius: 20px;\n  font-size: 15px;\n  cursor: pointer;\n  transition: 0.2s ease;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.jobs-filters .jobs-filter-buttons .filter-btn:hover {\n  background: #e7e2db;\n}\n.jobs-filters .jobs-filter-buttons .filter-btn.active {\n  background: #fff3cd;\n  color: #111;\n  border: 1px solid #fdd535;\n}\n.jobs-filters .jobs-filters-info {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n.jobs-filters .jobs-filters-info p {\n  margin: 0;\n  font-size: 16px;\n  color: #6b6b6b;\n}\n.jobs-filters .jobs-filters-info p strong {\n  color: #111;\n}\n\n@media (max-width: 768px) {\n  .jobs-filters {\n    padding: 0 1.25rem 1.25rem;\n    gap: 1rem;\n  }\n  .jobs-filters .jobs-filter-buttons {\n    flex-wrap: nowrap;\n    overflow-x: auto;\n    -webkit-overflow-scrolling: touch;\n    scrollbar-width: none;\n    padding-bottom: 0.25rem;\n    margin: 0 -0.25rem;\n    padding-left: 0.25rem;\n    padding-right: 0.25rem;\n  }\n  .jobs-filters .jobs-filter-buttons::-webkit-scrollbar {\n    display: none;\n  }\n  .jobs-filters .jobs-filter-buttons .filter-btn {\n    flex-shrink: 0;\n  }\n}\n@media (max-width: 480px) {\n  .jobs-filters {\n    padding: 0 1rem 1rem;\n    gap: 0.875rem;\n  }\n  .jobs-filters .jobs-filters-top .jobs-select {\n    width: 100%;\n    min-width: unset;\n    height: 3rem;\n    font-size: 0.9375rem;\n  }\n  .jobs-filters .jobs-filter-buttons {\n    gap: 0.5rem;\n  }\n  .jobs-filters .jobs-filter-buttons .filter-btn {\n    font-size: 0.8125rem;\n    padding: 0.5rem 0.875rem;\n  }\n  .jobs-filters .jobs-filters-info {\n    flex-direction: column;\n    align-items: flex-start;\n    gap: 0.375rem;\n  }\n  .jobs-filters .jobs-filters-info p {\n    font-size: 0.875rem;\n  }\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

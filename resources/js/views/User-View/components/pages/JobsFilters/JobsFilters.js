@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { JOB_LISTING_TYPES } from '../../../../../api/jobsApi';
+import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
 
 import './JobsFilters.scss';
 
@@ -24,6 +25,8 @@ const JobsFilters = ({
   jobsPerPage,
 
 }) => {
+  const { data } = usePlatformAdmin();
+  const filterTitle = data.pageContent?.jobs?.filterTitle || 'Search jobs';
 
   const filterButtons = ['All Types', ...JOB_LISTING_TYPES];
 
@@ -42,6 +45,8 @@ const JobsFilters = ({
   return (
 
     <section className="jobs-filters" data-aos="fade-up" data-aos-delay="100">
+
+      <h2 className="jobs-filters-heading">{filterTitle}</h2>
 
       <div className="jobs-filters-top">
 

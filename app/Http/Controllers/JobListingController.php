@@ -47,7 +47,10 @@ class JobListingController extends Controller
             });
         }
 
-        $jobs = $query->orderByDesc('created_at')->get();
+        $jobs = $query
+            ->orderByDesc('is_featured')
+            ->orderByDesc('created_at')
+            ->get();
 
         return response()->json(['jobs' => $jobs]);
     }
@@ -83,12 +86,6 @@ class JobListingController extends Controller
     {
         $validated = $request->validated();
         $types = $validated['types'];
-        $typesLabel = JobListing::typesLabel($types);
-
-        $description = $validated['description'] ?? trim(
-            "We're looking for a talented {$validated['title']} to join {$validated['company']}. " .
-            "This is a {$typesLabel} position based in {$validated['location']}."
-        );
 
         $job = JobListing::query()->create([
             'user_id' => $request->user()->id,
@@ -99,7 +96,9 @@ class JobListingController extends Controller
             'types' => $types,
             'type' => $types[0] ?? null,
             'tags' => $validated['tags'] ?? [],
-            'description' => $description,
+            'description' => $validated['description'] ?? null,
+            'benefits' => $validated['benefits'] ?? null,
+            'is_featured' => (bool) ($validated['is_featured'] ?? false),
             'status' => 'active',
             'is_active' => true,
         ]);
@@ -157,12 +156,6 @@ class JobListingController extends Controller
     private function updateJobFields(array $validated, JobListing $jobListing): JsonResponse
     {
         $types = $validated['types'];
-        $typesLabel = JobListing::typesLabel($types);
-
-        $description = $validated['description'] ?? $jobListing->description ?? trim(
-            "We're looking for a talented {$validated['title']} to join {$validated['company']}. " .
-            "This is a {$typesLabel} position based in {$validated['location']}."
-        );
 
         $jobListing->fill([
             'title' => $validated['title'],
@@ -172,7 +165,9 @@ class JobListingController extends Controller
             'types' => $types,
             'type' => $types[0] ?? null,
             'tags' => $validated['tags'] ?? [],
-            'description' => $description,
+            'description' => $validated['description'] ?? null,
+            'benefits' => $validated['benefits'] ?? null,
+            'is_featured' => (bool) ($validated['is_featured'] ?? false),
         ]);
 
         if (isset($validated['status'])) {

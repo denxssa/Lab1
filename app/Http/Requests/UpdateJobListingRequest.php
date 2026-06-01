@@ -27,7 +27,9 @@ class UpdateJobListingRequest extends FormRequest
             'types.*' => ['required', 'string', Rule::in(JobListing::JOB_TYPES)],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:100'],
-            'description' => ['nullable', 'string', 'max:10000'],
+            'description' => ['required', 'string', 'min:20', 'max:10000'],
+            'benefits' => ['nullable', 'string', 'max:10000'],
+            'is_featured' => ['sometimes', 'boolean'],
             'status' => ['sometimes', Rule::in(['active', 'paused', 'closed'])],
         ];
     }

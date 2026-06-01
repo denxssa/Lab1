@@ -130,6 +130,29 @@
   gap: 8px;
 }
 
+.admin-form-grid .admin-actions {
+  grid-column: 1 / -1;
+  position: relative;
+  z-index: 5;
+}
+
+.admin-page-content-card {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 8px;
+}
+
+.admin-page-content-form {
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+.admin-nav-visibility-card {
+  position: relative;
+  z-index: 1;
+  margin-top: 8px;
+}
+
 .admin-btn {
   border: none;
   border-radius: 10px;
