@@ -54,6 +54,11 @@ class HomePageContentController extends Controller
         'contact_page_form_title' => 'Send a message',
         'contact_page_form_description' => 'Tell us what you need and the team will respond as soon as possible.',
         'contact_page_primary_cta' => 'Send message',
+        'jobs_page_hero_title' => 'Find the right job for your next step',
+        'jobs_page_hero_description' => 'Search roles across design, engineering, marketing, business, and more.',
+        'jobs_page_filter_title' => 'Search jobs',
+        'jobs_page_listings_title' => 'Latest opportunities',
+        'jobs_page_primary_cta' => 'View jobs',
     ];
 
     private const DEFAULT_SECTIONS = [
@@ -254,7 +259,7 @@ class HomePageContentController extends Controller
     public function update(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            '_pageKey' => ['nullable', 'string', 'in:home,companies,contact'],
+            '_pageKey' => ['nullable', 'string', 'in:home,companies,contact,pricing,about,jobs'],
             'proofText' => ['nullable', 'string', 'max:255'],
             'heroTitle' => ['nullable', 'string', 'max:255'],
             'heroSubtitle' => ['nullable', 'string'],
@@ -284,10 +289,28 @@ class HomePageContentController extends Controller
             'faqTitle' => ['nullable', 'string', 'max:255'],
             'formTitle' => ['nullable', 'string', 'max:255'],
             'formDescription' => ['nullable', 'string'],
+            'filterTitle' => ['nullable', 'string', 'max:255'],
+            'listingsTitle' => ['nullable', 'string', 'max:255'],
         ]);
 
         $content = $this->ensureDefaultContent();
         $pageKey = $validated['_pageKey'] ?? 'home';
+
+        if ($pageKey === 'jobs') {
+            $content->fill([
+                'jobs_page_hero_title' => $validated['heroTitle'] ?? $content->jobs_page_hero_title,
+                'jobs_page_hero_description' => $validated['heroDescription'] ?? $content->jobs_page_hero_description,
+                'jobs_page_filter_title' => $validated['filterTitle'] ?? $content->jobs_page_filter_title,
+                'jobs_page_listings_title' => $validated['listingsTitle'] ?? $content->jobs_page_listings_title,
+                'jobs_page_primary_cta' => $validated['primaryCta'] ?? $content->jobs_page_primary_cta,
+            ]);
+            $content->save();
+
+            return response()->json([
+                'message' => 'Jobs page content updated successfully.',
+                'pageContent' => $this->toPageContentShape($content),
+            ]);
+        }
 
         if ($pageKey === 'contact') {
             $content->fill([
@@ -548,6 +571,13 @@ class HomePageContentController extends Controller
                 'formTitle'       => $content->contact_page_form_title,
                 'formDescription' => $content->contact_page_form_description,
                 'primaryCta'      => $content->contact_page_primary_cta,
+            ],
+            'jobs' => [
+                'heroTitle'       => $content->jobs_page_hero_title,
+                'heroDescription' => $content->jobs_page_hero_description,
+                'filterTitle'     => $content->jobs_page_filter_title,
+                'listingsTitle'   => $content->jobs_page_listings_title,
+                'primaryCta'      => $content->jobs_page_primary_cta,
             ],
         ];
     }

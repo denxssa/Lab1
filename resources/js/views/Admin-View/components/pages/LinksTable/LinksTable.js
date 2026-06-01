@@ -11,12 +11,14 @@ const LinksTable = () => {
     const pages = useMemo(() => [...data.userViewPages].sort((a, b) => a.navOrder - b.navOrder), [data.userViewPages]);
 
     return (
-        <main className="admin-page">
-            <section className="admin-card">
+        <section className="admin-card admin-nav-visibility-card">
                 <div className="admin-card-head">
                     <div>
                         <h2>Navigation and page visibility</h2>
-                        <p>Control which pages are visible in the public navigation and in what order they appear.</p>
+                        <p>
+                          Control which pages appear in the site navigation, their order, and whether visitors can open them directly.
+                          Changes apply on this browser immediately (stored locally until a server setting is added).
+                        </p>
                     </div>
                 </div>
                 <table className="admin-table">
@@ -63,8 +65,7 @@ const LinksTable = () => {
                         ))}
                     </tbody>
                 </table>
-            </section>
-        </main>
+        </section>
     );
 };
 

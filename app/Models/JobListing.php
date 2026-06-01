@@ -25,8 +25,10 @@ class JobListing extends Model
         'types',
         'tags',
         'description',
+        'benefits',
         'embedding',
         'is_active',
+        'is_featured',
         'status',
     ];
 
@@ -37,6 +39,7 @@ class JobListing extends Model
             'tags' => 'array',
             'embedding' => 'array',
             'is_active' => 'boolean',
+            'is_featured' => 'boolean',
         ];
     }
 

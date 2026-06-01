@@ -36,7 +36,6 @@ export const initialPageContent = {
     primaryCta: 'Browse companies',
   },
   jobs: {
-    heroEyebrow: 'Open roles',
     heroTitle: 'Find the right job for your next step',
     heroDescription: 'Search roles across design, engineering, marketing, business, and more.',
     filterTitle: 'Search jobs',

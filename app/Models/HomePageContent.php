@@ -45,5 +45,11 @@ class HomePageContent extends Model
         'contact_page_form_title',
         'contact_page_form_description',
         'contact_page_primary_cta',
+        'jobs_page_hero_eyebrow',
+        'jobs_page_hero_title',
+        'jobs_page_hero_description',
+        'jobs_page_filter_title',
+        'jobs_page_listings_title',
+        'jobs_page_primary_cta',
     ];
 }

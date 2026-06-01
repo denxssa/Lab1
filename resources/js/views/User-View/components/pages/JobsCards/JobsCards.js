@@ -1,6 +1,7 @@
 import React from 'react';
 import './JobsCards.scss';
 import { useNavigate } from 'react-router-dom';
+import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
 
 const JobsCards = ({
   jobs,
@@ -11,6 +12,8 @@ const JobsCards = ({
   jobsPerPage,
 }) => {
   const navigate = useNavigate();
+  const { data } = usePlatformAdmin();
+  const listingsTitle = data.pageContent?.jobs?.listingsTitle || 'Latest opportunities';
   const start = (page - 1) * jobsPerPage;
   const visibleJobs = jobs.slice(start, start + jobsPerPage);
   const totalPages = Math.ceil(jobs.length / jobsPerPage) || 1;
@@ -51,6 +54,7 @@ const JobsCards = ({
   return (
     <section className="jobs-cards-section">
       <div className="jobs-cards-wrapper">
+        <h2 className="jobs-listings-heading">{listingsTitle}</h2>
         {visibleJobs.map((job, index) => (
           <div
             key={job.id}

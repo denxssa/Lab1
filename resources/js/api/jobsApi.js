@@ -113,7 +113,18 @@ export function deleteJobListing(id) {
     return axios.delete(`/api/job-listings/${id}`).then((response) => response.data);
 }
 
-export function mapJobListing(job, index = 0) {
+export function splitJobText(text) {
+    if (!text || typeof text !== 'string') {
+        return [];
+    }
+
+    return text
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+}
+
+export function mapJobListing(job) {
     const company = job.company || '';
     const initials = company
         .split(' ')
@@ -145,9 +156,12 @@ export function mapJobListing(job, index = 0) {
         time,
         types,
         type,
-        featured: index < 2,
+        featured: Boolean(job.is_featured),
         tags: normalizeTags(job.tags),
         description: job.description || '',
+        benefits: job.benefits || '',
+        benefitLines: splitJobText(job.benefits || ''),
+        descriptionParagraphs: splitJobText(job.description || ''),
     };
 }
 
@@ -165,6 +179,6 @@ export function mapJobListingForHr(job) {
         shortlisted:  job.shortlisted_count     ?? 0,
         daysLeft: status === 'active' ? 30 : 0,
         postedDays,
-        featured: false,
+        featured: Boolean(job.is_featured),
     };
 }
