@@ -91,11 +91,19 @@ export default function LoginContent() {
         setSubmitting(true);
 
         try {
-            const loggedInUser = await login({
+            const result = await login({
                 email: values.email.trim(),
                 password: values.password,
             });
-            navigate(getHomePathForRole(loggedInUser?.role), { replace: true });
+            // HR invited accounts that haven't completed first-time onboarding
+            if (result?.first_login) {
+                navigate('/first-login', {
+                    replace: true,
+                    state: { email: result.email ?? values.email.trim() },
+                });
+                return;
+            }
+            navigate(getHomePathForRole(result?.user?.role ?? result?.role), { replace: true });
         } catch (error) {
             setErrors(mapServerErrors(error));
         } finally {

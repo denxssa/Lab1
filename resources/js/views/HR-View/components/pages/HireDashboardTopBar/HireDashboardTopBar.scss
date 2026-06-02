@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
-  height: 64px;
+  height: 48px;
   border-bottom: 1px solid #e7dfd4;
   background: rgba(250, 250, 248, 0.75);
   backdrop-filter: blur(12px);
@@ -17,7 +17,32 @@
   box-sizing: border-box;
 
   @media (max-width: 768px) {
-    padding: 0 16px 0 64px;
+    padding: 0 16px;
+  }
+}
+
+// ── Mobile hamburger (inside topbar) ────────────────────────────────────────
+.hire-topbar-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid #e7dfd4;
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  cursor: pointer;
+  color: #111111;
+  transition: 0.2s ease;
+
+  &:hover {
+    background: #f2efea;
+    border-color: #c8c2bb;
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
   }
 }
 
@@ -42,9 +67,9 @@
   position: relative;
   background: none;
   border: 1px solid #e7dfd4;
-  border-radius: 12px;
-  width: 42px;
-  height: 42px;
+  border-radius: 10px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -187,9 +212,9 @@
   color: #ffffff;
   border: none;
   border-radius: 999px;
-  padding: 0 18px;
-  height: 42px;
-  font-size: 14px;
+  padding: 0 14px;
+  height: 34px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s ease;

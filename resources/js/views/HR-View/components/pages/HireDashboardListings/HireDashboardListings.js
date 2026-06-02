@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FaMapMarkerAlt, FaBriefcase, FaClock, FaUsers, FaPause, FaPlay, FaTimes, FaEllipsisV, FaEdit, FaTrash } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import './HireDashboardListings.scss';
 import {
   deleteJobListing,
@@ -20,7 +21,8 @@ const expiryClass = (days, status) => {
 };
 
 const HireDashboardListings = () => {
-  const { listingsVersion, refreshListings } = useHireDashboard();
+  const { listingsVersion, refreshListings, setJobFilter } = useHireDashboard();
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -259,6 +261,20 @@ const HireDashboardListings = () => {
                         <span className="hire-listing-expiry">Closed</span>
                       )}
                     </div>
+
+                    {job.applications > 0 && (
+                      <button
+                        type="button"
+                        className="hire-listing-view-applicants"
+                        onClick={() => {
+                          setJobFilter({ id: job.id, title: job.title });
+                          navigate('/hire-dashboard/applications');
+                        }}
+                      >
+                        <FaUsers style={{ marginRight: 6 }} />
+                        View {job.applications} Applicant{job.applications !== 1 ? 's' : ''}
+                      </button>
+                    )}
 
                   </div>
                 </div>

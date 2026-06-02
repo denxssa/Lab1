@@ -1,41 +1,75 @@
-import React from 'react';
-import { FiMail, FiUsers, FiGrid, FiEye } from 'react-icons/fi';
-import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
+import React, { useEffect, useState } from 'react';
+import { FiBriefcase, FiCheckCircle, FiUsers, FiActivity } from 'react-icons/fi';
+import { fetchAdminStats } from '../../../../../api/adminApi';
 import '../../shared/AdminShared.scss';
 
 const AdminDashboardOverview = () => {
-  const { data } = usePlatformAdmin();
-  const cards = [
-    { label: 'Managed pages', value: data.userViewPages.length, icon: FiGrid },
-    { label: 'Visible nav pages', value: data.userViewPages.filter((page) => page.enabled && page.showInNav).length, icon: FiEye },
-    { label: 'Users', value: data.users.length, icon: FiUsers },
-    { label: 'HR invites', value: data.hrInvites.length, icon: FiMail },
-  ];
+    const [stats, setStats]   = useState(null);
+    const [loading, setLoad]  = useState(true);
 
-  return (
-    <main className="admin-page">
-      <section className="admin-card">
-        <div className="admin-card-head">
-          <div>
-            <h2>Everything managed from admin</h2>
-            <p>Manage page content, navigation visibility, platform settings, users, and HR invitations from one place.</p>
-          </div>
-        </div>
-        <div className="admin-kpi-grid">
-          {cards.map((item) => {
-            const Icon = item.icon;
-            return (
-              <article className="admin-kpi" key={item.label}>
-                <span className="admin-icon-badge"><Icon /></span>
-                <strong>{item.value}</strong>
-                <span>{item.label}</span>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-    </main>
-  );
+    useEffect(() => {
+        fetchAdminStats()
+            .then(setStats)
+            .catch(() => {})
+            .finally(() => setLoad(false));
+    }, []);
+
+    const val = (key) => loading ? '—' : (stats?.[key] ?? '—');
+
+    const cards = [
+        { label: 'Total users',       value: val('total_users'),        icon: FiUsers      },
+        { label: 'Active HR accounts',value: val('active_hr'),          icon: FiBriefcase  },
+        { label: 'Active job listings',value: val('active_jobs'),       icon: FiActivity   },
+        { label: 'Total hired',       value: val('total_hired'),        icon: FiCheckCircle},
+    ];
+
+    const secondRow = [
+        { label: 'HR users total',        value: val('hr_users')          },
+        { label: 'Pending HR activations',value: val('pending_hr')        },
+        { label: 'Total applications',    value: val('total_applications') },
+        { label: 'Total job listings',    value: val('total_jobs')        },
+    ];
+
+    return (
+        <main className="admin-page">
+            <section className="admin-card">
+                <div className="admin-card-head">
+                    <div>
+                        <h2>Platform Overview</h2>
+                        <p>Live statistics pulled from the database.</p>
+                    </div>
+                </div>
+                <div className="admin-kpi-grid">
+                    {cards.map(({ label, value, icon: Icon }) => (
+                        <article className="admin-kpi" key={label}>
+                            <span className="admin-icon-badge"><Icon /></span>
+                            <strong>{value}</strong>
+                            <span>{label}</span>
+                        </article>
+                    ))}
+                </div>
+            </section>
+
+            <section className="admin-card">
+                <div className="admin-card-head">
+                    <div><h2>Detailed Counts</h2></div>
+                </div>
+                <table className="admin-table">
+                    <thead>
+                        <tr><th>Metric</th><th>Value</th></tr>
+                    </thead>
+                    <tbody>
+                        {secondRow.map(({ label, value }) => (
+                            <tr key={label}>
+                                <td>{label}</td>
+                                <td><strong>{value}</strong></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    );
 };
 
 export default AdminDashboardOverview;

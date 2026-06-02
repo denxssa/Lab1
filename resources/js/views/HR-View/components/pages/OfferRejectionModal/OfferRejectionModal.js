@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FaFileAlt, FaEnvelope, FaTimes, FaCheck } from 'react-icons/fa';
 import './OfferRejectionModal.scss';
 
 const buildOffer = (candidate, company) => ({

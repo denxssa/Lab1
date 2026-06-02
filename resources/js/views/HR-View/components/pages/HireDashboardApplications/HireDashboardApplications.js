@@ -10,7 +10,7 @@ const tabs     = ['All', 'Reviewing', 'Shortlisted', 'Hired', 'Rejected'];
 const statuses = ['Reviewing', 'Shortlisted', 'Hired', 'Rejected'];
 
 const HireDashboardApplications = ({ activeTab: propTab, setActiveTab: propSetTab }) => {
-  const { apps, setApps, changeAppStatus } = useHireDashboard();
+  const { apps, setApps, changeAppStatus, jobFilter, clearJobFilter } = useHireDashboard();
 
   const [internalTab, setInternalTab] = useState('All');
   const activeTab    = propTab    !== undefined ? propTab    : internalTab;
@@ -49,12 +49,16 @@ const HireDashboardApplications = ({ activeTab: propTab, setActiveTab: propSetTa
     });
   };
 
+  const baseApps = jobFilter
+    ? apps.filter((a) => a.job_listing_id === jobFilter.id)
+    : apps;
+
   const counts = tabs.reduce((acc, t) => {
-    acc[t] = t === 'All' ? apps.length : apps.filter((a) => a.status === t).length;
+    acc[t] = t === 'All' ? baseApps.length : baseApps.filter((a) => a.status === t).length;
     return acc;
   }, {});
 
-  let filtered = activeTab === 'All' ? [...apps] : apps.filter((a) => a.status === activeTab);
+  let filtered = activeTab === 'All' ? [...baseApps] : baseApps.filter((a) => a.status === activeTab);
 
   if (search.trim()) {
     const q = search.toLowerCase();
@@ -82,7 +86,16 @@ const HireDashboardApplications = ({ activeTab: propTab, setActiveTab: propSetTa
         <div className="hire-applications-header">
           <div>
             <h2>Recent Applications</h2>
-            <p>{apps.length} total candidates</p>
+            <p>{baseApps.length} {jobFilter ? `applicants for "${jobFilter.title}"` : 'total candidates'}</p>
+            {jobFilter && (
+              <button
+                type="button"
+                className="hire-job-filter-clear"
+                onClick={clearJobFilter}
+              >
+                ✕ Clear filter
+              </button>
+            )}
           </div>
           <div className="hire-applications-tabs">
             {tabs.map((tab) => (

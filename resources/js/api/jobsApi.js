@@ -89,6 +89,10 @@ export function getSavedJobIds() {
     return axios.get('/api/saved-jobs').then((response) => response.data.saved_job_ids || []);
 }
 
+export function fetchSavedJobs() {
+    return axios.get('/api/saved-jobs').then((response) => response.data.saved_jobs || []);
+}
+
 export function saveJob(jobListingId) {
     return axios.post('/api/saved-jobs', { job_listing_id: jobListingId }).then((response) => response.data);
 }
@@ -115,22 +119,6 @@ export function updateJobListing(id, payload) {
 
 export function deleteJobListing(id) {
     return axios.delete(`/api/job-listings/${id}`).then((response) => response.data);
-}
-
-export function applyToJob(jobListingId) {
-    return axios.post(`/api/job-listings/${jobListingId}/apply`).then((r) => r.data);
-}
-
-export function getSavedJobIds() {
-    return axios.get('/api/saved-jobs').then((r) => r.data.saved_job_ids || []);
-}
-
-export function saveJob(jobListingId) {
-    return axios.post('/api/saved-jobs', { job_listing_id: jobListingId }).then((r) => r.data);
-}
-
-export function unsaveJob(jobListingId) {
-    return axios.delete(`/api/saved-jobs/${jobListingId}`).then((r) => r.data);
 }
 
 export function mapJobListing(job, index = 0) {

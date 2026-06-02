@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './HireDashboardSidebar.scss';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../../../context/AuthContext';
@@ -46,7 +46,7 @@ const bottomNav = [
   },
 ];
 
-const HireDashboardSidebar = () => {
+const HireDashboardSidebar = ({ open, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -65,22 +65,15 @@ const HireDashboardSidebar = () => {
     await logout();
     navigate('/login');
   };
-  const [open, setOpen] = useState(false);
 
   const handleNav = (path) => {
     navigate(path);
-    setOpen(false);
+    onClose();
   };
 
   return (
     <>
-      {!open && (
-        <button className="hire-hamburger" onClick={() => setOpen(true)}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-      )}
-
-      {open && <div className="hire-sidebar-overlay" onClick={() => setOpen(false)} />}
+      {open && <div className="hire-sidebar-overlay" onClick={onClose} />}
 
       <aside className={`hire-sidebar${open ? ' open' : ''}`}>
         <div className="hire-sidebar-top">
@@ -90,7 +83,7 @@ const HireDashboardSidebar = () => {
               <span className="hire-sidebar-app">BEE HIRED</span>
               <span className="hire-sidebar-company">{company}</span>
             </div>
-            <button className="hire-sidebar-close" onClick={(e) => { e.stopPropagation(); setOpen(false); }}>
+            <button className="hire-sidebar-close" onClick={(e) => { e.stopPropagation(); onClose(); }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>

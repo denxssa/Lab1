@@ -405,3 +405,26 @@
   &.warn   { color: #b88a00; }
   &.urgent { color: #bf1603; }
 }
+
+.hire-listing-view-applicants {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px 16px;
+  background: #f2efea;
+  border: 1px solid #e7dfd4;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111111;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.18s, border-color 0.18s;
+
+  &:hover {
+    background: #e7dfd4;
+    border-color: #d4cdc5;
+  }
+}

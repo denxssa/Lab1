@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\FirstLoginController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomePageContentController;
 use App\Http\Controllers\HomePageSectionItemController;
@@ -13,11 +15,9 @@ use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\HiresController;
-use App\Http\Controllers\HrController;
 use App\Http\Controllers\CvProfileController;
 use App\Http\Controllers\ResumeController;
 use App\Http\Controllers\PricingPlanController;
-use App\Http\Controllers\SavedJobController;
 use App\Http\Controllers\TeamMemberController;
 use Illuminate\Support\Facades\Route;
 
@@ -51,11 +51,11 @@ Route::view('/contact-us', 'welcome');
 Route::view('/pricing', 'welcome');
 Route::view('/login', 'welcome')->name('login');
 Route::view('/signup', 'welcome')->name('signup');
+Route::view('/first-login', 'welcome');
 Route::view('/jobs/{any}', 'welcome');
 Route::view('/dashboard', 'welcome');
 Route::view('/profile', 'welcome');
 Route::view('/applied-jobs', 'welcome');
-Route::view('/unfinished-jobs', 'welcome');
 Route::view('/saved-jobs', 'welcome');
 Route::view('/interviews', 'welcome');
 Route::view('/interviews/join/{token}', 'welcome');
@@ -66,7 +66,6 @@ Route::view('/user-dashboard', 'welcome');
 Route::view('/user-dashboard/dashboard', 'welcome');
 Route::view('/user-dashboard/profile', 'welcome');
 Route::view('/user-dashboard/applied-jobs', 'welcome');
-Route::view('/user-dashboard/unfinished-jobs', 'welcome');
 Route::view('/user-dashboard/saved-jobs', 'welcome');
 Route::view('/user-dashboard/interviews', 'welcome');
 Route::view('/user-dashboard/interviews/join/{token}', 'welcome');
@@ -138,31 +137,25 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/api/interviews/{interview}', [InterviewController::class, 'destroy']);
 
     // ── HR dashboard ──────────────────────────────────────────────────────
-    Route::get('/api/hr/analytics',             [HrController::class,       'analytics']);
-    Route::get('/api/hr/applications',          [HrController::class,       'applications']);
-    Route::put('/api/hr/applications/{id}',     [HrController::class,       'updateApplication']);
-    Route::get('/api/hr/hires',                 [HrController::class,       'hires']);
-    Route::post('/api/job-listings/{id}/apply', [HrController::class,       'apply']);
-    Route::get('/api/hr/team',                  [HrTeamController::class,   'index']);
-    Route::post('/api/hr/team',                 [HrTeamController::class,   'store']);
-    Route::delete('/api/hr/team/{id}',          [HrTeamController::class,   'destroy']);
-    Route::get('/api/hr/settings',              [HrSettingsController::class, 'show']);
-    Route::put('/api/hr/settings',              [HrSettingsController::class, 'update']);
-    Route::put('/api/hr/account',               [HrSettingsController::class, 'updateAccount']);
-    Route::put('/api/hr/notifications',         [HrSettingsController::class, 'updateNotifications']);
+    Route::get('/api/hr/analytics',                              [HrController::class,       'analytics']);
+    Route::get('/api/hr/applications',                           [HrController::class,       'applications']);
+    Route::put('/api/hr/applications/{id}',                      [HrController::class,       'updateApplication']);
+    Route::get('/api/hr/hires',                                  [HrController::class,       'hires']);
+    Route::get('/api/hr/candidates/{userId}',                    [HrController::class,       'candidateProfile']);
+    Route::get('/api/hr/job-listings/{jobListingId}/applicants', [HrController::class,       'jobApplicants']);
+    Route::get('/api/hr/team',                                   [HrTeamController::class,   'index']);
+    Route::post('/api/hr/team',                                  [HrTeamController::class,   'store']);
+    Route::delete('/api/hr/team/{id}',                           [HrTeamController::class,   'destroy']);
+    Route::get('/api/hr/settings',                               [HrSettingsController::class, 'show']);
+    Route::put('/api/hr/settings',                               [HrSettingsController::class, 'update']);
+    Route::put('/api/hr/account',                                [HrSettingsController::class, 'updateAccount']);
+    Route::put('/api/hr/notifications',                          [HrSettingsController::class, 'updateNotifications']);
 
-    // ── Saved jobs ────────────────────────────────────────────────────────
-    Route::get('/api/saved-jobs',         [SavedJobController::class, 'index']);
-    Route::post('/api/saved-jobs',        [SavedJobController::class, 'store']);
-    Route::delete('/api/saved-jobs/{id}', [SavedJobController::class, 'destroy']);
+    // ── Candidate dashboard ───────────────────────────────────────────────
+    Route::get('/api/candidate/applications', [HrController::class, 'myApplications']);
 
     Route::get('/api/hires', [HiresController::class, 'index']);
     Route::delete('/api/hires/{application}', [HiresController::class, 'destroy']);
-
-    Route::get('/api/hr/applications', [HrController::class, 'applications']);
-    Route::put('/api/hr/applications/{id}', [HrController::class, 'updateApplication']);
-    Route::get('/api/hr/analytics', [HrController::class, 'analytics']);
-    Route::get('/api/hr/hires', [HrController::class, 'hires']);
 
     Route::get('/api/conversations', [ConversationController::class, 'index']);
     Route::get('/api/conversations/messageable-candidates', [ConversationController::class, 'messageableCandidates']);
@@ -172,3 +165,21 @@ Route::middleware('auth:api')->group(function () {
 });
 
 Route::get('/api/job-listings/{jobListing}', [JobListingController::class, 'show']);
+
+// ── First-login onboarding (no auth — secured via onboarding_token) ───────────
+Route::post('/auth/first-login/send-code',    [FirstLoginController::class, 'sendCode']);
+Route::post('/auth/first-login/verify-code',  [FirstLoginController::class, 'verifyCode']);
+Route::post('/auth/first-login/set-password', [FirstLoginController::class, 'setPassword']);
+Route::post('/auth/first-login/resend-code',  [FirstLoginController::class, 'resendCode']);
+
+// ── Admin routes ──────────────────────────────────────────────────────────────
+Route::middleware(['auth:api', 'admin'])->prefix('api/admin')->group(function () {
+    Route::get('/stats',                          [AdminController::class, 'stats']);
+    Route::get('/hr-users',                       [AdminController::class, 'index']);
+    Route::post('/hr-users',                      [AdminController::class, 'store']);
+    Route::put('/hr-users/{id}',                  [AdminController::class, 'update']);
+    Route::post('/hr-users/{id}/deactivate',      [AdminController::class, 'deactivate']);
+    Route::post('/hr-users/{id}/reactivate',      [AdminController::class, 'reactivate']);
+    Route::post('/hr-users/{id}/reset-password',  [AdminController::class, 'resetPassword']);
+    Route::get('/logs',                           [AdminController::class, 'logs']);
+});

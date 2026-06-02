@@ -211,8 +211,32 @@ export function register(payload) {
 
 export function login(payload) {
     return axios.post('/auth/login', payload).then((res) => {
-        setToken(res.data);
+        // first_login: true means the account needs the onboarding flow — don't store a token
+        if (!res.data.first_login) {
+            setToken(res.data);
+        }
         return res.data;
+    });
+}
+
+// ── First-login onboarding flow ────────────────────────────────────────────────
+
+export function sendFirstLoginCode(payload) {
+    return axios.post('/auth/first-login/send-code', payload).then((r) => r.data);
+}
+
+export function verifyFirstLoginCode(payload) {
+    return axios.post('/auth/first-login/verify-code', payload).then((r) => r.data);
+}
+
+export function resendFirstLoginCode(payload) {
+    return axios.post('/auth/first-login/resend-code', payload).then((r) => r.data);
+}
+
+export function setFirstLoginPassword(payload) {
+    return axios.post('/auth/first-login/set-password', payload).then((r) => {
+        setToken(r.data);
+        return r.data;
     });
 }
 
