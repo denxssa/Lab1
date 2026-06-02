@@ -241,7 +241,7 @@ export const PlatformAdminProvider = ({ children }) => {
   const updatePageContent = async (pageKey, updates) => {
     if (pageKey === 'home') {
       await updateHomeContent(updates);
-      return;
+      return true;
     }
 
     const nextPageContent = {
@@ -259,10 +259,10 @@ export const PlatformAdminProvider = ({ children }) => {
     };
     persist(optimisticState);
 
-    if (pageKey === 'about' || pageKey === 'pricing' || pageKey === 'companies' || pageKey === 'contact') {
+    if (pageKey === 'about' || pageKey === 'pricing' || pageKey === 'companies' || pageKey === 'contact' || pageKey === 'jobs') {
       try {
         const payload = await homeApi.putHomePageContent(nextPageContent[pageKey], pageKey);
-        if (!payload?.pageContent?.[pageKey]) return;
+        if (!payload?.pageContent?.[pageKey]) return true;
 
         persist({
           ...optimisticState,
@@ -272,9 +272,13 @@ export const PlatformAdminProvider = ({ children }) => {
           },
           ...(payload.homeContent ? { homeContent: payload.homeContent } : {}),
         });
+        return true;
       } catch {
+        return false;
       }
     }
+
+    return true;
   };
 
   const addActivityLog = (record) => {

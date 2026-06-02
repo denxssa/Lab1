@@ -4,6 +4,7 @@ import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
 import AdminHomeSectionsPanel from './AdminHomeSectionsPanel';
 import AdminAboutPanel from './AdminAboutPanel';
 import AdminPricingPanel from './AdminPricingPanel';
+import LinksTable from '../LinksTable/LinksTable';
 import '../../shared/AdminShared.scss';
 
 const pageFields = {
@@ -43,7 +44,6 @@ const pageFields = {
     { key: 'primaryCta', label: 'Primary CTA' },
   ],
   jobs: [
-    { key: 'heroEyebrow', label: 'Hero eyebrow' },
     { key: 'heroTitle', label: 'Hero title' },
     { key: 'heroDescription', label: 'Hero description', type: 'textarea' },
     { key: 'filterTitle', label: 'Filter title' },
@@ -106,6 +106,7 @@ const AdminDashboardContent = () => {
   const [activePage, setActivePage] = useState(pages[0]?.id || 'home');
   const [form, setForm] = useState(data.pageContent?.[activePage] || {});
   const [homeSectionsForm, setHomeSectionsForm] = useState(data.homeSections || []);
+  const [savingPage, setSavingPage] = useState(false);
   const activePageMeta = pages.find((page) => page.id === activePage) || pages[0];
   const fields = pageFields[activePage] || [];
 
@@ -121,9 +122,15 @@ const AdminDashboardContent = () => {
     setForm((current) => ({ ...current, [key]: value }));
   };
 
-  const submitContent = (e) => {
+  const submitContent = async (e) => {
     e.preventDefault();
-    updatePageContent(activePage, form);
+    if (savingPage) return;
+    setSavingPage(true);
+    try {
+      await updatePageContent(activePage, form);
+    } finally {
+      setSavingPage(false);
+    }
   };
 
   return (
@@ -132,7 +139,7 @@ const AdminDashboardContent = () => {
         <div className="admin-card-head">
           <div>
             <h2>Content editor</h2>
-            <p>Select a page and update copy. Home page body text for category/company headers is edited here; cards and lists are under Home page sections.</p>
+            <p>Select a page and edit its text. Home page cards and lists are under Home page sections.</p>
           </div>
           {activePageMeta?.path && (
             <a className="admin-btn admin-btn-light" href={activePageMeta.path} target="_blank" rel="noreferrer">
@@ -203,33 +210,55 @@ const AdminDashboardContent = () => {
       )}
 
       {fields.length > 0 && activePage !== 'about' && activePage !== 'pricing' && (
-        <section className="admin-card">
+        <section className="admin-card admin-page-content-card">
           <div className="admin-card-head">
             <div>
-              <h2>{activePageMeta?.title || 'Page'} copy</h2>
-              <p>Update the editable text for this public page.</p>
+              <h2>{activePageMeta?.title || 'Page'} content</h2>
+              <p>
+                Update the editable text for this public page.
+                {activePage === 'jobs' && (
+                  <> The job count badge (for example, &quot;13 jobs&quot;) is calculated automatically from published listings, not set here.</>
+                )}
+              </p>
             </div>
+            <button
+              type="submit"
+              form={`admin-page-content-form-${activePage}`}
+              className="admin-btn admin-btn-accent"
+              disabled={savingPage}
+            >
+              <FiEdit2 />
+              {savingPage ? 'Saving…' : 'Save changes'}
+            </button>
           </div>
-          <form className="admin-form-grid" onSubmit={submitContent}>
+          <form
+            id={`admin-page-content-form-${activePage}`}
+            className="admin-form-grid admin-form-grid--single-column admin-page-content-form"
+            onSubmit={submitContent}
+          >
             {fields.map((field) => (
               <div key={field.key} className="admin-field">
-                <label>{field.label}</label>
+                <label htmlFor={`${activePage}-${field.key}`}>{field.label}</label>
                 {field.type === 'textarea' ? (
-                  <textarea value={form[field.key] || ''} onChange={(e) => updateField(field.key, e.target.value)} />
+                  <textarea
+                    id={`${activePage}-${field.key}`}
+                    value={form[field.key] || ''}
+                    onChange={(e) => updateField(field.key, e.target.value)}
+                  />
                 ) : (
-                  <input value={form[field.key] || ''} onChange={(e) => updateField(field.key, e.target.value)} />
+                  <input
+                    id={`${activePage}-${field.key}`}
+                    value={form[field.key] || ''}
+                    onChange={(e) => updateField(field.key, e.target.value)}
+                  />
                 )}
               </div>
             ))}
-            <div className="admin-actions">
-              <button type="submit" className="admin-btn admin-btn-accent">
-                <FiEdit2 />
-                Save Page Copy
-              </button>
-            </div>
           </form>
         </section>
       )}
+
+      <LinksTable />
     </main>
   );
 };

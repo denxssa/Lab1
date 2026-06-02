@@ -2,7 +2,7 @@ import axios from 'axios';
 import {
   JOB_LISTING_TYPES,
   jobTypesLabel,
-  normalizeJobTypes,
+  typesIncludingRemoteFromLocation,
 } from '../utils/jobFormUtils';
 
 export { JOB_LISTING_TYPES };
@@ -24,11 +24,7 @@ function normalizeTags(tags) {
 
 /** True if the job is tagged with this type (it may also have other types). */
 export function jobMatchesTypeFilter(job, filter) {
-    const types = normalizeJobTypes(job.types, job.type);
-
-    if (filter === 'Remote') {
-        return types.includes('Remote') || /remote/i.test(job.location || '');
-    }
+    const types = typesIncludingRemoteFromLocation(job.types, job.type, job.location);
 
     return types.includes(filter);
 }
@@ -121,7 +117,18 @@ export function deleteJobListing(id) {
     return axios.delete(`/api/job-listings/${id}`).then((response) => response.data);
 }
 
-export function mapJobListing(job, index = 0) {
+export function splitJobText(text) {
+    if (!text || typeof text !== 'string') {
+        return [];
+    }
+
+    return text
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+}
+
+export function mapJobListing(job) {
     const company = job.company || '';
     const initials = company
         .split(' ')
@@ -140,7 +147,7 @@ export function mapJobListing(job, index = 0) {
         else time = `${days} days ago`;
     }
 
-    const types = normalizeJobTypes(job.types, job.type);
+    const types = typesIncludingRemoteFromLocation(job.types, job.type, job.location);
     const type = jobTypesLabel(types);
 
     return {
@@ -153,9 +160,12 @@ export function mapJobListing(job, index = 0) {
         time,
         types,
         type,
-        featured: index < 2,
+        featured: Boolean(job.is_featured),
         tags: normalizeTags(job.tags),
         description: job.description || '',
+        benefits: job.benefits || '',
+        benefitLines: splitJobText(job.benefits || ''),
+        descriptionParagraphs: splitJobText(job.description || ''),
     };
 }
 
@@ -173,6 +183,6 @@ export function mapJobListingForHr(job) {
         shortlisted:  job.shortlisted_count     ?? 0,
         daysLeft: status === 'active' ? 30 : 0,
         postedDays,
-        featured: false,
+        featured: Boolean(job.is_featured),
     };
 }

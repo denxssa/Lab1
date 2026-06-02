@@ -1,24 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import JobDetail from '../../components/pages/JobDetail/JobDetail';
 import Navbar from '../../components/shared/navbar/Navbar';
 import Footer from '../../components/shared/footer/Footer';
 import { getJobListing, listJobListings, mapJobListing } from '../../../../api/jobsApi';
+import '../../components/pages/JobDetail/JobDetail.scss';
+
+function jobFromNavigationState(state, id) {
+  const preview = state?.job;
+  if (!preview || String(preview.id) !== String(id)) {
+    return null;
+  }
+  return preview;
+}
 
 const JobDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [job, setJob] = useState(null);
+  const location = useLocation();
+  const previewJob = jobFromNavigationState(location.state, id);
+
+  const [job, setJob] = useState(previewJob);
   const [relatedJobs, setRelatedJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!previewJob);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
+    const nextPreview = jobFromNavigationState(location.state, id);
+
+    if (nextPreview) {
+      setJob(nextPreview);
+      setLoading(false);
+    } else {
+      setJob(null);
+      setLoading(true);
+    }
+    setError('');
 
     const load = async () => {
-      setLoading(true);
-      setError('');
       try {
         const [jobRes, listRes] = await Promise.all([
           getJobListing(id),
@@ -40,9 +60,16 @@ const JobDetailPage = () => {
             .slice(0, 3),
         );
       } catch {
-        if (!cancelled) setError('Job not found.');
+        if (!cancelled) {
+          setError('Job not found.');
+          if (!nextPreview) {
+            setJob(null);
+          }
+        }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
@@ -51,36 +78,36 @@ const JobDetailPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, location.state]);
 
-  if (loading) {
+  if (loading && !job) {
     return (
-      <div>
+      <div className="job-detail-page-wrap">
         <Navbar />
-        <p style={{ padding: '2rem' }}>Loading job…</p>
+        <p className="job-detail-page-loading">Loading job…</p>
         <Footer />
       </div>
     );
   }
 
-  if (error || !job) {
+  if ((error && !job) || !job) {
     return (
-      <div>
+      <div className="job-detail-page-wrap">
         <Navbar />
-        <p style={{ padding: '2rem' }}>{error || 'Job not found.'}</p>
+        <p className="job-detail-page-error">{error || 'Job not found.'}</p>
         <Footer />
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="job-detail-page-wrap">
       <Navbar />
       <JobDetail
         job={job}
         onBack={() => navigate('/jobs')}
         relatedJobs={relatedJobs}
-        onSelectJob={(related) => navigate(`/jobs/${related.id}`)}
+        onSelectJob={(related) => navigate(`/jobs/${related.id}`, { state: { job: related } })}
       />
       <Footer />
     </div>

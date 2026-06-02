@@ -24,6 +24,17 @@ export function normalizeJobTypes(types, fallbackType = '') {
   return normalized;
 }
 
+
+export function typesIncludingRemoteFromLocation(types, fallbackType = '', location = '') {
+  const normalized = normalizeJobTypes(types, fallbackType);
+
+  if (!normalized.includes('Remote') && /remote/i.test(location || '')) {
+    return [...normalized, 'Remote'];
+  }
+
+  return normalized;
+}
+
 export function jobTypesLabel(types, fallbackType = 'Full-time') {
   const normalized = normalizeJobTypes(types, fallbackType);
 
@@ -64,6 +75,13 @@ export function validateJobForm(form) {
 
   if (types.length === 0) {
     errors.types = 'Select at least one job type.';
+  }
+
+  const description = (form.description ?? '').trim();
+  if (!description) {
+    errors.description = 'Job description is required.';
+  } else if (description.length < 20) {
+    errors.description = 'Description must be at least 20 characters.';
   }
 
   return errors;

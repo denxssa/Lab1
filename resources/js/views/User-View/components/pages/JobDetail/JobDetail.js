@@ -8,16 +8,23 @@ const JobDetail = ({ job, onBack, relatedJobs, onSelectJob }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // 'idle' | 'loading' | 'applied' | 'already' | 'error'
   const [applyState, setApplyState] = useState('idle');
   const [saved, setSaved] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
 
-  // Check if the user has already applied / saved this job
+  const descriptionParagraphs = job.descriptionParagraphs?.length
+    ? job.descriptionParagraphs
+    : (job.description ? [job.description] : []);
+
+  const benefitLines = job.benefitLines?.length
+    ? job.benefitLines
+    : [];
+
+  const requirementItems = job.tags?.length ? job.tags : [];
+
   useEffect(() => {
     if (!user || !job?.id) return;
 
-    // Check saved status
     getSavedJobIds()
       .then((ids) => setSaved(ids.includes(job.id)))
       .catch(() => {});
@@ -100,35 +107,44 @@ const JobDetail = ({ job, onBack, relatedJobs, onSelectJob }) => {
         <span>Posted: {job.time}</span>
       </div>
 
-      <div className="job-detail-tags" data-aos="fade-up" data-aos-delay="150">
-        {job.tags.map((tag) => (
-          <div key={tag} className="job-detail-tag">{tag}</div>
-        ))}
-      </div>
+      {job.tags?.length > 0 && (
+        <div className="job-detail-tags" data-aos="fade-up" data-aos-delay="150">
+          {job.tags.map((tag) => (
+            <div key={tag} className="job-detail-tag">{tag}</div>
+          ))}
+        </div>
+      )}
 
-      <h2 data-aos="fade-up">About the Role</h2>
-      <p data-aos="fade-up">
-        We're looking for a talented {job.title} to join {job.company}.
-        This is a {(job.types?.length ? job.types : [job.type]).join(', ')} position based in {job.location}.
-        You'll work alongside a passionate team building products that make a real impact.
-      </p>
+      {descriptionParagraphs.length > 0 && (
+        <>
+          <h2 data-aos="fade-up">About the Role</h2>
+          {descriptionParagraphs.map((paragraph) => (
+            <p key={paragraph} data-aos="fade-up">{paragraph}</p>
+          ))}
+        </>
+      )}
 
-      <h2 data-aos="fade-up">Requirements</h2>
-      <ul data-aos="fade-up">
-        {job.tags.map((tag) => (
-          <li key={tag}>Experience with {tag}</li>
-        ))}
-        <li>Strong communication and collaboration skills</li>
-        <li>Passion for continuous learning and growth</li>
-      </ul>
+      {requirementItems.length > 0 && (
+        <>
+          <h2 data-aos="fade-up">Requirements</h2>
+          <ul data-aos="fade-up">
+            {requirementItems.map((tag) => (
+              <li key={tag}>{tag}</li>
+            ))}
+          </ul>
+        </>
+      )}
 
-      <h2 data-aos="fade-up">What We Offer</h2>
-      <ul data-aos="fade-up">
-        <li>Competitive salary: {job.salary}</li>
-        <li>Comprehensive health, dental, and vision benefits</li>
-        <li>Flexible work arrangements</li>
-        <li>Professional development budget</li>
-      </ul>
+      {benefitLines.length > 0 && (
+        <>
+          <h2 data-aos="fade-up">What We Offer</h2>
+          <ul data-aos="fade-up">
+            {benefitLines.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </>
+      )}
 
       <div className="job-detail-actions" data-aos="fade-up">
         <button
@@ -147,36 +163,40 @@ const JobDetail = ({ job, onBack, relatedJobs, onSelectJob }) => {
         </button>
       </div>
 
-      <div className="job-detail-related" data-aos="fade-up">
-        <h2>More Jobs</h2>
-        <div className="related-cards">
-          {relatedJobs.map((related, index) => (
-            <div
-              key={related.id}
-              className="related-card"
-              onClick={() => onSelectJob(related)}
-              style={{ cursor: 'pointer' }}
-              data-aos="fade-up"
-              data-aos-delay={index * 80}
-            >
-              {related.featured && (
-                <div className="related-featured">☆ Featured</div>
-              )}
-              <div className="related-initials">{related.initials}</div>
-              <h3>{related.title}</h3>
-              <p>{related.company}</p>
-              <span>{related.location}</span>
-              <span>{related.salary}</span>
-              <span>{related.time}</span>
-              <div className="related-tags">
-                {related.tags.map((tag) => (
-                  <div key={tag} className="related-tag">{tag}</div>
-                ))}
+      {relatedJobs.length > 0 && (
+        <div className="job-detail-related" data-aos="fade-up">
+          <h2>More Jobs</h2>
+          <div className="related-cards">
+            {relatedJobs.map((related, index) => (
+              <div
+                key={related.id}
+                className="related-card"
+                onClick={() => onSelectJob(related)}
+                style={{ cursor: 'pointer' }}
+                data-aos="fade-up"
+                data-aos-delay={index * 80}
+              >
+                {related.featured && (
+                  <div className="related-featured">☆ Featured</div>
+                )}
+                <div className="related-initials">{related.initials}</div>
+                <h3>{related.title}</h3>
+                <p>{related.company}</p>
+                <span>{related.location}</span>
+                <span>{related.salary}</span>
+                <span>{related.time}</span>
+                {related.tags?.length > 0 && (
+                  <div className="related-tags">
+                    {related.tags.map((tag) => (
+                      <div key={tag} className="related-tag">{tag}</div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
     </div>
   );

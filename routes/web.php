@@ -120,6 +120,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/api/candidate/profile', [CandidateProfileController::class, 'show']);
     Route::put('/api/candidate/profile', [CandidateProfileController::class, 'update']);
+    Route::post('/api/candidate/profile/avatar', [CandidateProfileController::class, 'uploadAvatar']);
     Route::delete('/api/candidate/profile', [CandidateProfileController::class, 'destroy']);
 
     Route::get('/api/cv/profile', [CvProfileController::class, 'show']);

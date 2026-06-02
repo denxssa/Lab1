@@ -88,3 +88,26 @@
       }
     }
   }
+
+  @media (max-width: 480px) {
+    .social-links {
+      border-radius: 1rem;
+
+      &__header,
+      &__body {
+        padding: 1rem;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .social-links {
+      &__header {
+        padding: 1rem;
+      }
+
+      &__body {
+        padding: 1rem;
+      }
+    }
+  }

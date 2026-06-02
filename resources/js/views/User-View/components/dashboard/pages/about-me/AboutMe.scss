@@ -86,3 +86,22 @@
       }
     }
   }
+
+  @media (max-width: 480px) {
+    .about-me {
+      border-radius: 1rem;
+
+      &__header {
+        padding: 1rem;
+      }
+
+      &__body {
+        padding: 1rem;
+      }
+
+      &__textarea {
+        min-height: 7rem;
+        font-size: 1rem;
+      }
+    }
+  }
