@@ -19168,9 +19168,14 @@ var HireDashboardMessages = function HireDashboardMessages() {
               });
             });
             setAllConvos(convos);
-            if (convos.length && !activeId) {
-              setActiveId(convos[0].id);
-            }
+            // Keep the user's selected chat during polling (interval uses a stale closure).
+            setActiveId(function (current) {
+              if (convos.length === 0) return null;
+              if (!current) return convos[0].id;
+              return convos.some(function (c) {
+                return c.id === current;
+              }) ? current : convos[0].id;
+            });
             _context.n = 4;
             break;
           case 3:
