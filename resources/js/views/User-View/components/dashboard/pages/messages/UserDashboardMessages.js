@@ -28,7 +28,11 @@ const UserDashboardMessages = () => {
       const data   = await listConversations();
       const convos = (data.conversations || []).map((c) => ({ ...c, messages: [] }));
       setAllConvos(convos);
-      if (convos.length && !activeId) setActiveId(convos[0].id);
+      setActiveId((current) => {
+        if (convos.length === 0) return null;
+        if (!current) return convos[0].id;
+        return convos.some((c) => c.id === current) ? current : convos[0].id;
+      });
     } catch {
       if (!silent) setError('Could not load conversations.');
     } finally {

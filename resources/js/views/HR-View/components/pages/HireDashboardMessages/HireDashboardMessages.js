@@ -37,9 +37,12 @@ const HireDashboardMessages = () => {
         messages: [],
       }));
       setAllConvos(convos);
-      if (convos.length && !activeId) {
-        setActiveId(convos[0].id);
-      }
+      // Keep the user's selected chat during polling (interval uses a stale closure).
+      setActiveId((current) => {
+        if (convos.length === 0) return null;
+        if (!current) return convos[0].id;
+        return convos.some((c) => c.id === current) ? current : convos[0].id;
+      });
     } catch {
       if (!silent) {
         setError('Could not load conversations. Log in as HR.');
