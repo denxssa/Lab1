@@ -185,26 +185,6 @@
   }
 }
 
-.admin-mobile-menu {
-  display: none;
-
-  @media (max-width: 768px) {
-    display: inline-flex;
-    position: fixed;
-    top: 14px;
-    left: 16px;
-    z-index: 200;
-    border: 1px solid #e7dfd4;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: #ffffff;
-    color: #111;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-  }
-}
 
 .admin-sidebar-overlay {
   position: fixed;

@@ -8,9 +8,11 @@ export const HireDashboardProvider = ({ children }) => {
   const [appsLoading, setAppsLoading] = useState(true);
   const [listingsVersion, setListingsVersion] = useState(0);
   const [hiresVersion,    setHiresVersion]    = useState(0);
+  const [jobFilter, setJobFilter]             = useState(null); // { id, title } | null
 
   const refreshListings = () => setListingsVersion((v) => v + 1);
   const refreshHires    = () => setHiresVersion((v) => v + 1);
+  const clearJobFilter  = () => setJobFilter(null);
 
   const loadApps = useCallback(async () => {
     setAppsLoading(true);
@@ -61,6 +63,9 @@ export const HireDashboardProvider = ({ children }) => {
       refreshListings,
       hiresVersion,
       refreshHires,
+      jobFilter,
+      setJobFilter,
+      clearJobFilter,
     }}
     >
       {children}

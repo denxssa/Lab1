@@ -1,32 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import "./navbar.scss";
 import MobileNav from "../MobileNav/MobileNav";
 import { TbTriangleInvertedFilled } from "react-icons/tb";
 import { IoIosNotifications } from "react-icons/io";
+import { useAuth } from "../../../../../../context/AuthContext";
 
 const Navbar = (props) => {
-  const [isSticky, setIsSticky] = useState(false);
-
-  useEffect(() => {
-    const nav = document.querySelector(".nav");
-    if (!nav) {
-      return undefined;
-    }
-
-    const handleScroll = () => {
-      const scrollHeight = window.pageYOffset;
-      setIsSticky(scrollHeight > 25);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const { user } = useAuth();
 
   return (
     <div
       id="navbar"
-      className={`nav ${props.styles ?? ""} ${isSticky ? "nav__sticky" : ""}`.trim()}
+      className={`nav nav__sticky ${props.styles ?? ""}`.trim()}
     >
       <div className="left-side">
         <a href="/" className="nav-logo">
@@ -58,7 +43,6 @@ const Navbar = (props) => {
           <div className="line"></div>
           <div className="jobs-dropdown-menu">
             <a href="/user-dashboard/applied-jobs" className="dropdown-item">Applied Jobs</a>
-            <a href="/user-dashboard/unfinished-jobs" className="dropdown-item">Unfinished Jobs</a>
             <a href="/user-dashboard/saved-jobs" className="dropdown-item">Saved Jobs</a>
           </div>
         </div>
@@ -78,7 +62,7 @@ const Navbar = (props) => {
         <button type="button" className="notification-button" aria-label="Notifications">
           <IoIosNotifications className="notification-icon" />
         </button>
-        <a href="/" className="contact-us">Vesa Susuri</a>
+        <a href="/" className="contact-us">{user?.name ?? ''}</a>
       </div> 
       <MobileNav />
     </div>

@@ -74,8 +74,12 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (payload) => {
     const data = await authApi.login(payload);
+    // first_login: true → HR account needs the onboarding flow; no JWT is issued
+    if (data.first_login) {
+      return data;
+    }
     applyUser(data.user);
-    return data.user;
+    return data;
   }, [applyUser]);
 
   const register = useCallback(async (payload) => {

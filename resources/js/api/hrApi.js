@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// ── Applications ─────────────────────────────────────────────────────────────
+// ── Applications (HR) ─────────────────────────────────────────────────────────
 
 export function fetchHrApplications() {
     return axios.get('/api/hr/applications').then((r) => r.data.applications);
@@ -10,8 +10,18 @@ export function updateHrApplicationStatus(id, status) {
     return axios.put(`/api/hr/applications/${id}`, { status }).then((r) => r.data);
 }
 
-export function applyToJob(jobListingId) {
-    return axios.post(`/api/job-listings/${jobListingId}/apply`).then((r) => r.data);
+export function fetchJobApplicants(jobListingId) {
+    return axios.get(`/api/hr/job-listings/${jobListingId}/applicants`).then((r) => r.data);
+}
+
+export function fetchCandidateProfile(userId) {
+    return axios.get(`/api/hr/candidates/${userId}`).then((r) => r.data);
+}
+
+// ── Applications (Candidate) ──────────────────────────────────────────────────
+
+export function fetchMyApplications() {
+    return axios.get('/api/candidate/applications').then((r) => r.data.applications);
 }
 
 // ── Analytics ─────────────────────────────────────────────────────────────────

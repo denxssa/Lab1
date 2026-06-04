@@ -2,20 +2,28 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
-#[Fillable(['name', 'email', 'password', 'role'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
+
+    protected $fillable = [
+        'name', 'email', 'password', 'role', 'company',
+        'account_status', 'first_login_completed',
+        'last_login_at', 'password_changed_at',
+        'verification_code', 'verification_code_expires_at',
+        'onboarding_token', 'onboarding_token_expires_at',
+        'invited_by',
+    ];
+
+    protected $hidden = ['password', 'remember_token', 'verification_code', 'onboarding_token'];
 
     public function getJWTIdentifier(): mixed
     {
@@ -28,17 +36,56 @@ class User extends Authenticatable implements JWTSubject
     }
 
     public const ROLE_CANDIDATE = 'candidate';
+    public const ROLE_HR        = 'hr';
+    public const ROLE_ADMIN     = 'admin';
 
-    public const ROLE_HR = 'hr';
-
-    public const ROLE_ADMIN = 'admin';
+    public const STATUS_PENDING   = 'pending_activation';
+    public const STATUS_ACTIVE    = 'active';
+    public const STATUS_SUSPENDED = 'suspended';
 
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at'            => 'datetime',
+            'password'                     => 'hashed',
+            'first_login_completed'        => 'boolean',
+            'last_login_at'                => 'datetime',
+            'password_changed_at'          => 'datetime',
+            'verification_code_expires_at' => 'datetime',
+            'onboarding_token_expires_at'  => 'datetime',
         ];
+    }
+
+    public function isPendingActivation(): bool
+    {
+        return $this->account_status === self::STATUS_PENDING;
+    }
+
+    public function isHr(): bool
+    {
+        return $this->role === self::ROLE_HR || $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isCandidate(): bool
+    {
+        return $this->role === self::ROLE_CANDIDATE;
+    }
+
+    // ── Relationships ─────────────────────────────────────────────────────────
+
+    public function invitedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'invited_by');
+    }
+
+    public function invitees(): HasMany
+    {
+        return $this->hasMany(User::class, 'invited_by');
+    }
+
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
     }
 
     public function hrInterviews(): HasMany
@@ -79,15 +126,5 @@ class User extends Authenticatable implements JWTSubject
     public function candidateApplications(): HasMany
     {
         return $this->hasMany(JobApplication::class, 'candidate_user_id');
-    }
-
-    public function isHr(): bool
-    {
-        return $this->role === self::ROLE_HR || $this->role === self::ROLE_ADMIN;
-    }
-
-    public function isCandidate(): bool
-    {
-        return $this->role === self::ROLE_CANDIDATE;
     }
 }

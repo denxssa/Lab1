@@ -85,6 +85,10 @@ export function getSavedJobIds() {
     return axios.get('/api/saved-jobs').then((response) => response.data.saved_job_ids || []);
 }
 
+export function fetchSavedJobs() {
+    return axios.get('/api/saved-jobs').then((response) => response.data.saved_jobs || []);
+}
+
 export function saveJob(jobListingId) {
     return axios.post('/api/saved-jobs', { job_listing_id: jobListingId }).then((response) => response.data);
 }

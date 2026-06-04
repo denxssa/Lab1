@@ -497,3 +497,22 @@
   font-weight: 600;
   align-self: flex-end;
 }
+
+.hire-job-filter-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 4px 12px;
+  background: #fdd535;
+  border: none;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #111111;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+
+  &:hover { background: #f5c800; }
+}

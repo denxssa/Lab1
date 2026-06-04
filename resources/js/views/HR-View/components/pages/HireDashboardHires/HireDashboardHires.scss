@@ -4,46 +4,13 @@
   margin: 0 auto;
   padding: 48px 32px 60px;
 
-  @media (max-width: 768px) {
-    padding: 24px 16px 48px;
-  }
+  @media (max-width: 768px) { padding: 24px 16px 48px; }
 }
 
 .hire-hires-wrapper {
   display: flex;
   flex-direction: column;
   gap: 28px;
-}
-
-// ── Search bar ───────────────────────────────────────────────────
-.hire-list-search {
-  position: relative;
-  display: flex;
-  align-items: center;
-
-  input {
-    width: 100%;
-    height: 40px;
-    border: 1px solid #e7dfd4;
-    border-radius: 10px;
-    padding: 0 36px 0 36px;
-    font-size: 13.5px;
-    font-family: inherit;
-    color: #111111;
-    background: #ffffff;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-
-    &::placeholder { color: #b0a89e; }
-    &:focus { border-color: #c8c2bb; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
-  }
-}
-
-.hire-hires-empty {
-  text-align: center;
-  color: #7a746d;
-  font-size: 14px;
-  padding: 16px 0;
 }
 
 // ── Header ──────────────────────────────────────────────────────
@@ -107,32 +74,57 @@
   background: #e7dfd4;
 }
 
-// ── Toolbar ─────────────────────────────────────────────────────
-.hire-hires-toolbar {
+// ── Search ──────────────────────────────────────────────────────
+.hire-list-search {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-}
 
-.hire-hires-sort {
-  height: 40px;
-  padding: 0 14px;
-  border: 1px solid #e7dfd4;
-  border-radius: 10px;
-  font-size: 13px;
-  font-family: inherit;
-  color: #555050;
-  background: #ffffff;
-  cursor: pointer;
-  outline: none;
+  .hire-search-icon {
+    position: absolute;
+    left: 12px;
+    color: #b0a89e;
+    font-size: 13px;
+    pointer-events: none;
+  }
 
-  &:focus { border-color: #bbb5ae; }
+  .hire-search-clear {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #b0a89e;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+
+    &:hover { color: #111111; }
+  }
+
+  input {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #e7dfd4;
+    border-radius: 12px;
+    padding: 0 36px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: #111111;
+    background: #ffffff;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &::placeholder { color: #b0a89e; }
+    &:focus { border-color: #c8c2bb; box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06); }
+  }
 }
 
 .hire-hires-empty {
-  font-size: 14px;
+  text-align: center;
   color: #7a746d;
-  padding: 8px 0;
+  font-size: 14px;
+  padding: 16px 0;
 }
 
 // ── Grid ────────────────────────────────────────────────────────
@@ -150,7 +142,7 @@
 .hire-hire-card {
   background: #ffffff;
   border: 1px solid #e7dfd4;
-  border-radius: 18px;
+  border-radius: 20px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -163,9 +155,10 @@
   }
 }
 
+// ── Banner ──────────────────────────────────────────────────────
 .hire-hire-banner {
   position: relative;
-  height: 88px;
+  height: 80px;
   flex-shrink: 0;
   background:
     repeating-linear-gradient(
@@ -180,41 +173,35 @@
 
 .hire-hire-avatar {
   position: absolute;
-  bottom: -20px;
-  left: 20px;
-  width: 52px;
-  height: 52px;
+  bottom: -22px;
+  left: 18px;
+  width: 50px;
+  height: 50px;
   background: #ffffff;
   border: 3px solid #fdd535;
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   color: #111111;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
 }
 
-.hire-hire-card-body {
-  padding: 28px 18px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  flex: 1;
-}
-
-.hire-hire-card-top {
+// ── Identity block ───────────────────────────────────────────────
+.hire-hire-identity-block {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+  padding: 34px 18px 14px; // 34px = avatar overflow (22px) + gap
 }
 
-.hire-hire-identity {
+.hire-hire-identity-left {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
 }
 
@@ -222,13 +209,23 @@
   font-size: 15px;
   font-weight: 700;
   color: #111111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hire-hire-role {
-  font-size: 12px;
-  color: #7a746d;
+  font-size: 12.5px;
+  color: #555050;
 }
 
+.hire-hire-dept {
+  font-size: 11.5px;
+  color: #b0a89e;
+  margin-top: 1px;
+}
+
+// ── Status badge ─────────────────────────────────────────────────
 .hire-hire-status {
   border-radius: 999px;
   padding: 4px 11px;
@@ -237,20 +234,53 @@
   white-space: nowrap;
   flex-shrink: 0;
 
-  &.status-active        { background: #e6f4ec; color: #18a87a; border: 1px solid #b3e6ce; }
-  &.status-starting-soon { background: #fff8e1; color: #b88a00; border: 1px solid #f5d87a; }
+  &.status-active         { background: #e6f4ec; color: #18a87a; border: 1px solid #b3e6ce; }
+  &.status-starting-soon  { background: #fff8e1; color: #b88a00; border: 1px solid #f5d87a; }
 }
 
 .hire-hire-divider {
   height: 1px;
   background: #f0ece6;
+  flex-shrink: 0;
 }
 
-// ── Sections ────────────────────────────────────────────────────
-.hire-hire-section {
+// ── Details strip ────────────────────────────────────────────────
+.hire-hire-details-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 18px;
+}
+
+.hire-hire-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f7f4f0;
+  border: 1px solid #ede8e2;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  color: #555050;
+  white-space: nowrap;
+
+  svg { color: #b0a89e; font-size: 10px; flex-shrink: 0; }
+
+  &.chip-date {
+    background: #fff8e1;
+    border-color: #f5d87a;
+    color: #8a6800;
+
+    svg { color: #c58a00; }
+  }
+}
+
+// ── Onboarding section ───────────────────────────────────────────
+.hire-hire-onboarding {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  padding: 14px 18px 18px;
 }
 
 .hire-hire-section-title {
@@ -273,30 +303,7 @@
   color: #7a746d;
 }
 
-.hire-hire-detail-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-
-  li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12.5px;
-    color: #444444;
-  }
-}
-
-.hire-hire-detail-icon {
-  color: #bbb5ae;
-  font-size: 12px;
-  flex-shrink: 0;
-}
-
-// ── Progress bar ────────────────────────────────────────────────
+// ── Progress bar ─────────────────────────────────────────────────
 .hire-hire-progress-bar {
   height: 5px;
   background: #f0ece6;
@@ -311,14 +318,47 @@
   transition: width 0.4s ease;
 }
 
-// ── Next Steps ──────────────────────────────────────────────────
+// ── Action buttons ───────────────────────────────────────────────
+.hire-hire-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.hire-hire-action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  border: 1px solid #e7dfd4;
+  background: #fafaf8;
+  color: #444444;
+
+  &:hover { background: #f2efea; border-color: #d4cdc5; }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+
+    &:hover { background: #fafaf8; border-color: #e7dfd4; }
+  }
+}
+
+// ── Next Steps list ──────────────────────────────────────────────
 .hire-hire-steps-list {
   margin: 0;
   padding: 0;
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 
   li {
     display: flex;
@@ -328,7 +368,7 @@
     color: #444444;
     cursor: pointer;
     border-radius: 6px;
-    padding: 4px 6px;
+    padding: 5px 6px;
     margin: 0 -6px;
     transition: background 0.15s;
     user-select: none;
@@ -364,6 +404,7 @@
     font-weight: 700;
     color: #111111;
   }
+
   p {
     margin: 0;
     font-size: 13px;
@@ -512,48 +553,4 @@
   &.status-starting-soon { background: #fff8e1; color: #b88a00; border: 1px solid #f5d87a; }
 
   @media (max-width: 600px) { margin-left: 0; }
-}
-
-// ── Action buttons ───────────────────────────────────────────────
-.hire-hire-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.hire-hire-action-btn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 36px;
-  border-radius: 8px;
-  font-size: 12.5px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
-  border: 1px solid #e7dfd4;
-  background: #fafaf8;
-  color: #444444;
-
-  &:hover { background: #f2efea; border-color: #d4cdc5; }
-
-  &.primary {
-    background: #111111;
-    border-color: #111111;
-    color: #ffffff;
-
-    &:hover { background: #2e2e2e; }
-  }
-
-  &.danger {
-    flex: 0 0 36px;
-    color: #c0392b;
-    border-color: #f5c6c2;
-
-    &:hover { background: #fdf0ef; border-color: #e8a09a; }
-    &:disabled { opacity: 0.5; cursor: not-allowed; }
-  }
 }

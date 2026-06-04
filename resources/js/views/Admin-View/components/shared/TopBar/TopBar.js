@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiMail } from 'react-icons/fi';
+import { FiArrowLeft, FiMail, FiMenu } from 'react-icons/fi';
 import '../../shared/AdminShared.scss';
 import './TopBar.scss';
 
@@ -20,7 +20,7 @@ const backLinks = {
   '/admin-dashboard/pricing': { label: 'Pricing', path: '/admin-dashboard/content' },
 };
 
-const TopBar = () => {
+const TopBar = ({ onOpenSidebar }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const back = backLinks[location.pathname];
@@ -28,6 +28,9 @@ const TopBar = () => {
   return (
     <header className="admin-topbar">
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button className="admin-topbar-hamburger" onClick={onOpenSidebar} aria-label="Open menu">
+          <FiMenu />
+        </button>
         {back && (
           <button className="admin-btn admin-btn-light" onClick={() => navigate(back.path)} style={{ padding: '6px 12px' }}>
             <FiArrowLeft />

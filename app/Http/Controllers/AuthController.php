@@ -2,32 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RefreshToken;
+use App\Http\Controllers\Concerns\IssuesRefreshToken;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    private function issueRefreshToken(int $userId): string
-    {
-        RefreshToken::where('user_id', $userId)->delete();
-
-        $raw = Str::random(64);
-
-        RefreshToken::create([
-            'user_id'    => $userId,
-            'token'      => hash('sha256', $raw),
-            'expires_at' => now()->addMinutes((int) config('jwt.refresh_ttl', 43200)),
-        ]);
-
-        return $raw;
-    }
+    use IssuesRefreshToken;
 
     public function register(Request $request): JsonResponse
     {
@@ -39,10 +24,12 @@ class AuthController extends Controller
         ]);
 
         $user = User::query()->create([
-            'name'     => $validated['full_name'],
-            'email'    => $validated['email'],
-            'password' => $validated['password'],
-            'role'     => User::ROLE_CANDIDATE,
+            'name'                  => $validated['full_name'],
+            'email'                 => $validated['email'],
+            'password'              => $validated['password'],
+            'role'                  => User::ROLE_CANDIDATE,
+            'account_status'        => User::STATUS_ACTIVE,
+            'first_login_completed' => true,
         ]);
 
         $token        = Auth::guard('api')->login($user);
@@ -73,13 +60,34 @@ class AuthController extends Controller
 
         if (!$user || !in_array($user->role, [User::ROLE_CANDIDATE, User::ROLE_HR, User::ROLE_ADMIN], true)) {
             Auth::guard('api')->logout();
-
             throw ValidationException::withMessages([
                 'email' => ['This account is not allowed to sign in.'],
             ]);
         }
 
+        if ($user->account_status === User::STATUS_SUSPENDED) {
+            Auth::guard('api')->logout();
+            throw ValidationException::withMessages([
+                'email' => ['Your account has been suspended. Contact your administrator.'],
+            ]);
+        }
+
+        // HR/Admin invited accounts must complete the first-login flow
+        if (!$user->first_login_completed && $user->account_status === User::STATUS_PENDING) {
+            Auth::guard('api')->logout();
+            return response()->json(['first_login' => true, 'email' => $user->email], 200);
+        }
+
+        $user->update(['last_login_at' => now()]);
+
         $refreshToken = $this->issueRefreshToken($user->id);
+
+        ActivityLog::create([
+            'user_id'     => $user->id,
+            'action'      => 'login',
+            'description' => "User logged in: {$user->email}",
+            'ip'          => $request->ip(),
+        ]);
 
         return $this->authResponse([
             'message'       => 'Logged in successfully.',
@@ -97,7 +105,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Refresh token required.'], 401);
         }
 
-        $record = RefreshToken::where('token', hash('sha256', $raw))->first();
+        $record = \App\Models\RefreshToken::where('token', hash('sha256', $raw))->first();
 
         if (!$record || $record->isExpired()) {
             return response()->json(['message' => 'Session expired. Please sign in again.'], 401);
@@ -120,28 +128,17 @@ class AuthController extends Controller
         $user = Auth::guard('api')->user();
 
         if ($user) {
-            RefreshToken::where('user_id', $user->id)->delete();
+            \App\Models\RefreshToken::where('user_id', $user->id)->delete();
         }
 
         Auth::guard('api')->logout();
 
-        return response()->json([
-            'message' => 'Logged out successfully.',
-        ]);
+        return response()->json(['message' => 'Logged out successfully.']);
     }
 
     public function user(): JsonResponse
     {
-        return response()->json([
-            'user' => Auth::guard('api')->user(),
-        ]);
-    }
-
-    private function tokenTtlSeconds(): int
-    {
-        $ttlMinutes = (int) config('jwt.ttl', 1);
-
-        return max($ttlMinutes, 1) * 60;
+        return response()->json(['user' => Auth::guard('api')->user()]);
     }
 
     private function authResponse(array $payload, int $status = 200): JsonResponse

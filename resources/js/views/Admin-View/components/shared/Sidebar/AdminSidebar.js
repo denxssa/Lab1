@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../../context/AuthContext';
 import { FiActivity, FiBarChart2, FiFileText, FiGrid, FiLogOut, FiMail, FiMenu, FiSettings, FiUsers, FiX } from 'react-icons/fi';
@@ -18,8 +18,7 @@ const bottomNav = [
   { label: 'Settings', path: '/admin-dashboard/settings', icon: FiSettings },
 ];
 
-const AdminSideBar = () => {
-  const [open, setOpen] = useState(false);
+const AdminSideBar = ({ open, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -31,10 +30,7 @@ const AdminSideBar = () => {
 
   return (
     <>
-      {!open && <button className="admin-mobile-menu" onClick={() => setOpen(true)}>
-        <FiMenu />
-      </button>}
-      {open && <div className="admin-sidebar-overlay" onClick={() => setOpen(false)} />}
+      {open && <div className="admin-sidebar-overlay" onClick={onClose} />}
       <aside className={`admin-sidebar${open ? ' open' : ''}`}>
         <div className="admin-sidebar-top">
           <div className="admin-brand" onClick={() => navigate('/admin-dashboard')}>
@@ -42,7 +38,7 @@ const AdminSideBar = () => {
               <span>BEE HIRED</span>
               <small>Admin Console</small>
             </div>
-            <button className="admin-sidebar-close" onClick={(e) => { e.stopPropagation(); setOpen(false); }}>
+            <button className="admin-sidebar-close" onClick={(e) => { e.stopPropagation(); onClose(); }}>
               <FiX />
             </button>
           </div>
@@ -55,7 +51,7 @@ const AdminSideBar = () => {
                   className={`admin-nav-item${location.pathname === item.path ? ' active' : ''}`}
                   onClick={() => {
                     navigate(item.path);
-                    setOpen(false);
+                    onClose();
                   }}
                 >
                   <span className="admin-icon-badge"><Icon /></span>
@@ -74,7 +70,7 @@ const AdminSideBar = () => {
                   className={`admin-nav-item${location.pathname === item.path ? ' active' : ''}`}
                   onClick={() => {
                     navigate(item.path);
-                    setOpen(false);
+                    onClose();
                   }}
                 >
                   <span className="admin-icon-badge"><Icon /></span>

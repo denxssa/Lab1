@@ -6,7 +6,7 @@ export function getHomePathForRole(role) {
       return '/admin-dashboard';
     case 'candidate':
     default:
-      return '/dashboard';
+      return '/user-dashboard';
   }
 }
 

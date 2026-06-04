@@ -9,13 +9,34 @@ use Illuminate\Http\Request;
 
 class SavedJobController extends Controller
 {
-    /** List all saved job IDs for the current user */
+    /** List saved jobs — returns both IDs (for toggle state) and full details (for dashboard) */
     public function index(Request $request): JsonResponse
     {
-        $ids = SavedJob::where('user_id', $request->user()->id)
-            ->pluck('job_listing_id');
+        $saved = SavedJob::with('jobListing')
+            ->where('user_id', $request->user()->id)
+            ->orderByDesc('created_at')
+            ->get();
 
-        return response()->json(['saved_job_ids' => $ids]);
+        $ids = $saved->pluck('job_listing_id');
+
+        $jobs = $saved
+            ->filter(fn($s) => $s->jobListing !== null)
+            ->map(fn($s) => [
+                'saved_job_id'   => $s->id,
+                'job_listing_id' => $s->job_listing_id,
+                'title'          => $s->jobListing->title,
+                'company'        => $s->jobListing->company,
+                'location'       => $s->jobListing->location ?? '—',
+                'salary'         => $s->jobListing->salary   ?? '—',
+                'type'           => $s->jobListing->type     ?? '',
+                'saved_at'       => $s->created_at->format('M d, Y'),
+            ])
+            ->values();
+
+        return response()->json([
+            'saved_job_ids' => $ids,
+            'saved_jobs'    => $jobs,
+        ]);
     }
 
     /** Save a job */
