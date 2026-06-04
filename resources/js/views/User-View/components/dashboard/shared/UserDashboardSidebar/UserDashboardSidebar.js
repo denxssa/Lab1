@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import NotificationBell from '../../../../../../components/NotificationBell/NotificationBell';
+import NotificationBell from '../NotificationBell/NotificationBell';
 import { useAuth } from '../../../../../../context/AuthContext';
 import './UserDashboardSidebar.scss';
 

@@ -5,7 +5,7 @@ import {
   fetchUnreadNotificationCount,
   markAllNotificationsRead,
   markNotificationRead,
-} from '../../api/notificationsApi';
+} from '../../../../../../api/notificationsApi';
 import './NotificationBell.scss';
 
 const BellIcon = () => (
@@ -15,6 +15,7 @@ const BellIcon = () => (
   </svg>
 );
 
+/** Candidate notification bell (application stage updates). */
 export default function NotificationBell({ pollIntervalMs = 60000, variant = 'user' }) {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
@@ -28,7 +29,7 @@ export default function NotificationBell({ pollIntervalMs = 60000, variant = 'us
       const count = await fetchUnreadNotificationCount();
       setUnreadCount(count);
     } catch {
-      
+      // ignore when logged out or offline
     }
   }, []);
 

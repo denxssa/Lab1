@@ -2,7 +2,7 @@ import React from "react";
 import { CgClose } from "react-icons/cg";
 import { FaHome, FaUser, FaFileAlt, FaBriefcase } from "react-icons/fa";
 import { MdWork } from "react-icons/md";
-import NotificationBell from "../../../../../../components/NotificationBell/NotificationBell";
+import NotificationBell from '../../NotificationBell/NotificationBell';
 
 const Sidebar = (props) => {
   return (

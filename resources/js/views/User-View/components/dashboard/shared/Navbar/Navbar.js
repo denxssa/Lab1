@@ -3,7 +3,7 @@ import "./navbar.scss";
 import MobileNav from "../MobileNav/MobileNav";
 import { TbTriangleInvertedFilled } from "react-icons/tb";
 import { useAuth } from "../../../../../../context/AuthContext";
-import NotificationBell from "../../../../../../components/NotificationBell/NotificationBell";
+import NotificationBell from '../NotificationBell/NotificationBell';
 
 const Navbar = (props) => {
   const { user } = useAuth();
