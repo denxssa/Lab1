@@ -63,7 +63,7 @@ const JobDetail = ({ job, onBack, relatedJobs, onSelectJob }) => {
         setSaved(true);
       }
     } catch {
-      // silently ignore
+      
     } finally {
       setSaveLoading(false);
     }

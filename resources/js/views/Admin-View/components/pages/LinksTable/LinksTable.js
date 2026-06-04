@@ -1,7 +1,5 @@
 import React, { useMemo } from 'react';
 import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
-// import '../../shared/AdminShared.scss';
-
 
 const LinksTable = () => {
     const {

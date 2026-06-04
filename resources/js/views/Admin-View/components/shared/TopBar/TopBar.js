@@ -38,10 +38,16 @@ const TopBar = ({ onOpenSidebar }) => {
         )}
         <span className="admin-topbar-page">{names[location.pathname] || 'Admin Dashboard'}</span>
       </div>
-      <button className="admin-btn admin-btn-accent" onClick={() => navigate('/admin-dashboard/users')}>
-        <FiMail />
-        Invite HR
-      </button>
+      {location.pathname !== '/admin-dashboard/users' && (
+        <button
+          type="button"
+          className="admin-btn admin-btn-accent admin-topbar-invite"
+          onClick={() => navigate('/admin-dashboard/users')}
+        >
+          <FiMail />
+          <span>Invite HR</span>
+        </button>
+      )}
     </header>
   );
 };

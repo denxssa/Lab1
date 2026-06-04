@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-// Simple cache so we only fetch once per page load
 const cache = { data: null };
 
 const useAboutContent = () => {

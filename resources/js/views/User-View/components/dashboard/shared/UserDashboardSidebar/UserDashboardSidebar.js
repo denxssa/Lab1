@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import NotificationBell from '../../../../../../components/NotificationBell/NotificationBell';
 import { useAuth } from '../../../../../../context/AuthContext';
 import './UserDashboardSidebar.scss';
 
@@ -55,6 +56,7 @@ export default function UserDashboardSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const showNotifications = user?.role === 'candidate' || !user?.role;
   const displayName = user?.name || localStorage.getItem('user_name') || 'Candidate';
   const initials = displayName.split(' ').map((word) => word[0]).join('').slice(0, 2).toUpperCase();
 
@@ -73,9 +75,16 @@ export default function UserDashboardSidebar() {
   return (
     <>
       {!open && (
-        <button className="user-dashboard-hamburger" onClick={() => setOpen(true)} aria-label="Open dashboard menu">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
+        <div className="user-dashboard-mobile-bar">
+          <button className="user-dashboard-hamburger" onClick={() => setOpen(true)} aria-label="Open dashboard menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          {showNotifications && (
+            <div className="user-dashboard-mobile-bar__notif">
+              <NotificationBell variant="sidebar" />
+            </div>
+          )}
+        </div>
       )}
 
       {open && <div className="user-dashboard-sidebar-overlay" onClick={() => setOpen(false)} />}
@@ -91,6 +100,13 @@ export default function UserDashboardSidebar() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
+
+          {showNotifications && (
+            <div className="user-dashboard-sidebar__notif-row">
+              <span className="user-dashboard-sidebar__notif-label">Notifications</span>
+              <NotificationBell variant="sidebar" />
+            </div>
+          )}
 
           <nav className="user-dashboard-sidebar__nav">
             {mainNav.map((item) => (

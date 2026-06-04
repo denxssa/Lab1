@@ -34,8 +34,7 @@ const HireDashboardSettings = () => {
 
   const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS);
 
-  // Load settings from API on mount
-  useEffect(() => {
+useEffect(() => {
     fetchHrSettings()
       .then((data) => {
         if (data && data.company_name) {
@@ -67,7 +66,7 @@ const HireDashboardSettings = () => {
       setProfileSaved(true);
       setTimeout(() => setProfileSaved(false), 2000);
     } catch {
-      // silently fail — could add error state here
+      
     } finally {
       setProfileSaving(false);
     }
@@ -167,7 +166,7 @@ const HireDashboardSettings = () => {
           </form>
         </div>
 
-        {/* Account */}
+        {}
         <div className="hire-settings-block">
           <div className="hire-settings-block-header">
             <h2>Account</h2>
@@ -196,7 +195,7 @@ const HireDashboardSettings = () => {
           </form>
         </div>
 
-        {/* Notifications */}
+        {}
         <div className="hire-settings-block">
           <div className="hire-settings-block-header">
             <h2>Notifications</h2>
@@ -230,7 +229,7 @@ const HireDashboardSettings = () => {
           </div>
         </div>
 
-        {/* Danger Zone */}
+        {}
         <div className="hire-settings-block hire-settings-block--danger">
           <div className="hire-settings-block-header">
             <h2>Danger Zone</h2>

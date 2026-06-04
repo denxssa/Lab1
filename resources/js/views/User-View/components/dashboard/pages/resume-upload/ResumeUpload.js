@@ -20,8 +20,18 @@ export default function ResumeUpload({
             return;
         }
 
-        if (selectedFile.type !== 'application/pdf') {
-            setLocalError('Only PDF files are allowed.');
+        const allowedTypes = [
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/msword',
+        ];
+        const allowedExtensions = ['.pdf', '.doc', '.docx'];
+        const extension = selectedFile.name.includes('.')
+            ? selectedFile.name.slice(selectedFile.name.lastIndexOf('.')).toLowerCase()
+            : '';
+
+        if (!allowedTypes.includes(selectedFile.type) && !allowedExtensions.includes(extension)) {
+            setLocalError('Only PDF or Word (.docx) files are allowed.');
             return;
         }
 
@@ -54,7 +64,7 @@ export default function ResumeUpload({
                 <div className="resume-upload__icon"><FiUpload size={18} /></div>
                 <div>
                     <h3 className="resume-upload__title">Resume / CV</h3>
-                    <p className="resume-upload__subtitle">Upload your latest resume (PDF, max 5MB)</p>
+                    <p className="resume-upload__subtitle">Upload your latest resume (PDF or DOCX, max 5MB)</p>
                 </div>
             </div>
             <div className="resume-upload__body">
@@ -94,11 +104,11 @@ export default function ResumeUpload({
                         tabIndex={0}
                     >
                         <FiUpload size={28} />
-                        <p>Drag and drop your PDF here or <span>browse</span></p>
+                        <p>Drag and drop your CV here or <span>browse</span></p>
                         <input
                             id="resume-input"
                             type="file"
-                            accept=".pdf,application/pdf"
+                            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                             onChange={handleChange}
                             style={{ display: 'none' }}
                             disabled={loading}

@@ -4,7 +4,6 @@ import { usePlatformAdmin } from "../../../../../context/PlatformAdminContext";
 import './findjob.scss';
 import { FaArrowRight } from "react-icons/fa";
 
-
 const FindJob = () => {
   const { data } = usePlatformAdmin();
   const homeContent = data.homeContent || {};

@@ -1,4 +1,4 @@
-// ── Overlay ───────────────────────────────────────────────────────────
+
 .pjm-overlay {
   position: fixed;
   inset: 0;
@@ -10,7 +10,6 @@
   padding: 24px;
 }
 
-// ── Two-panel modal ────────────────────────────────────────────────────
 .pjm-modal {
   background: #ffffff;
   border-radius: 24px;
@@ -24,7 +23,6 @@
   @media (max-width: 700px) { flex-direction: column; }
 }
 
-// ── Left panel ─────────────────────────────────────────────────────────
 .pjm-form-panel {
   flex: 1;
   padding: 36px 32px;
@@ -142,7 +140,6 @@
   &:hover { background: #333333; transform: translateY(-1px); }
 }
 
-// ── Right panel: preview ───────────────────────────────────────────────
 .pjm-preview-panel {
   flex: 1;
   padding: 36px 28px;

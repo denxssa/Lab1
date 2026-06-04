@@ -13,7 +13,6 @@
   gap: 20px;
 }
 
-// ── Header ───────────────────────────────────────────────────────
 .hire-analytics-header {
   display: flex;
   justify-content: space-between;
@@ -65,7 +64,6 @@
   &:hover:not(.active) { color: #111111; }
 }
 
-// ── Stat cards ───────────────────────────────────────────────────
 .hire-analytics-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -134,7 +132,6 @@
   &.down { color: #d94f4f; }
 }
 
-// ── Card shell ───────────────────────────────────────────────────
 .hire-analytics-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -163,7 +160,6 @@
   &--full { grid-column: 1 / -1; }
 }
 
-// ── Bar chart ────────────────────────────────────────────────────
 .hire-bar-chart {
   display: flex;
   flex-direction: column;
@@ -214,7 +210,6 @@
   flex-shrink: 0;
 }
 
-// ── Hiring funnel ────────────────────────────────────────────────
 .hire-funnel {
   display: flex;
   flex-direction: column;
@@ -270,7 +265,6 @@
   padding: 2px 0 6px 0;
 }
 
-// ── Trend chart ──────────────────────────────────────────────────
 .hire-trend-chart {
   display: flex;
   align-items: flex-end;

@@ -34,18 +34,15 @@ export default function FirstLoginPage() {
 
     const [step, setStep]     = useState(STEPS.CREDENTIALS);
 
-    // Step 1
-    const [email, setEmail]               = useState(location.state?.email ?? '');
+const [email, setEmail]               = useState(location.state?.email ?? '');
     const [tempPw, setTempPw]             = useState('');
     const [showTempPw, setShowTempPw]     = useState(false);
 
-    // Step 2
-    const [code, setCode]                 = useState('');
+const [code, setCode]                 = useState('');
     const [token, setToken]               = useState('');
     const [resendTimer, setResendTimer]   = useState(0);
 
-    // Step 3
-    const [password, setPassword]         = useState('');
+const [password, setPassword]         = useState('');
     const [confirm, setConfirm]           = useState('');
     const [showPw, setShowPw]             = useState(false);
     const [showConfirm, setShowConfirm]   = useState(false);
@@ -54,8 +51,7 @@ export default function FirstLoginPage() {
     const [error, setError]               = useState('');
     const [notice, setNotice]             = useState('');
 
-    // ── Countdown helper ──────────────────────────────────────────────────────
-    const startCountdown = (secs = 60) => {
+const startCountdown = (secs = 60) => {
         setResendTimer(secs);
         const iv = setInterval(() => setResendTimer((t) => {
             if (t <= 1) { clearInterval(iv); return 0; }
@@ -63,8 +59,7 @@ export default function FirstLoginPage() {
         }), 1000);
     };
 
-    // ── Step 1 ────────────────────────────────────────────────────────────────
-    const handleSendCode = async (e) => {
+const handleSendCode = async (e) => {
         e.preventDefault();
         setError(''); setNotice('');
         setLoading(true);
@@ -81,8 +76,7 @@ export default function FirstLoginPage() {
         }
     };
 
-    // ── Step 2 ────────────────────────────────────────────────────────────────
-    const handleVerifyCode = async (e) => {
+const handleVerifyCode = async (e) => {
         e.preventDefault();
         setError(''); setNotice('');
         setLoading(true);
@@ -108,8 +102,7 @@ export default function FirstLoginPage() {
         }
     };
 
-    // ── Step 3 ────────────────────────────────────────────────────────────────
-    const handleSetPassword = async (e) => {
+const handleSetPassword = async (e) => {
         e.preventDefault();
         setError(''); setNotice('');
         if (password !== confirm) { setError('Passwords do not match.'); return; }
@@ -129,8 +122,7 @@ export default function FirstLoginPage() {
         }
     };
 
-    // ── Render ────────────────────────────────────────────────────────────────
-    const pwStrength = PW_RULES.filter((r) => r.test(password)).length;
+const pwStrength = PW_RULES.filter((r) => r.test(password)).length;
 
     return (
         <div className="fl-page">
@@ -223,7 +215,7 @@ export default function FirstLoginPage() {
                     </form>
                 )}
 
-                {/* ══════ STEP 2 ══════ */}
+                {}
                 {step === STEPS.VERIFY_CODE && (
                     <form className="fl-form" onSubmit={handleVerifyCode} noValidate>
                         <div className="fl-form-intro">
@@ -265,7 +257,7 @@ export default function FirstLoginPage() {
                     </form>
                 )}
 
-                {/* ══════ STEP 3 ══════ */}
+                {}
                 {step === STEPS.SET_PASSWORD && (
                     <form className="fl-form" onSubmit={handleSetPassword} noValidate>
                         <div className="fl-form-intro">
@@ -293,7 +285,7 @@ export default function FirstLoginPage() {
                                     {showPw ? <FiEyeOff size={15} /> : <FiEye size={15} />}
                                 </button>
                             </div>
-                            {/* Strength bar */}
+                            {}
                             {password.length > 0 && (
                                 <div className="fl-strength-bar">
                                     {[1,2,3,4,5].map((n) => (
@@ -303,7 +295,7 @@ export default function FirstLoginPage() {
                             )}
                         </div>
 
-                        {/* Requirements checklist */}
+                        {}
                         {password.length > 0 && (
                             <ul className="fl-rules">
                                 {PW_RULES.map((r) => (

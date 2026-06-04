@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\Utf8;
 use Illuminate\Support\Facades\Log;
 
 class CVRatingService
@@ -24,40 +25,50 @@ class CVRatingService
             }
         }
 
-        return $this->heuristicRate($parsedData, $extractedText);
+        return Utf8::sanitizeArray($this->heuristicRate($parsedData, $extractedText));
     }
 
     private function buildPrompt(array $parsedData, string $extractedText): string
     {
-        $json = json_encode($parsedData, JSON_PRETTY_PRINT);
+        $json         = Utf8::jsonEncode($parsedData, JSON_PRETTY_PRINT);
+        $textPreview  = mb_substr(trim(Utf8::sanitizeString($extractedText)), 0, 6000);
 
         return <<<PROMPT
-You are an ATS resume reviewer. Analyze the CV and return JSON only:
-{
-  "score": 0,
-  "missing": [],
-  "strengths": [],
-  "suggestions": []
-}
+You are an expert ATS (Applicant Tracking System) resume reviewer.
 
-Evaluate:
-- Missing sections
-- Missing skills
-- Weak descriptions
-- Keyword relevance
-- Overall completeness
+TASK: Score the resume and return exactly this JSON — nothing else, no markdown:
+{"score": 0, "missing": [], "strengths": [], "suggestions": []}
 
-Score must be an integer from 0 to 100.
+SCORING RUBRIC (total 100 points):
+- Contact info complete (name + email + phone): 10 pts
+- Work experience section present with 2+ entries: 20 pts
+- Each experience has role, company, dates, AND a description: up to 10 pts
+- Education section present: 10 pts
+- 5+ technical skills listed: 10 pts
+- Projects section present: 8 pts
+- Languages section present: 5 pts
+- Certifications present: 5 pts
+- GitHub or portfolio link present: 5 pts
+- Descriptions contain measurable results (numbers, %, $, users, etc.): 10 pts
+- No obvious issues (garbled text, very short content, no structure): 7 pts
 
-PARSED CV JSON:
+FIELD RULES:
+- score: integer 0–100 based on the rubric above
+- missing: short strings for sections/fields that are absent or empty (e.g. "Work experience", "Contact phone", "GitHub profile")
+- strengths: short strings for things done well (e.g. "5 technical skills listed", "Includes measurable results")
+- suggestions: specific, actionable improvement advice (e.g. "Add quantified achievements to Software Engineer role at Acme", "Include a GitHub or portfolio link")
+- All arrays must contain only strings, no objects.
+- Be concise — 3 to 6 items per array at most.
+
+PARSED CV DATA:
 {$json}
 
-RAW CV TEXT:
-{$extractedText}
+RAW CV TEXT (first 6000 chars):
+{$textPreview}
 PROMPT;
     }
 
-    private function heuristicRate(array $parsedData, string $extractedText): array
+    public function heuristicRate(array $parsedData, string $extractedText = ''): array
     {
         $missing = [];
         $strengths = [];
@@ -128,11 +139,11 @@ PROMPT;
 
     private function normalizeRating(array $data): array
     {
-        return [
+        return Utf8::sanitizeArray([
             'score' => max(0, min(100, (int) ($data['score'] ?? 0))),
             'missing' => array_values(array_filter($data['missing'] ?? [], 'is_string')),
             'strengths' => array_values(array_filter($data['strengths'] ?? [], 'is_string')),
             'suggestions' => array_values(array_filter($data['suggestions'] ?? [], 'is_string')),
-        ];
+        ]);
     }
 }

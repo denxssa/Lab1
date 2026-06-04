@@ -53,8 +53,7 @@ const HireDashboardSidebar = ({ open, onClose }) => {
   const { apps } = useHireDashboard();
   const company = localStorage.getItem('user_company') || user?.company || 'Your Company';
 
-  // Real badge counts
-  const reviewingCount = apps.filter((a) => a.status === 'Reviewing').length;
+const reviewingCount = apps.filter((a) => a.status === 'Reviewing').length;
   const badges = {
     applications: reviewingCount || null,
     messages:     null,

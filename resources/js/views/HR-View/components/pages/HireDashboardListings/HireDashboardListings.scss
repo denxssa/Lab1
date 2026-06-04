@@ -13,7 +13,6 @@
   gap: 22px;
 }
 
-// ── Header ───────────────────────────────────────────────────────
 .hire-listings-header {
   display: flex;
   justify-content: space-between;
@@ -48,7 +47,6 @@
   }
 }
 
-// ── Tabs ─────────────────────────────────────────────────────────
 .hire-listings-tabs {
   display: flex;
   gap: 6px;
@@ -84,7 +82,6 @@
   .hire-tab.active & { background: rgba(0, 0, 0, 0.12); }
 }
 
-// ── Grid ─────────────────────────────────────────────────────────
 .hire-listings-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -94,7 +91,6 @@
   @media (max-width: 560px)  { grid-template-columns: 1fr; }
 }
 
-// ── Empty ─────────────────────────────────────────────────────────
 .hire-listings-empty {
   text-align: center;
   padding: 64px 24px;
@@ -106,7 +102,6 @@
   p { margin: 0; font-size: 14px; color: #7a746d; }
 }
 
-// ── Card ─────────────────────────────────────────────────────────
 .hire-listing-card {
   background: #ffffff;
   border: 1px solid #e7dfd4;
@@ -138,7 +133,6 @@
   &.is-closed { opacity: 0.48; }
 }
 
-// ── Banner (LinkedIn-style like Hires) ───────────────────────────
 .hire-listing-banner {
   position: relative;
   height: 72px;
@@ -170,7 +164,6 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.09);
 }
 
-// Kebab sits in the banner top-right
 .hire-listing-menu-wrap {
   position: absolute;
   top: 10px;
@@ -235,7 +228,6 @@
   }
 }
 
-// ── Card body ────────────────────────────────────────────────────
 .hire-listing-body {
   padding: 26px 18px 18px;
   display: flex;
@@ -244,7 +236,6 @@
   flex: 1;
 }
 
-// ── Identity ─────────────────────────────────────────────────────
 .hire-listing-identity {
   display: flex;
   flex-direction: column;
@@ -289,7 +280,6 @@
   &.pill-closed { background: #f2efea; color: #9e9890; border: 1px solid #e7dfd4; }
 }
 
-// ── Meta ─────────────────────────────────────────────────────────
 .hire-listing-meta {
   display: flex;
   flex-direction: column;
@@ -306,13 +296,11 @@
   }
 }
 
-// ── Divider ───────────────────────────────────────────────────────
 .hire-listing-divider {
   height: 1px;
   background: #f2efea;
 }
 
-// ── Pipeline ──────────────────────────────────────────────────────
 .hire-listing-pipeline {
   display: flex;
   flex-direction: column;
@@ -381,7 +369,6 @@
   }
 }
 
-// ── Footer ────────────────────────────────────────────────────────
 .hire-listing-footer {
   display: flex;
   align-items: center;

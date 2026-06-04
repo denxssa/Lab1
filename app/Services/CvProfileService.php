@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Support\CvCertificationNormalizer;
+use App\Support\CvLanguageNormalizer;
 use App\Models\CvCertification;
 use App\Models\CvEducation;
 use App\Models\CvExperience;
@@ -33,10 +35,7 @@ class CvProfileService
             ->first();
     }
 
-    /**
-     * Sync normalized tables from AI/OCR parsed JSON (AIService schema).
-     */
-    public function syncFromParsedData(User $user, array $parsed): CvProfile
+public function syncFromParsedData(User $user, array $parsed): CvProfile
     {
         return DB::transaction(function () use ($user, $parsed) {
             $profile = $this->getOrCreateForUser($user);
@@ -60,10 +59,7 @@ class CvProfileService
         });
     }
 
-    /**
-     * Persist dashboard form payload to normalized tables.
-     */
-    public function updateFromPayload(User $user, array $payload): CvProfile
+public function updateFromPayload(User $user, array $payload): CvProfile
     {
         return DB::transaction(function () use ($user, $payload) {
             $profile = $this->getOrCreateForUser($user);
@@ -85,10 +81,7 @@ class CvProfileService
         });
     }
 
-    /**
-     * Standard structure for Blade templates and PDF export.
-     */
-    public function toTemplateData(CvProfile $profile): array
+public function toTemplateData(CvProfile $profile): array
     {
         $profile->loadMissing([
             'skills', 'experiences', 'education', 'languages', 'projects', 'certifications',
@@ -155,20 +148,20 @@ class CvProfileService
             'skills' => $profile->skills->pluck('name')->all(),
             'experiences' => $profile->experiences->map(fn (CvExperience $e) => [
                 'id' => $e->id,
-                'company' => $e->company,
-                'role' => $e->role,
-                'startDate' => $e->start_date,
-                'endDate' => $e->end_date,
+                'company' => $this->str($e->company),
+                'role' => $this->str($e->role),
+                'startDate' => $this->str($e->start_date),
+                'endDate' => $e->is_current ? '' : $this->str($e->end_date),
                 'current' => $e->is_current,
-                'description' => $e->description,
+                'description' => $this->str($e->description),
             ])->all(),
             'education' => $profile->education->map(fn (CvEducation $e) => [
                 'id' => $e->id,
-                'school' => $e->institution,
-                'degree' => $e->degree,
-                'fieldOfStudy' => $e->field_of_study,
-                'startDate' => $e->start_date,
-                'endDate' => $e->end_date,
+                'school' => $this->str($e->institution),
+                'degree' => $this->str($e->degree),
+                'fieldOfStudy' => $this->str($e->field_of_study),
+                'startDate' => $this->str($e->start_date),
+                'endDate' => $e->is_current ? '' : $this->str($e->end_date),
                 'current' => $e->is_current,
             ])->all(),
             'languages' => $profile->languages->map(fn (CvLanguage $l) => [
@@ -178,18 +171,18 @@ class CvProfileService
             ])->all(),
             'projects' => $profile->projects->map(fn (CvProject $p) => [
                 'id' => $p->id,
-                'name' => $p->name,
-                'description' => $p->description,
+                'name' => $this->str($p->name),
+                'description' => $this->str($p->description),
                 'technologies' => $p->technologies ?? [],
-                'url' => $p->url,
-                'startDate' => $p->start_date,
-                'endDate' => $p->end_date,
+                'url' => $this->str($p->url),
+                'startDate' => $this->str($p->start_date),
+                'endDate' => $this->str($p->end_date),
             ])->all(),
             'certifications' => $profile->certifications->map(fn (CvCertification $c) => [
                 'id' => $c->id,
-                'name' => $c->name,
-                'issuer' => $c->issuer,
-                'year' => $c->year,
+                'name' => $this->str($c->name),
+                'issuer' => $this->str($c->issuer),
+                'year' => $this->str($c->year),
             ])->all(),
         ];
     }
@@ -256,17 +249,20 @@ class CvProfileService
         }
 
         foreach ($payload['experiences'] ?? [] as $i => $exp) {
-            if (empty($exp['company']) && empty($exp['role'])) {
+            $exp = $this->normalizeExperiencePayload($exp);
+
+            if ($exp['company'] === '' && $exp['role'] === '' && $exp['description'] === '') {
                 continue;
             }
+
             CvExperience::query()->create([
                 'cv_profile_id' => $profile->id,
-                'company' => $exp['company'] ?? '',
-                'role' => $exp['role'] ?? '',
-                'start_date' => $exp['startDate'] ?? $exp['start_date'] ?? null,
-                'end_date' => !empty($exp['current']) ? null : ($exp['endDate'] ?? $exp['end_date'] ?? null),
+                'company' => $exp['company'],
+                'role' => $exp['role'],
+                'start_date' => $exp['start_date'] ?: null,
+                'end_date' => !empty($exp['current']) ? null : ($exp['end_date'] ?: null),
                 'is_current' => !empty($exp['current']),
-                'description' => $exp['description'] ?? null,
+                'description' => $exp['description'] ?: null,
                 'sort_order' => $i,
             ]);
         }
@@ -288,13 +284,16 @@ class CvProfileService
         }
 
         foreach ($payload['languages'] ?? [] as $i => $lang) {
-            if (empty($lang['language'])) {
+            $sanitized = CvLanguageNormalizer::sanitizeRow(is_array($lang) ? $lang : []);
+
+            if ($sanitized === null) {
                 continue;
             }
+
             CvLanguage::query()->create([
                 'cv_profile_id' => $profile->id,
-                'language' => $lang['language'],
-                'level' => $lang['level'] ?? 'Fluent',
+                'language' => $sanitized['language'],
+                'level' => $sanitized['level'],
                 'sort_order' => $i,
             ]);
         }
@@ -316,14 +315,17 @@ class CvProfileService
         }
 
         foreach ($payload['certifications'] ?? [] as $i => $cert) {
-            if (empty($cert['name'])) {
+            $sanitized = CvCertificationNormalizer::sanitizeRow(is_array($cert) ? $cert : []);
+
+            if ($sanitized === null) {
                 continue;
             }
+
             CvCertification::query()->create([
                 'cv_profile_id' => $profile->id,
-                'name' => $cert['name'],
-                'issuer' => $cert['issuer'] ?? null,
-                'year' => isset($cert['year']) ? (string) $cert['year'] : null,
+                'name' => $sanitized['name'],
+                'issuer' => $sanitized['issuer'],
+                'year' => $sanitized['year'],
                 'sort_order' => $i,
             ]);
         }
@@ -497,10 +499,7 @@ class CvProfileService
         ];
     }
 
-    /**
-     * @return array{0: string, 1: string}
-     */
-    private function resolveNameParts(CvProfile $profile, User $user): array
+private function resolveNameParts(CvProfile $profile, User $user): array
     {
         if ($profile->first_name || $profile->last_name) {
             return [
@@ -512,10 +511,7 @@ class CvProfileService
         return $this->splitFullName($profile->full_name ?? $user->name);
     }
 
-    /**
-     * @return array{0: string, 1: string}
-     */
-    private function splitFullName(?string $fullName): array
+private function splitFullName(?string $fullName): array
     {
         $fullName = trim((string) $fullName);
         if ($fullName === '') {
@@ -595,6 +591,64 @@ class CvProfileService
                 ? (int) ($personal['expected_salary'] ?? $personal['expectedSalary'])
                 : null,
             'availability' => $personal['availability'] ?? null,
+        ];
+    }
+
+    private function str(?string $value): string
+    {
+        return $value === null ? '' : trim($value);
+    }
+
+private function normalizeExperiencePayload(array $exp): array
+    {
+        $company = $this->str($exp['company'] ?? null);
+        $role = $this->str($exp['role'] ?? $exp['title'] ?? null);
+        $description = $this->str($exp['description'] ?? null);
+        $startDate = $this->str($exp['startDate'] ?? $exp['start_date'] ?? null);
+        $endDate = $this->str($exp['endDate'] ?? $exp['end_date'] ?? null);
+        $current = !empty($exp['current']) || preg_match('/present|current/i', $endDate);
+
+        if ($company === '' && $role === '' && $description !== '') {
+            $lines = preg_split('/\r\n|\r|\n/', $description) ?: [];
+            $headline = trim($lines[0] ?? '');
+
+            if ($headline !== '') {
+                if (preg_match('/^(.+?)\s+(?:at|@)\s+(.+)$/iu', $headline, $match)) {
+                    $role = trim($match[1]);
+                    $company = trim($match[2]);
+                } elseif (preg_match('/^(.+?)\s*\|\s*(.+)$/', $headline, $match)) {
+                    $role = trim($match[1]);
+                    $company = trim($match[2]);
+                } else {
+                    $role = $headline;
+                }
+
+                $rest = array_slice($lines, 1);
+                $description = trim(implode("\n", $rest));
+            }
+        }
+
+        if (preg_match('/(\d{4})\s*[-–—]\s*((?:\d{4})|present|current)/i', $role.' '.$company.' '.$description, $dates)) {
+            if ($startDate === '') {
+                $startDate = $dates[1];
+            }
+            if ($endDate === '') {
+                $endDate = $dates[2];
+            }
+        }
+
+        if (preg_match('/present|current/i', $endDate)) {
+            $current = true;
+            $endDate = '';
+        }
+
+        return [
+            'company' => $company,
+            'role' => $role,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'current' => $current,
+            'description' => $description,
         ];
     }
 }

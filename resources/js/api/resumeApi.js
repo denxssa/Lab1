@@ -9,12 +9,17 @@ export function uploadResume(file) {
   formData.append('resume', file);
 
   return axios
-    .post('/api/resume/upload', formData, { headers: { Accept: 'application/json' } })
+    .post('/api/resume/upload', formData, {
+      headers: { Accept: 'application/json' },
+      timeout: 300000,
+    })
     .then((r) => r.data);
 }
 
 export function analyzeResume(resumeId) {
-  return axios.post(`/api/resume/${resumeId}/analyze`).then((r) => r.data);
+  return axios
+    .post(`/api/resume/${resumeId}/analyze`, null, { timeout: 300000 })
+    .then((r) => r.data);
 }
 
 export function getAtsScore(resumeId) {

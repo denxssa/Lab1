@@ -3,21 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Resume;
-use App\Services\AIService;
+use App\Services\Cv\ResumeProcessingPipeline;
 use App\Services\CVRatingService;
-use App\Services\JobMatchingService;
 use App\Services\CvProfileService;
-use App\Services\OCRService;
+use App\Services\JobMatchingService;
+use App\Support\Utf8;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class ResumeController extends Controller
 {
     public function __construct(
-        private readonly OCRService $ocrService,
-        private readonly AIService $aiService,
+        private readonly ResumeProcessingPipeline $pipeline,
         private readonly CVRatingService $cvRatingService,
         private readonly JobMatchingService $jobMatchingService,
         private readonly CvProfileService $cvProfileService,
@@ -40,7 +38,24 @@ class ResumeController extends Controller
         $maxKb = (int) config('resume.max_upload_kb', 5120);
 
         $validated = $request->validate([
-            'resume' => ['required', 'file', 'mimes:pdf', 'max:'.$maxKb],
+            'resume' => [
+                'required',
+                'file',
+                'max:'.$maxKb,
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    if (!$value instanceof \Illuminate\Http\UploadedFile) {
+                        $fail('Invalid upload.');
+
+                        return;
+                    }
+
+                    $extension = strtolower($value->getClientOriginalExtension());
+
+                    if (!in_array($extension, ['pdf', 'doc', 'docx'], true)) {
+                        $fail('The resume must be a PDF or Word document (.pdf, .doc, .docx).');
+                    }
+                },
+            ],
         ]);
 
         $file = $validated['resume'];
@@ -49,34 +64,18 @@ class ResumeController extends Controller
 
         $resume = Resume::query()->create([
             'user_id' => $user->id,
-            'original_filename' => $file->getClientOriginalName(),
+            'original_filename' => Utf8::sanitizeString($file->getClientOriginalName()),
             'path' => $path,
             'file_size' => $file->getSize(),
             'status' => Resume::STATUS_UPLOADED,
         ]);
 
         try {
-            $result = $this->processResume($resume);
+            $result = $this->pipeline->process($resume, forUpload: true);
 
-            return response()->json([
-                'message' => 'Resume uploaded and analyzed successfully.',
-                'resume' => $result->toApiArray(),
-                'parsed' => $result->parsed_data,
-                'ats' => $result->ats_rating,
-                'job_match' => $result->job_match,
-                'profile' => $this->cvProfileService->toApiPayload($result->cvProfile),
-            ], 201);
+            return response()->json($this->successPayload($result, 'Resume uploaded and analyzed successfully.'), 201);
         } catch (\Throwable $exception) {
-            $resume->update([
-                'status' => Resume::STATUS_FAILED,
-                'error_message' => $exception->getMessage(),
-            ]);
-
-            return response()->json([
-                'message' => 'Resume uploaded, but analysis failed.',
-                'error' => $exception->getMessage(),
-                'resume' => $resume->fresh()->toApiArray(),
-            ], 422);
+            return $this->failureResponse($resume, $exception, 'Resume uploaded, but analysis failed.');
         }
     }
 
@@ -97,27 +96,11 @@ class ResumeController extends Controller
         ]);
 
         try {
-            $result = $this->processResume($resume);
+            $result = $this->pipeline->process($resume);
 
-            return response()->json([
-                'message' => 'Resume analyzed successfully.',
-                'resume' => $result->toApiArray(),
-                'parsed' => $result->parsed_data,
-                'ats' => $result->ats_rating,
-                'job_match' => $result->job_match,
-                'profile' => $this->cvProfileService->toApiPayload($result->cvProfile),
-            ]);
+            return response()->json($this->successPayload($result, 'Resume analyzed successfully.'));
         } catch (\Throwable $exception) {
-            $resume->update([
-                'status' => Resume::STATUS_FAILED,
-                'error_message' => $exception->getMessage(),
-            ]);
-
-            return response()->json([
-                'message' => 'Resume analysis failed.',
-                'error' => $exception->getMessage(),
-                'resume' => $resume->fresh()->toApiArray(),
-            ], 422);
+            return $this->failureResponse($resume, $exception, 'Resume analysis failed.');
         }
     }
 
@@ -136,7 +119,7 @@ class ResumeController extends Controller
             $resume->extracted_text ?? ''
         );
 
-        $resume->update(['ats_rating' => $atsRating]);
+        $resume->update(['ats_rating' => Utf8::sanitizeArray($atsRating)]);
 
         return response()->json(['ats' => $atsRating]);
     }
@@ -168,44 +151,52 @@ class ResumeController extends Controller
         return response()->json(['job_match' => $jobMatch]);
     }
 
+private function successPayload(Resume $result, string $message): array
+    {
+        $parsed = $result->parsed_data ?? [];
+
+        return [
+            'message' => $message,
+            'resume' => $result->toApiArray(),
+            'parsed' => $parsed,
+            'structured' => $this->pipeline->presentForApi($parsed),
+            'ats' => $result->ats_rating,
+            'job_match' => $result->job_match,
+            'profile' => $result->cvProfile
+                ? $this->cvProfileService->toApiPayload($result->cvProfile)
+                : null,
+        ];
+    }
+
+    private function failureResponse(Resume $resume, \Throwable $exception, string $message): JsonResponse
+    {
+        $errors = $exception instanceof ValidationException
+            ? $exception->errors()
+            : [];
+
+        $errorMessage = $errors !== []
+            ? collect($errors)->flatten()->first() ?? 'Validation failed.'
+            : Utf8::sanitizeString($exception->getMessage());
+
+        $resume->update([
+            'status' => Resume::STATUS_FAILED,
+            'error_message' => Utf8::sanitizeString($errorMessage),
+        ]);
+
+        return response()->json([
+            'message' => $message,
+            'error' => $errorMessage,
+            'errors' => $errors,
+            'resume' => $resume->fresh()->toApiArray(),
+        ], 422);
+    }
+
     private function latestResumeForUser(Request $request): ?Resume
     {
         return Resume::query()
             ->where('user_id', $request->user()->id)
             ->latest()
             ->first();
-    }
-
-    private function processResume(Resume $resume): Resume
-    {
-        $resume->update([
-            'status' => Resume::STATUS_PROCESSING,
-            'error_message' => null,
-        ]);
-
-        return DB::transaction(function () use ($resume) {
-            $extractedText = $this->ocrService->extractFromPdf($resume->path, 'local');
-            $parsedData = $this->aiService->parseCvText($extractedText);
-            $atsRating = $this->cvRatingService->rate($parsedData, $extractedText);
-
-            $jobs = \App\Models\JobListing::query()->where('is_active', true)->get();
-            $this->jobMatchingService->ensureJobEmbeddings($jobs);
-            $jobMatch = $this->jobMatchingService->match($parsedData);
-
-            $profile = $this->cvProfileService->syncFromParsedData($resume->user, $parsedData);
-
-            $resume->update([
-                'cv_profile_id' => $profile->id,
-                'extracted_text' => $extractedText,
-                'parsed_data' => $parsedData,
-                'ats_rating' => $atsRating,
-                'job_match' => $jobMatch,
-                'status' => Resume::STATUS_COMPLETED,
-                'analyzed_at' => now(),
-            ]);
-
-            return $resume->fresh(['cvProfile']);
-        });
     }
 
     private function authorizeResume(Request $request, Resume $resume): void

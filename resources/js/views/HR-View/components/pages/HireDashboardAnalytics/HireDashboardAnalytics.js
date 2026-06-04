@@ -53,7 +53,7 @@ const HireDashboardAnalytics = () => {
           </div>
         </div>
 
-        {/* ── Stat cards ── */}
+        {}
         <div className="hire-analytics-stats">
           {stats.map((s) => {
             const Icon = ICON_MAP[s.icon] || FaUsers;
@@ -75,7 +75,7 @@ const HireDashboardAnalytics = () => {
 
         <div className="hire-analytics-row">
 
-          {/* ── Applications by Job ── */}
+          {}
           <div className="hire-analytics-card">
             <h3>Applications by Job</h3>
             {loading && <p className="hire-analytics-empty">Loading…</p>}
@@ -100,7 +100,7 @@ const HireDashboardAnalytics = () => {
             )}
           </div>
 
-          {/* ── Hiring Funnel ── */}
+          {}
           <div className="hire-analytics-card">
             <h3>Hiring Funnel</h3>
             {loading && <p className="hire-analytics-empty">Loading…</p>}
@@ -131,7 +131,7 @@ const HireDashboardAnalytics = () => {
 
         </div>
 
-        {/* ── Applications Over Time ── */}
+        {}
         <div className="hire-analytics-card hire-analytics-card--full">
           <h3>Applications Over Time</h3>
           {loading && <p className="hire-analytics-empty">Loading…</p>}

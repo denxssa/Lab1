@@ -71,9 +71,7 @@ class User extends Authenticatable implements JWTSubject
         return $this->role === self::ROLE_CANDIDATE;
     }
 
-    // ── Relationships ─────────────────────────────────────────────────────────
-
-    public function invitedBy(): BelongsTo
+public function invitedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'invited_by');
     }
@@ -126,5 +124,10 @@ class User extends Authenticatable implements JWTSubject
     public function candidateApplications(): HasMany
     {
         return $this->hasMany(JobApplication::class, 'candidate_user_id');
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->latest();
     }
 }

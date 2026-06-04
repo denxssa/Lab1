@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-/** How often open message views refetch from the API (ms). */
 export const MESSAGES_POLL_MS = 4000;
 
 export function listConversations() {

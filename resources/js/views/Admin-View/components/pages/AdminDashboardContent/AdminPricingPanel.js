@@ -28,8 +28,7 @@ const AdminPricingPanel = ({ pageContent, updatePageContent }) => {
   const updateCopyField = (key, value) => setCopyForm(cur => ({ ...cur, [key]: value }));
   const submitCopy = (e) => { e.preventDefault(); updatePageContent('pricing', copyForm); };
 
-  // Plans state
-  const [plans, setPlans]               = useState([]);
+const [plans, setPlans]               = useState([]);
   const [form, setForm]                 = useState(EMPTY);
   const [loading, setLoading]           = useState(false);
   const [editId, setEditId]             = useState(null);

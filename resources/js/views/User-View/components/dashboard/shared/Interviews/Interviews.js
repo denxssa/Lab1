@@ -8,6 +8,7 @@ import {
   formatStatusLabel,
   typeLabel,
 } from '../../../../../../utils/interviewUtils';
+import { USER_INTERVIEWS_PATH, userInterviewJoinPath } from '../../../../../../utils/interviewRoutes';
 import './Interviews.scss';
 
 const Interviews = () => {
@@ -43,11 +44,13 @@ const Interviews = () => {
 
   if (token) {
     return (
-      <main className="interviews">
-        <InterviewMeeting
-          token={token}
-          onLeave={() => navigate('/interviews')}
-        />
+      <main className="interviews interviews--meeting">
+        <div className="interviews__meeting">
+          <InterviewMeeting
+            token={token}
+            onLeave={() => navigate(USER_INTERVIEWS_PATH)}
+          />
+        </div>
       </main>
     );
   }
@@ -90,7 +93,7 @@ const Interviews = () => {
             {interview.type === 'video' && interview.status !== 'cancelled' && (
               <button
                 type="button"
-                onClick={() => navigate(`/interviews/join/${interview.access_token}`)}
+                onClick={() => navigate(userInterviewJoinPath(interview.access_token))}
               >
                 <FaExternalLinkAlt aria-hidden="true" />
                 Join

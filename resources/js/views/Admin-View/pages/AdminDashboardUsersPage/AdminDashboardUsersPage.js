@@ -11,11 +11,9 @@ import {
 import '../../components/shared/AdminShared.scss';
 import './AdminDashboardUsersPage.scss';
 
-// ── Status badge ──────────────────────────────────────────────────────────────
-
 const STATUS_META = {
     active:             { label: 'Active',             bg: '#d1fae5', color: '#065f46' },
-    pending_activation: { label: 'Pending Activation', bg: '#fef3c7', color: '#92400e' },
+    pending_activation: { label: 'Pending', bg: '#fef3c7', color: '#92400e' },
     suspended:          { label: 'Suspended',          bg: '#fee2e2', color: '#991b1b' },
 };
 
@@ -27,8 +25,6 @@ function StatusBadge({ status }) {
         </span>
     );
 }
-
-// ── Invite Modal ──────────────────────────────────────────────────────────────
 
 function InviteModal({ onClose, onCreated }) {
     const [form, setForm]    = useState({ name: '', email: '', company: '' });
@@ -95,8 +91,6 @@ function InviteModal({ onClose, onCreated }) {
     );
 }
 
-// ── Edit Modal ────────────────────────────────────────────────────────────────
-
 function EditModal({ user, onClose, onUpdated }) {
     const [form, setForm]    = useState({ name: user.name, company: user.company ?? '' });
     const [loading, setLoad] = useState(false);
@@ -152,8 +146,6 @@ function EditModal({ user, onClose, onUpdated }) {
         </div>
     );
 }
-
-// ── Main page ─────────────────────────────────────────────────────────────────
 
 const AdminDashboardUsersPage = () => {
     const [hrUsers, setHrUsers]       = useState({ data: [], meta: {} });
@@ -223,7 +215,9 @@ const AdminDashboardUsersPage = () => {
     };
 
     const users = hrUsers.data ?? [];
-    const meta  = hrUsers.meta ?? {};
+    const totalHrUsers = hrUsers.total ?? users.length;
+    const currentPage = hrUsers.current_page ?? 1;
+    const lastPage = hrUsers.last_page ?? 1;
 
     const fmt = (iso) => iso
         ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -251,7 +245,7 @@ const AdminDashboardUsersPage = () => {
                 />
             )}
 
-            {/* Header card */}
+            {}
             <section className="admin-card">
                 <div className="admin-card-head">
                     <div>
@@ -265,7 +259,7 @@ const AdminDashboardUsersPage = () => {
 
                 <div className="au-stat-row">
                     {[
-                        { label: 'Total HR users',    value: meta.total ?? '—',                                             Icon: FiUser       },
+                        { label: 'Total HR users',    value: totalHrUsers,                                             Icon: FiUser       },
                         { label: 'Active',            value: users.filter((u) => u.account_status === 'active').length,     Icon: FiBriefcase, c: '#065f46', bg: '#d1fae5' },
                         { label: 'Pending activation',value: users.filter((u) => u.account_status === 'pending_activation').length, Icon: FiMail, c: '#92400e', bg: '#fef3c7' },
                         { label: 'Suspended',         value: users.filter((u) => u.account_status === 'suspended').length,  Icon: FiSlash,     c: '#991b1b', bg: '#fee2e2' },
@@ -279,8 +273,8 @@ const AdminDashboardUsersPage = () => {
                 </div>
             </section>
 
-            {/* Table card */}
-            <section className="admin-card">
+            {}
+            <section className="admin-card admin-card--table">
                 <div className="au-toolbar">
                     <div className="admin-input-with-icon">
                         <FiSearch />
@@ -317,24 +311,33 @@ const AdminDashboardUsersPage = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {users.map((user) => (
+                                {users.map((user, index) => {
+                                    const menuOpensUp = index >= users.length - 2;
+
+                                    return (
                                     <tr key={user.id}>
                                         <td><strong>{user.name}</strong></td>
-                                        <td className="au-muted">{user.email}</td>
-                                        <td>{user.company ?? '—'}</td>
+                                        <td className="au-muted au-cell-email">{user.email}</td>
+                                        <td className="au-cell-company">{user.company ?? '—'}</td>
                                         <td><StatusBadge status={user.account_status} /></td>
-                                        <td className="au-muted">{fmt(user.last_login_at)}</td>
-                                        <td className="au-muted">{fmt(user.created_at)}</td>
-                                        <td style={{ position: 'relative' }}>
+                                        <td className="au-muted au-cell-date">{fmt(user.last_login_at)}</td>
+                                        <td className="au-muted au-cell-date">{fmt(user.created_at)}</td>
+                                        <td className="au-actions-cell">
                                             <button
+                                                type="button"
                                                 className="au-menu-btn"
                                                 onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === user.id ? null : user.id); }}
                                                 disabled={actionLoad[user.id]}
+                                                aria-label={`Actions for ${user.name}`}
+                                                aria-expanded={openMenu === user.id}
                                             >
                                                 <FiMoreVertical />
                                             </button>
                                             {openMenu === user.id && (
-                                                <div className="au-dropdown" onMouseDown={(e) => e.stopPropagation()}>
+                                                <div
+                                                    className={`au-dropdown${menuOpensUp ? ' au-dropdown--up' : ''}`}
+                                                    onMouseDown={(e) => e.stopPropagation()}
+                                                >
                                                     <button onClick={() => { setEdit(user); setOpenMenu(null); }}>
                                                         <FiEdit2 /> Edit
                                                     </button>
@@ -355,17 +358,18 @@ const AdminDashboardUsersPage = () => {
                                             )}
                                         </td>
                                     </tr>
-                                ))}
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
                 )}
 
-                {meta.last_page > 1 && (
+                {lastPage > 1 && (
                     <div className="au-pagination">
                         <button className="admin-btn admin-btn-light" onClick={() => setPage((p) => p - 1)} disabled={page <= 1}>← Prev</button>
-                        <span>Page {meta.current_page} of {meta.last_page}</span>
-                        <button className="admin-btn admin-btn-light" onClick={() => setPage((p) => p + 1)} disabled={page >= meta.last_page}>Next →</button>
+                        <span>Page {currentPage} of {lastPage}</span>
+                        <button className="admin-btn admin-btn-light" onClick={() => setPage((p) => p + 1)} disabled={page >= lastPage}>Next →</button>
                     </div>
                 )}
             </section>

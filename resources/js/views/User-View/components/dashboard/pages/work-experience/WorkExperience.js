@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiBriefcase, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { normalizeExperience } from '../../../../../../utils/formFieldUtils';
 import './WorkExperience.scss';
 
 const initialExperiences = [
@@ -16,7 +17,9 @@ const initialExperiences = [
 
 export default function WorkExperience({ experiences: controlledExperiences, onExperiencesChange }) {
     const [internalExperiences, setInternalExperiences] = useState(initialExperiences);
-    const experiences = controlledExperiences ?? internalExperiences;
+    const experiences = (controlledExperiences ?? internalExperiences).map((exp, index) =>
+        normalizeExperience(exp, index)
+    );
     const setExperiences = onExperiencesChange ?? setInternalExperiences;
 
     const handleChange = (id, field, value) => {

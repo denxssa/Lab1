@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { fetchCandidateProfile } from '../../../../../api/hrApi';
+import { FiDownload } from 'react-icons/fi';
+import { downloadCandidateResume, fetchCandidateProfile } from '../../../../../api/hrApi';
 import './CandidateProfileModal.scss';
 
-// Turns "2026-06" or "2026-06-15" → "Jun 2026", leaves other strings as-is
 const fmtDate = (raw) => {
   if (!raw) return '';
   const m = raw.match(/^(\d{4})-(\d{2})/);
@@ -24,6 +24,8 @@ const CandidateProfileModal = ({ candidate, onClose, onSchedule, onOffer, onReje
   const [profile, setProfile]   = useState(null);
   const [loading, setLoading]   = useState(false);
   const [error,   setError]     = useState('');
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState('');
 
   useEffect(() => {
     const userId = candidate?.candidate_user_id ?? candidate?.id;
@@ -39,8 +41,7 @@ const CandidateProfileModal = ({ candidate, onClose, onSchedule, onOffer, onReje
 
   if (!candidate) return null;
 
-  // Merge fetched profile with application-level data for display
-  const name     = profile?.name     ?? candidate.name;
+const name     = profile?.name     ?? candidate.name;
   const initials = profile?.initials ?? candidate.initials;
   const email    = profile?.email    ?? candidate.email    ?? '—';
   const phone    = profile?.phone    ?? candidate.phone    ?? '';
@@ -52,6 +53,21 @@ const CandidateProfileModal = ({ candidate, onClose, onSchedule, onOffer, onReje
   const experiences = profile?.experiences ?? [];
   const education   = profile?.education   ?? [];
   const resume      = profile?.resume      ?? null;
+  const candidateUserId = profile?.id ?? candidate?.candidate_user_id ?? candidate?.id;
+
+  const handleDownloadResume = async () => {
+    if (!candidateUserId || !resume?.filename) return;
+
+    setDownloading(true);
+    setDownloadError('');
+    try {
+      await downloadCandidateResume(candidateUserId, resume.filename);
+    } catch {
+      setDownloadError('Could not download resume. The file may be missing.');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const mostRecentExp = experiences[0];
   const experienceLabel = mostRecentExp
@@ -88,7 +104,7 @@ const CandidateProfileModal = ({ candidate, onClose, onSchedule, onOffer, onReje
         {!loading && (
           <div className="cpm-body">
 
-            {/* ── Left column ── */}
+            {}
             <div className="cpm-left">
 
               <div className="cpm-section">
@@ -154,7 +170,7 @@ const CandidateProfileModal = ({ candidate, onClose, onSchedule, onOffer, onReje
 
             </div>
 
-            {/* ── Right column ── */}
+            {}
             <div className="cpm-right">
 
               {summary && (
@@ -218,7 +234,7 @@ const CandidateProfileModal = ({ candidate, onClose, onSchedule, onOffer, onReje
                   <div className="cpm-resume-block">
                     <div className="cpm-resume-item">
                       <div className="cpm-resume-dot" />
-                      <div>
+                      <div className="cpm-resume-item__body">
                         <strong>{resume.filename}</strong>
                         {resume.analyzed_at && (
                           <div style={{ fontSize: 12, color: '#b0a89e' }}>Analyzed {resume.analyzed_at}</div>
@@ -229,7 +245,19 @@ const CandidateProfileModal = ({ candidate, onClose, onSchedule, onOffer, onReje
                           </div>
                         )}
                       </div>
+                      <button
+                        type="button"
+                        className="cpm-resume-download"
+                        onClick={handleDownloadResume}
+                        disabled={downloading}
+                      >
+                        <FiDownload size={14} aria-hidden="true" />
+                        {downloading ? 'Downloading…' : 'Download'}
+                      </button>
                     </div>
+                    {downloadError && (
+                      <p className="cpm-resume-download-error" role="alert">{downloadError}</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -244,7 +272,7 @@ const CandidateProfileModal = ({ candidate, onClose, onSchedule, onOffer, onReje
           </div>
         )}
 
-        {/* ── Actions ── */}
+        {}
         <div className="cpm-footer">
           <button className="cpm-action-secondary" onClick={onSchedule}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>

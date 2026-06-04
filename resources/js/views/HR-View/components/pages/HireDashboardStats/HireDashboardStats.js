@@ -1,49 +1,73 @@
-import React from 'react';
-import { FiClipboard, FiInbox, FiCalendar, FiCheckCircle } from 'react-icons/fi';
-import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
+import React, { useEffect, useState } from 'react';
+import { FiCalendar, FiCheckCircle, FiClipboard, FiInbox } from 'react-icons/fi';
+import { fetchHrOverviewStats } from '../../../../../api/hrApi';
 import './HireDashboardStats.scss';
 
-const iconMap = { FiClipboard, FiInbox, FiCalendar, FiCheckCircle };
+const ICON_MAP = { FiClipboard, FiInbox, FiCalendar, FiCheckCircle };
+
+const ACTIONS = {
+    postings:     'listings',
+    applications: 'all',
+    interviews:   'interviews',
+    hires:        'hires',
+};
 
 const HireDashboardStats = ({ setActiveTab }) => {
-  const { data } = usePlatformAdmin();
-  const stats = data.hireDashboardCards.map((item, index) => {
-    const Icon = iconMap[item.icon] || FiClipboard;
-    return {
-      ...item,
-      action: index === 0 ? 'listings' : index === 1 ? 'all' : 'shortlisted',
-      icon: <Icon color="#ffffff" size={22} />,
+    const [stats,   setStats]   = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchHrOverviewStats()
+            .then(setStats)
+            .catch(() => setStats([]))
+            .finally(() => setLoading(false));
+    }, []);
+
+    const handleClick = (id) => {
+        const action = ACTIONS[id];
+        if (action === 'listings') {
+            document.getElementById('hire-listings-anchor')?.scrollIntoView({ behavior: 'smooth' });
+        } else if (action === 'all') {
+            setActiveTab?.('All');
+            document.getElementById('hire-applications-anchor')?.scrollIntoView({ behavior: 'smooth' });
+        }
     };
-  });
 
-  const handleClick = (action) => {
-    if (action === 'listings') {
-      document.getElementById('hire-listings-anchor')?.scrollIntoView({ behavior: 'smooth' });
-    } else if (action === 'all') {
-      setActiveTab('All');
-      document.getElementById('hire-applications-anchor')?.scrollIntoView({ behavior: 'smooth' });
-    } else if (action === 'shortlisted') {
-      setActiveTab('Shortlisted');
-      document.getElementById('hire-applications-anchor')?.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+    const displayStats = loading
+        ? [
+            { id: 'postings',     label: 'Active Postings',    value: '—', sub: 'Loading…', icon: 'FiClipboard'   },
+            { id: 'applications', label: 'Applications',        value: '—', sub: 'Loading…', icon: 'FiInbox'       },
+            { id: 'interviews',   label: 'Interviews Set',      value: '—', sub: 'Loading…', icon: 'FiCalendar'    },
+            { id: 'hires',        label: 'Hires This Month',    value: '—', sub: 'Loading…', icon: 'FiCheckCircle' },
+          ]
+        : (stats ?? []);
 
-  return (
-    <section className="hire-dashboard-stats-section">
-      <div className="hire-stats-wrapper">
-        {stats.map((s) => (
-          <div key={s.label} className="hire-stat-card" onClick={() => handleClick(s.action)}>
-            <div className="hire-stat-icon">{s.icon}</div>
-            <div className="hire-stat-info">
-              <div className="hire-stat-value">{s.value}</div>
-              <div className="hire-stat-label">{s.label}</div>
-              <div className="hire-stat-sub">{s.sub}</div>
+    return (
+        <section className="hire-dashboard-stats-section">
+            <div className="hire-stats-wrapper">
+                {displayStats.map((s) => {
+                    const Icon = ICON_MAP[s.icon] || FiClipboard;
+                    return (
+                        <div
+                            key={s.id}
+                            className="hire-stat-card"
+                            onClick={() => handleClick(s.id)}
+                            style={{ cursor: ACTIONS[s.id] ? 'pointer' : 'default' }}
+                        >
+                            <div className="hire-stat-icon">
+                                <Icon color="#ffffff" size={22} />
+                            </div>
+                            <div className="hire-stat-info">
+                                <div className="hire-stat-value">{s.value}</div>
+                                <div className="hire-stat-label">{s.label}</div>
+                                <div className="hire-stat-sub">{s.sub}</div>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
+        </section>
+    );
 };
 
 export default HireDashboardStats;

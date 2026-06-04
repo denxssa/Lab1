@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { fetchHrTeam, addHrTeamMember, removeHrTeamMember } from '../../../../../api/hrApi';
+import {
+  fetchHrTeam, addHrTeamMember, removeHrTeamMember,
+  fetchHrTeamNotes, createHrTeamNote, updateHrTeamNote, deleteHrTeamNote,
+} from '../../../../../api/hrApi';
 import './HireDashboardTeam.scss';
 
 const AVATAR_COLORS = ['#111111', '#3b5bdb', '#2d7a5a', '#9a7000', '#c0392b', '#6741d9'];
-
-const DEFAULT_MEMBERS = [
-  { id: 'default-1', name: 'Denisa Gjuraj',  title: 'HR Manager',         initials: 'DG', photo: null, isDefault: true },
-  { id: 'default-2', name: 'Migjen Prenaj',  title: 'Talent Acquisition', initials: 'MP', photo: null, isDefault: true },
-  { id: 'default-3', name: 'John Doe',       title: 'Recruiter',          initials: 'JD', photo: null, isDefault: true },
-];
 
 const PinIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
@@ -20,8 +17,8 @@ const getInitials = (name) =>
   (name || '?').trim().split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
 const HireDashboardTeam = () => {
-  // ── Hiring Team ──────────────────────────────────────────────────────
-  const [team,          setTeam]          = useState(DEFAULT_MEMBERS);
+
+  const [team,          setTeam]          = useState([]);
   const [teamLoaded,    setTeamLoaded]    = useState(false);
   const [showAddMember, setShowAddMember] = useState(false);
   const [newMember,     setNewMember]     = useState({ name: '', title: '', photo: null, file: null });
@@ -31,8 +28,7 @@ const HireDashboardTeam = () => {
   useEffect(() => {
     fetchHrTeam()
       .then((data) => {
-        // Use DB data if any exists; otherwise keep the defaults
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setTeam(data.map((m) => ({
             id:       m.id,
             name:     m.name,
@@ -65,8 +61,7 @@ const HireDashboardTeam = () => {
 
       const saved = await addHrTeamMember(formData);
       setTeam((prev) => [
-        // If defaults are still showing, replace them with real data on first add
-        ...(prev[0]?.isDefault ? [] : prev),
+        ...prev,
         {
           id:       saved.id,
           name:     saved.name,
@@ -78,18 +73,13 @@ const HireDashboardTeam = () => {
       setNewMember({ name: '', title: '', photo: null, file: null });
       setShowAddMember(false);
     } catch {
-      // keep current state on error
+
     } finally {
       setSaving(false);
     }
   };
 
   const removeMember = async (id) => {
-    if (String(id).startsWith('default-')) {
-      // Just remove from local state — defaults aren't in the DB
-      setTeam((prev) => prev.filter((m) => m.id !== id));
-      return;
-    }
     setRemovingId(id);
     try {
       await removeHrTeamMember(id);
@@ -102,25 +92,69 @@ const HireDashboardTeam = () => {
     }
   };
 
-  // ── Team Notes (local — not persisted) ───────────────────────────────
-  const [notes, setNotes] = useState([
-    { id: 1, from: 'Denisa', to: 'Migjen', content: 'Review shortlisted candidates for the Frontend role before Friday.', done: false },
-    { id: 2, from: 'John',   to: 'Denisa', content: 'Can you schedule the panel interview for the Data Scientist role?',  done: false },
-    { id: 3, from: 'Migjen', to: 'John',   content: 'Reminder: send rejection emails to candidates from last week.',      done: true  },
-    { id: 4, from: 'Denisa', to: 'All',    content: 'Weekly sync moved to Thursday 2 PM this week.',                      done: false },
-  ]);
+const [notes,       setNotes]       = useState([]);
   const [showAddNote, setShowAddNote] = useState(false);
   const [newNote,     setNewNote]     = useState({ from: '', to: '', content: '' });
+  const [savingNote,  setSavingNote]  = useState(false);
 
-  const addNote = () => {
+  useEffect(() => {
+    fetchHrTeamNotes()
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setNotes(data.map((n) => ({
+            id:      n.id,
+            from:    n.from_name ?? '',
+            to:      n.to_name   ?? '',
+            content: n.content,
+            done:    n.done,
+          })));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const addNote = async () => {
     if (!newNote.content.trim()) return;
-    setNotes([{ id: Date.now(), ...newNote, done: false }, ...notes]);
-    setNewNote({ from: '', to: '', content: '' });
-    setShowAddNote(false);
+    setSavingNote(true);
+    try {
+      const saved = await createHrTeamNote({
+        content:   newNote.content.trim(),
+        from_name: newNote.from.trim(),
+        to_name:   newNote.to.trim(),
+      });
+      setNotes((prev) => [{
+        id: saved.id, from: saved.from_name ?? '', to: saved.to_name ?? '',
+        content: saved.content, done: saved.done,
+      }, ...prev]);
+      setNewNote({ from: '', to: '', content: '' });
+      setShowAddNote(false);
+    } catch {
+
+    } finally {
+      setSavingNote(false);
+    }
   };
 
-  const toggleDone = (id) => setNotes((prev) => prev.map((n) => n.id === id ? { ...n, done: !n.done } : n));
-  const deleteNote = (id) => setNotes((prev) => prev.filter((n) => n.id !== id));
+  const toggleDone = async (id) => {
+    const note = notes.find((n) => n.id === id);
+    if (!note) return;
+    const next = !note.done;
+    setNotes((prev) => prev.map((n) => n.id === id ? { ...n, done: next } : n));
+    try {
+      await updateHrTeamNote(id, { done: next });
+    } catch {
+      setNotes((prev) => prev.map((n) => n.id === id ? { ...n, done: note.done } : n));
+    }
+  };
+
+  const deleteNote = async (id) => {
+    setNotes((prev) => prev.filter((n) => n.id !== id));
+    try {
+      await deleteHrTeamNote(id);
+    } catch {
+
+    }
+  };
 
   return (
     <section className="hire-team-section">
@@ -187,6 +221,16 @@ const HireDashboardTeam = () => {
               </div>
             )}
 
+            {teamLoaded && team.length === 0 && (
+              <div className="hire-team-empty">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <p>No team members yet.<br />Click <strong>Add</strong> to build your hiring team.</p>
+              </div>
+            )}
+
             <div className="hire-team-grid">
               {team.map((member, i) => (
                 <div
@@ -243,9 +287,21 @@ const HireDashboardTeam = () => {
                   autoFocus
                 />
                 <div className="hire-team-form-btns">
-                  <button className="hire-team-confirm" onClick={addNote}>Post Note</button>
+                  <button className="hire-team-confirm" onClick={addNote} disabled={savingNote}>
+                    {savingNote ? 'Saving…' : 'Post Note'}
+                  </button>
                   <button className="hire-team-cancel"  onClick={() => setShowAddNote(false)}>Cancel</button>
                 </div>
+              </div>
+            )}
+
+            {notes.length === 0 && (
+              <div className="hire-team-empty">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+                </svg>
+                <p>No notes yet.<br />Click <strong>New Note</strong> to leave a message for your team.</p>
               </div>
             )}
 

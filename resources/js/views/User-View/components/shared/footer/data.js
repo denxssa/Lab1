@@ -25,7 +25,6 @@ export const SocialMedia = [
   }
 ];
 
-
 export const FooterData = [
   {
     category: (

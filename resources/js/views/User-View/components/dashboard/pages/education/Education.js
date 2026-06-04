@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiBookOpen, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { normalizeEducation } from '../../../../../../utils/formFieldUtils';
 import './Education.scss';
 
 const initialEducation = [
@@ -16,7 +17,9 @@ const initialEducation = [
 
 export default function Education({ education: controlledEducation, onEducationChange }) {
     const [internalEducation, setInternalEducation] = useState(initialEducation);
-    const education = controlledEducation ?? internalEducation;
+    const education = (controlledEducation ?? internalEducation).map((edu, index) =>
+        normalizeEducation(edu, index)
+    );
     const setEducation = onEducationChange ?? setInternalEducation;
 
     const handleChange = (id, field, value) => {
@@ -73,15 +76,15 @@ export default function Education({ education: controlledEducation, onEducationC
                                     placeholder="e.g. BSc Computer Science"
                                 />
                             </div>
-                            <div className="education__field">
-                                <label>Field of study</label>
-                                <input
-                                    type="text"
-                                    value={edu.fieldOfStudy || ''}
-                                    onChange={e => handleChange(edu.id, 'fieldOfStudy', e.target.value)}
-                                    placeholder="e.g. Computer Science"
-                                />
-                            </div>
+                        </div>
+                        <div className="education__field">
+                            <label>Field of study</label>
+                            <input
+                                type="text"
+                                value={edu.fieldOfStudy || ''}
+                                onChange={e => handleChange(edu.id, 'fieldOfStudy', e.target.value)}
+                                placeholder="e.g. Computer Science"
+                            />
                         </div>
                         <div className="education__row">
                             <div className="education__field">

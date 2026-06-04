@@ -82,7 +82,7 @@ const HireDashboardHires = () => {
     <section className="hire-dashboard-hires-section">
       <div className="hire-hires-wrapper">
 
-        {/* ── Header ── */}
+        {}
         <div className="hire-hires-header">
           <div>
             <h2>Hires</h2>
@@ -138,12 +138,12 @@ const HireDashboardHires = () => {
             return (
               <div key={hire.id} className="hire-hire-card">
 
-                {/* Banner */}
+                {}
                 <div className="hire-hire-banner">
                   <div className="hire-hire-avatar">{hire.initials}</div>
                 </div>
 
-                {/* Identity */}
+                {}
                 <div className="hire-hire-identity-block">
                   <div className="hire-hire-identity-left">
                     <div className="hire-hire-name">{hire.name}</div>
@@ -157,7 +157,7 @@ const HireDashboardHires = () => {
 
                 <div className="hire-hire-divider" />
 
-                {/* Details strip */}
+                {}
                 <div className="hire-hire-details-strip">
                   {hire.location && (
                     <span className="hire-hire-detail-chip">
@@ -187,7 +187,7 @@ const HireDashboardHires = () => {
 
                 <div className="hire-hire-divider" />
 
-                {/* Onboarding */}
+                {}
                 <div className="hire-hire-onboarding">
                   <div className="hire-hire-section-title-row">
                     <span className="hire-hire-section-title">Onboarding</span>

@@ -6,8 +6,7 @@ import './Toolbar.scss';
 
 const Toolbar = (props) => {
 
-
-    const [isSticky2, setIsSticky2] = useState(false);
+const [isSticky2, setIsSticky2] = useState(false);
 
     useEffect(() => {
     const mobileToolbar = document.querySelector(".mobile-toolbar");

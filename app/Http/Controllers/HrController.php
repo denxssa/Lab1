@@ -6,22 +6,90 @@ use App\Models\Interview;
 use App\Models\JobApplication;
 use App\Models\JobListing;
 use App\Models\User;
+use App\Services\ApplicationNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class HrController extends Controller
 {
-    // ── Applications (HR view) ────────────────────────────────────────────
+    public function __construct(
+        private readonly ApplicationNotificationService $applicationNotifications,
+    ) {
+    }
 
-    public function applications(): JsonResponse
+private function ownedJobIds(Request $request): Collection
     {
+        return JobListing::where('user_id', $request->user()->id)->pluck('id');
+    }
+
+public function overviewStats(Request $request): JsonResponse
+    {
+        $userId = $request->user()->id;
+        $jobIds = $this->ownedJobIds($request);
+
+        $totalJobs    = JobListing::where('user_id', $userId)->where('status', 'active')->count();
+        $totalApps    = JobApplication::whereIn('job_listing_id', $jobIds)->count();
+        $newAppsWeek  = JobApplication::whereIn('job_listing_id', $jobIds)
+                            ->where('created_at', '>=', now()->subWeek())
+                            ->count();
+        $interviews   = Interview::where('hr_user_id', $userId)->count();
+        $interviewsWeek = Interview::where('hr_user_id', $userId)
+                            ->where('created_at', '>=', now()->subWeek())
+                            ->count();
+        $hiresMonth   = JobApplication::whereIn('job_listing_id', $jobIds)
+                            ->where('status', 'hired')
+                            ->where('updated_at', '>=', now()->startOfMonth())
+                            ->count();
+
+        return response()->json([
+            'stats' => [
+                [
+                    'id'    => 'postings',
+                    'label' => 'Active Postings',
+                    'value' => $totalJobs,
+                    'sub'   => $totalJobs === 0 ? 'No active listings' : 'Currently live',
+                    'icon'  => 'FiClipboard',
+                ],
+                [
+                    'id'    => 'applications',
+                    'label' => 'Applications',
+                    'value' => $totalApps,
+                    'sub'   => $newAppsWeek > 0 ? "+{$newAppsWeek} this week" : 'No new this week',
+                    'icon'  => 'FiInbox',
+                ],
+                [
+                    'id'    => 'interviews',
+                    'label' => 'Interviews Set',
+                    'value' => $interviews,
+                    'sub'   => $interviewsWeek > 0 ? "{$interviewsWeek} this week" : 'None this week',
+                    'icon'  => 'FiCalendar',
+                ],
+                [
+                    'id'    => 'hires',
+                    'label' => 'Hires This Month',
+                    'value' => $hiresMonth,
+                    'sub'   => $hiresMonth > 0 ? 'Great progress!' : 'None yet this month',
+                    'icon'  => 'FiCheckCircle',
+                ],
+            ],
+        ]);
+    }
+
+public function applications(Request $request): JsonResponse
+    {
+        $jobIds = $this->ownedJobIds($request);
+
         $apps = JobApplication::with([
                 'candidate.cvProfile.skills',
                 'candidate.cvProfile.experiences',
                 'candidate.latestResume',
                 'jobListing',
             ])
+            ->whereIn('job_listing_id', $jobIds)
             ->orderByDesc('created_at')
             ->get()
             ->map(fn($a) => $this->mapApplication($a));
@@ -32,9 +100,23 @@ class HrController extends Controller
     public function updateApplication(Request $request, $id): JsonResponse
     {
         $app = JobApplication::findOrFail($id);
+
+if ($app->jobListing?->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
         $request->validate(['status' => 'required|in:reviewing,shortlisted,hired,rejected']);
+
+        $previousStatus = $app->status;
         $app->status = $request->status;
+
+        if ($app->status === JobApplication::STATUS_HIRED) {
+            $app->hired_at = now();
+        }
+
         $app->save();
+
+        $this->applicationNotifications->notifyStatusChange($app, $previousStatus);
 
         return response()->json([
             'application' => $this->mapApplication(
@@ -43,18 +125,19 @@ class HrController extends Controller
         ]);
     }
 
-    // ── Applicants for a specific job listing (HR view) ───────────────────
-
-    public function jobApplicants($jobListingId): JsonResponse
+public function jobApplicants(Request $request, $jobListingId): JsonResponse
     {
-        $listing = JobListing::findOrFail($jobListingId);
+        $listing = JobListing::where('id', $jobListingId)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
 
         $apps = JobApplication::with([
                 'candidate.cvProfile.skills',
+                'candidate.cvProfile.experiences',
                 'candidate.latestResume',
                 'jobListing',
             ])
-            ->where('job_listing_id', $jobListingId)
+            ->where('job_listing_id', $listing->id)
             ->orderByDesc('created_at')
             ->get()
             ->map(fn($a) => $this->mapApplication($a));
@@ -65,10 +148,12 @@ class HrController extends Controller
         ]);
     }
 
-    // ── Candidate full profile (HR view) ─────────────────────────────────
-
-    public function candidateProfile($userId): JsonResponse
+public function candidateProfile(Request $request, $userId): JsonResponse
     {
+        if (!$this->hrCanViewCandidate($request, (int) $userId)) {
+            return response()->json(['message' => 'Candidate not found.'], 404);
+        }
+
         $user = User::with([
             'cvProfile.skills',
             'cvProfile.experiences',
@@ -100,10 +185,12 @@ class HrController extends Controller
         ])->values();
 
         $resume = $user->latestResume ? [
-            'filename'    => $user->latestResume->original_filename,
-            'ats_rating'  => $user->latestResume->ats_rating,
-            'analyzed_at' => $user->latestResume->analyzed_at?->format('M d, Y'),
-            'status'      => $user->latestResume->status,
+            'id'           => $user->latestResume->id,
+            'filename'     => $user->latestResume->original_filename,
+            'ats_rating'   => $user->latestResume->ats_rating,
+            'analyzed_at'  => $user->latestResume->analyzed_at?->format('M d, Y'),
+            'status'       => $user->latestResume->status,
+            'download_url' => url("/api/hr/candidates/{$userId}/resume/download"),
         ] : null;
 
         return response()->json([
@@ -129,9 +216,54 @@ class HrController extends Controller
         ]);
     }
 
-    // ── My applications (candidate view) ─────────────────────────────────
+    public function downloadCandidateResume(Request $request, int $userId): StreamedResponse|JsonResponse
+    {
+        if (!$this->hrCanViewCandidate($request, $userId)) {
+            return response()->json(['message' => 'Candidate not found.'], 404);
+        }
 
-    public function myApplications(Request $request): JsonResponse
+        $resume = User::query()
+            ->with('latestResume')
+            ->findOrFail($userId)
+            ->latestResume;
+
+        if (!$resume || !Storage::disk('local')->exists($resume->path)) {
+            return response()->json(['message' => 'No resume file available for this candidate.'], 404);
+        }
+
+        $filename = $resume->original_filename ?: 'resume.pdf';
+        $mime = $this->resumeMimeType($filename);
+
+        return Storage::disk('local')->download($resume->path, $filename, [
+            'Content-Type' => $mime,
+        ]);
+    }
+
+    private function hrCanViewCandidate(Request $request, int $userId): bool
+    {
+        $jobIds = $this->ownedJobIds($request);
+
+        if ($jobIds->isEmpty()) {
+            return false;
+        }
+
+        return JobApplication::query()
+            ->where('candidate_user_id', $userId)
+            ->whereIn('job_listing_id', $jobIds)
+            ->exists();
+    }
+
+    private function resumeMimeType(string $filename): string
+    {
+        return match (strtolower(pathinfo($filename, PATHINFO_EXTENSION))) {
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            default => 'application/octet-stream',
+        };
+    }
+
+public function myApplications(Request $request): JsonResponse
     {
         $apps = JobApplication::with(['jobListing'])
             ->where('candidate_user_id', $request->user()->id)
@@ -154,22 +286,24 @@ class HrController extends Controller
         return response()->json(['applications' => $apps]);
     }
 
-    // ── Analytics ────────────────────────────────────────────────────────
-
-    public function analytics(): JsonResponse
+public function analytics(Request $request): JsonResponse
     {
-        $totalApps   = JobApplication::count();
-        $activeJobs  = JobListing::where('status', 'active')->count();
-        $hired       = JobApplication::where('status', 'hired')->count();
-        $shortlisted = JobApplication::where('status', 'shortlisted')->count();
-        $interviewed = Interview::count();
+        $userId = $request->user()->id;
+        $jobIds = $this->ownedJobIds($request);
+
+        $totalApps   = JobApplication::whereIn('job_listing_id', $jobIds)->count();
+        $activeJobs  = JobListing::where('user_id', $userId)->where('status', 'active')->count();
+        $hired       = JobApplication::whereIn('job_listing_id', $jobIds)->where('status', 'hired')->count();
+        $shortlisted = JobApplication::whereIn('job_listing_id', $jobIds)->where('status', 'shortlisted')->count();
+        $interviewed = Interview::where('hr_user_id', $userId)->count();
+
         $conversionRate = $totalApps > 0 ? round(($hired / $totalApps) * 100, 1) : 0;
 
         $stats = [
-            ['label' => 'Total Applications', 'value' => (string) $totalApps,  'icon' => 'FaUsers'],
-            ['label' => 'Conversion Rate',    'value' => $conversionRate . '%', 'icon' => 'FaPercent'],
-            ['label' => 'Avg. Time to Hire',  'value' => '—',                   'icon' => 'FaClock'],
-            ['label' => 'Active Jobs',        'value' => (string) $activeJobs,  'icon' => 'FaBriefcase'],
+            ['label' => 'Total Applications', 'value' => (string) $totalApps,   'icon' => 'FaUsers'],
+            ['label' => 'Conversion Rate',    'value' => $conversionRate . '%',  'icon' => 'FaPercent'],
+            ['label' => 'Avg. Time to Hire',  'value' => '—',                    'icon' => 'FaClock'],
+            ['label' => 'Active Jobs',        'value' => (string) $activeJobs,   'icon' => 'FaBriefcase'],
         ];
 
         $funnel = [
@@ -181,6 +315,7 @@ class HrController extends Controller
 
         $byJob = JobApplication::query()
             ->join('job_listings', 'job_applications.job_listing_id', '=', 'job_listings.id')
+            ->where('job_listings.user_id', $userId)
             ->select('job_listings.title', DB::raw('count(*) as apps'))
             ->groupBy('job_listings.id', 'job_listings.title')
             ->orderByDesc('apps')
@@ -193,7 +328,8 @@ class HrController extends Controller
         $monthly = [];
         for ($i = 5; $i >= 0; $i--) {
             $date  = now()->subMonths($i);
-            $count = JobApplication::whereYear('created_at', $date->year)
+            $count = JobApplication::whereIn('job_listing_id', $jobIds)
+                ->whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->count();
             $monthly[] = ['month' => $date->format('M'), 'apps' => $count];
@@ -202,11 +338,12 @@ class HrController extends Controller
         return response()->json(compact('stats', 'funnel', 'byJob', 'monthly'));
     }
 
-    // ── Hires ─────────────────────────────────────────────────────────────
-
-    public function hires(): JsonResponse
+public function hires(Request $request): JsonResponse
     {
+        $jobIds = $this->ownedJobIds($request);
+
         $hires = JobApplication::with(['candidate', 'jobListing'])
+            ->whereIn('job_listing_id', $jobIds)
             ->where('status', 'hired')
             ->orderByDesc('updated_at')
             ->get()
@@ -233,9 +370,7 @@ class HrController extends Controller
         return response()->json(['hires' => $hires]);
     }
 
-    // ── Apply (candidate) ────────────────────────────────────────────────
-
-    public function apply(Request $request, $jobListingId): JsonResponse
+public function apply(Request $request, $jobListingId): JsonResponse
     {
         $listing = JobListing::where('status', 'active')->findOrFail($jobListingId);
 
@@ -256,39 +391,37 @@ class HrController extends Controller
         return response()->json(['application' => $application], 201);
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────
-
-    private function mapApplication(JobApplication $app): array
+private function mapApplication(JobApplication $app): array
     {
         $name = $app->candidate?->name ?? 'Unknown';
         $cv   = $app->candidate?->cvProfile;
 
         $skills = $cv?->skills?->pluck('name')->toArray() ?? [];
 
-        $latestExp = $cv?->experiences?->first();
+        $latestExp  = $cv?->experiences?->first();
         $experience = $latestExp
             ? trim(($latestExp->role ?? '') . ($latestExp->company ? ' at ' . $latestExp->company : ''))
             : '—';
 
         return [
-            'id'               => $app->id,
-            'candidate_user_id'=> $app->candidate_user_id,
-            'name'             => $name,
-            'initials'         => $this->initials($name),
-            'role'             => $app->jobListing?->title    ?? '—',
-            'company'          => $app->jobListing?->company  ?? '—',
-            'status'           => ucfirst($app->status),
-            'date'             => $app->created_at?->diffForHumans() ?? '—',
-            'email'            => $app->candidate?->email ?? '—',
-            'phone'            => $cv?->phone    ?? '',
-            'linkedin'         => $cv?->linkedin ?? '',
-            'location'         => $cv?->location ?? $app->jobListing?->location ?? '—',
-            'summary'          => $cv?->summary  ?? '',
-            'headline'         => $cv?->headline ?? '',
-            'skills'           => $skills,
-            'experience'       => $experience,
-            'job_listing_id'   => $app->job_listing_id,
-            'history'          => [
+            'id'                => $app->id,
+            'candidate_user_id' => $app->candidate_user_id,
+            'name'              => $name,
+            'initials'          => $this->initials($name),
+            'role'              => $app->jobListing?->title    ?? '—',
+            'company'           => $app->jobListing?->company  ?? '—',
+            'status'            => ucfirst($app->status),
+            'date'              => $app->created_at?->diffForHumans() ?? '—',
+            'email'             => $app->candidate?->email ?? '—',
+            'phone'             => $cv?->phone    ?? '',
+            'linkedin'          => $cv?->linkedin ?? '',
+            'location'          => $cv?->location ?? $app->jobListing?->location ?? '—',
+            'summary'           => $cv?->summary  ?? '',
+            'headline'          => $cv?->headline ?? '',
+            'skills'            => $skills,
+            'experience'        => $experience,
+            'job_listing_id'    => $app->job_listing_id,
+            'history'           => [
                 ['stage' => 'Applied', 'date' => $app->created_at?->format('M d, Y') ?? '—'],
             ],
         ];

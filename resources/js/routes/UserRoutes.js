@@ -1,3 +1,4 @@
+import { Navigate } from "react-router-dom";
 import UserViewLayout from "../views/User-View/UserViewLayout";
 
 import Home from "../views/User-View/pages/Home/Home";
@@ -40,6 +41,8 @@ export const userRoutes = [{
             { path: "/user-dashboard/interviews", element: <Interview /> },
             { path: "/user-dashboard/interviews/join/:token", element: <Interview /> },
             { path: "/user-dashboard/interviews/:roomName", element: <Interview /> },
+            { path: "/interviews", element: <Navigate to="/user-dashboard/interviews" replace /> },
+            { path: "/interviews/join/:token", element: <Interview /> },
             { path: "/user-dashboard/profile", element: <ProfilePage /> },
             { path: "/user-dashboard/messages", element: <MessagesPage /> },
             { path: "/user-dashboard/resume", element: <ResumePage /> },

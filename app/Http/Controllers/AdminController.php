@@ -14,9 +14,8 @@ use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
-    // ── Stats ──────────────────────────────────────────────────────────────
 
-    public function stats(): JsonResponse
+public function stats(): JsonResponse
     {
         return response()->json([
             'total_users'        => User::count(),
@@ -31,9 +30,7 @@ class AdminController extends Controller
         ]);
     }
 
-    // ── HR Users ───────────────────────────────────────────────────────────
-
-    public function index(Request $request): JsonResponse
+public function index(Request $request): JsonResponse
     {
         $query = User::where('role', User::ROLE_HR);
 
@@ -165,9 +162,7 @@ class AdminController extends Controller
         return response()->json(['message' => 'Password reset. Invitation email sent.']);
     }
 
-    // ── Activity Logs ──────────────────────────────────────────────────────
-
-    public function logs(Request $request): JsonResponse
+public function logs(Request $request): JsonResponse
     {
         $query = ActivityLog::with('user:id,name,email');
 

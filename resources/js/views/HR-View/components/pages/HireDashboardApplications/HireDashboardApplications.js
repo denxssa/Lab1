@@ -23,10 +23,9 @@ const HireDashboardApplications = ({ activeTab: propTab, setActiveTab: propSetTa
   const [notes,        setNotes]        = useState({});
   const [savedNote,    setSavedNote]    = useState(null);
 
-  // Modal states
-  const [showProfile,  setShowProfile]  = useState(false);
+const [showProfile,  setShowProfile]  = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
-  const [offerModal,   setOfferModal]   = useState(null); // 'offer' | 'rejection' | null
+  const [offerModal,   setOfferModal]   = useState(null); 
 
   useEffect(() => {
     if (openDropdown === null) return;
@@ -82,7 +81,7 @@ const HireDashboardApplications = ({ activeTab: propTab, setActiveTab: propSetTa
     <section className="hire-dashboard-applications-section" id="hire-applications-anchor">
       <div className="hire-applications-wrapper">
 
-        {/* ── Header ── */}
+        {}
         <div className="hire-applications-header">
           <div>
             <h2>Recent Applications</h2>
@@ -111,7 +110,7 @@ const HireDashboardApplications = ({ activeTab: propTab, setActiveTab: propSetTa
           </div>
         </div>
 
-        {/* ── Toolbar ── */}
+        {}
         <div className="hire-app-toolbar">
           <div className="hire-app-search">
             <FaSearch className="hire-search-icon" />

@@ -13,6 +13,8 @@ class Resume extends Model
 
     public const STATUS_COMPLETED = 'completed';
 
+public const STATUS_PARSED = 'completed';
+
     public const STATUS_FAILED = 'failed';
 
     protected $fillable = [

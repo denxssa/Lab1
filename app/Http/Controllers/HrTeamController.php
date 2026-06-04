@@ -9,14 +9,12 @@ use Illuminate\Support\Facades\Storage;
 
 class HrTeamController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $members = HrTeamMember::orderBy('created_at')->get()->map(fn($m) => [
-            'id'    => $m->id,
-            'name'  => $m->name,
-            'title' => $m->title,
-            'photo' => $m->photo_path ? asset('storage/' . $m->photo_path) : null,
-        ]);
+        $members = HrTeamMember::where('user_id', $request->user()->id)
+            ->orderBy('created_at')
+            ->get()
+            ->map(fn($m) => $this->format($m));
 
         return response()->json($members);
     }
@@ -35,22 +33,20 @@ class HrTeamController extends Controller
         }
 
         $member = HrTeamMember::create([
+            'user_id'    => $request->user()->id,
             'name'       => $request->name,
             'title'      => $request->title ?? 'Team Member',
             'photo_path' => $photoPath,
         ]);
 
-        return response()->json([
-            'id'    => $member->id,
-            'name'  => $member->name,
-            'title' => $member->title,
-            'photo' => $member->photo_path ? asset('storage/' . $member->photo_path) : null,
-        ], 201);
+        return response()->json($this->format($member), 201);
     }
 
-    public function destroy($id): JsonResponse
+    public function destroy(Request $request, $id): JsonResponse
     {
-        $member = HrTeamMember::findOrFail($id);
+        $member = HrTeamMember::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
 
         if ($member->photo_path) {
             Storage::disk('public')->delete($member->photo_path);
@@ -59,5 +55,15 @@ class HrTeamController extends Controller
         $member->delete();
 
         return response()->json(['message' => 'Deleted']);
+    }
+
+    private function format(HrTeamMember $m): array
+    {
+        return [
+            'id'    => $m->id,
+            'name'  => $m->name,
+            'title' => $m->title,
+            'photo' => $m->photo_path ? asset('storage/' . $m->photo_path) : null,
+        ];
     }
 }

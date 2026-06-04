@@ -5,8 +5,6 @@ import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
 
 import './JobsFilters.scss';
 
-
-
 const JobsFilters = ({
 
   activeFilters,
@@ -40,9 +38,7 @@ const JobsFilters = ({
 
     : activeFilters.join(', ');
 
-
-
-  return (
+return (
 
     <section className="jobs-filters" data-aos="fade-up" data-aos-delay="100">
 
@@ -72,9 +68,7 @@ const JobsFilters = ({
 
       </div>
 
-
-
-      <div className="jobs-filter-buttons">
+<div className="jobs-filter-buttons">
 
         {filterButtons.map((button) => {
 
@@ -84,9 +78,7 @@ const JobsFilters = ({
 
             : activeFilters.includes(button);
 
-
-
-          return (
+return (
 
             <button
 
@@ -110,9 +102,7 @@ const JobsFilters = ({
 
       </div>
 
-
-
-      <div className="jobs-filters-info">
+<div className="jobs-filters-info">
 
         <p>
 
@@ -146,8 +136,5 @@ const JobsFilters = ({
 
 };
 
-
-
 export default JobsFilters;
-
 

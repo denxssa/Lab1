@@ -1,12 +1,8 @@
 import axios from 'axios';
 
-// ── Stats ──────────────────────────────────────────────────────────────────────
-
 export function fetchAdminStats() {
     return axios.get('/api/admin/stats').then((r) => r.data);
 }
-
-// ── HR Users ───────────────────────────────────────────────────────────────────
 
 export function fetchHrUsers(params = {}) {
     return axios.get('/api/admin/hr-users', { params }).then((r) => r.data);
@@ -31,8 +27,6 @@ export function reactivateHrUser(id) {
 export function resetHrUserPassword(id) {
     return axios.post(`/api/admin/hr-users/${id}/reset-password`).then((r) => r.data);
 }
-
-// ── Activity Logs ──────────────────────────────────────────────────────────────
 
 export function fetchActivityLogs(params = {}) {
     return axios.get('/api/admin/logs', { params }).then((r) => r.data);

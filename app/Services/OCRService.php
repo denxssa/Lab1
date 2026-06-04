@@ -10,7 +10,8 @@ use thiagoalessio\TesseractOCR\TesseractOCR;
 
 class OCRService
 {
-    public function extractFromPdf(string $storagePath, string $disk = 'local'): string
+
+public function extractRawFromPdf(string $storagePath, string $disk = 'local'): string
     {
         $absolutePath = Storage::disk($disk)->path($storagePath);
 
@@ -18,83 +19,166 @@ class OCRService
             throw new \RuntimeException('Resume file not found for text extraction.');
         }
 
-        $text = $this->extractWithPdfToText($absolutePath);
+$text = $this->extractWithPdfToText($absolutePath);
 
-        if ($this->isTextTooShort($text)) {
+if ($this->isTextTooShort($text)) {
             $text = $this->extractWithPdfParser($absolutePath);
         }
 
-        if ($this->isTextTooShort($text) && config('resume.ocr.tesseract_enabled')) {
-            $text = $this->extractWithTesseract($absolutePath);
-        }
+if ($this->isTextTooShort($text) && config('resume.ocr.tesseract_enabled')) {
+            $text = $this->extractWithTesseractViaImages($absolutePath);
 
-        $text = $this->normalizeText($text);
-
-        if ($this->isTextTooShort($text)) {
-            throw new \RuntimeException('Unable to extract readable text from the PDF. Try a text-based PDF or enable OCR.');
+if ($this->isTextTooShort($text)) {
+                $text = $this->extractWithTesseractDirect($absolutePath);
+            }
         }
 
         return $text;
     }
 
-    private function extractWithPdfToText(string $absolutePath): string
+public function extractFromPdf(string $storagePath, string $disk = 'local'): string
+    {
+        return $this->extractRawFromPdf($storagePath, $disk);
+    }
+
+private function extractWithPdfToText(string $path): string
     {
         try {
             $binary = config('resume.ocr.pdftotext_binary');
 
-            return Pdf::getText($absolutePath, $binary ?: null);
-        } catch (\Throwable $exception) {
-            Log::debug('spatie/pdf-to-text failed', ['message' => $exception->getMessage()]);
+            return Pdf::getText($path, $binary ?: null);
+        } catch (\Throwable $e) {
+            Log::debug('pdftotext failed', ['message' => $e->getMessage()]);
 
             return '';
         }
     }
 
-    private function extractWithPdfParser(string $absolutePath): string
+    private function extractWithPdfParser(string $path): string
     {
         try {
-            $parser = new PdfParser();
-            $pdf = $parser->parseFile($absolutePath);
-
-            return $pdf->getText();
-        } catch (\Throwable $exception) {
-            Log::debug('smalot/pdfparser failed', ['message' => $exception->getMessage()]);
+            return (new PdfParser())->parseFile($path)->getText();
+        } catch (\Throwable $e) {
+            Log::debug('pdfparser failed', ['message' => $e->getMessage()]);
 
             return '';
         }
     }
 
-    private function extractWithTesseract(string $absolutePath): string
+private function extractWithTesseractViaImages(string $pdfPath): string
+    {
+        $pdftoppm = config('resume.ocr.pdftoppm_binary', 'pdftoppm');
+
+        if (!$this->commandExists($pdftoppm)) {
+            Log::debug('pdftoppm not found, skipping image-based OCR');
+
+            return '';
+        }
+
+        $tmpDir = sys_get_temp_dir() . '/beehired_ocr_' . uniqid('', true);
+
+        try {
+            mkdir($tmpDir, 0700, true);
+
+$prefix  = $tmpDir . '/page';
+            $dpi     = (int) config('resume.ocr.ocr_dpi', 300);
+            $command = sprintf(
+                '%s -r %d -png %s %s 2>/dev/null',
+                escapeshellcmd($pdftoppm),
+                $dpi,
+                escapeshellarg($pdfPath),
+                escapeshellarg($prefix)
+            );
+
+            exec($command, $output, $code);
+
+            $images = glob($tmpDir . '/page-*.png') ?: glob($tmpDir . '/page*.png') ?: [];
+            sort($images);
+
+            if (!$images) {
+                return '';
+            }
+
+            $pages = [];
+            foreach ($images as $image) {
+                $pages[] = $this->tesseractOnImage($image);
+            }
+
+            return implode("\n\n", array_filter($pages));
+
+        } catch (\Throwable $e) {
+            Log::debug('Tesseract via images failed', ['message' => $e->getMessage()]);
+
+            return '';
+        } finally {
+            $this->removeDirectory($tmpDir);
+        }
+    }
+
+private function extractWithTesseractDirect(string $path): string
     {
         try {
-            $ocr = new TesseractOCR($absolutePath);
+            $ocr    = new TesseractOCR($path);
             $binary = config('resume.ocr.tesseract_binary');
 
             if ($binary) {
                 $ocr->executable($binary);
             }
 
-            return $ocr->run();
-        } catch (\Throwable $exception) {
-            Log::debug('tesseract OCR failed', ['message' => $exception->getMessage()]);
+            return (string) $ocr->run();
+        } catch (\Throwable $e) {
+            Log::debug('Tesseract direct failed', ['message' => $e->getMessage()]);
 
             return '';
         }
     }
 
-    private function isTextTooShort(string $text): bool
+    private function tesseractOnImage(string $imagePath): string
     {
-        return mb_strlen(trim($text)) < (int) config('resume.ocr.min_text_length', 80);
+        try {
+            $ocr    = new TesseractOCR($imagePath);
+            $binary = config('resume.ocr.tesseract_binary');
+
+            if ($binary) {
+                $ocr->executable($binary);
+            }
+
+$langs = config('resume.ocr.tesseract_languages', ['eng']);
+            $ocr->lang(...$langs);
+
+$ocr->psm(6);
+
+            return (string) $ocr->run();
+        } catch (\Throwable $e) {
+            Log::debug('Tesseract image page failed', ['message' => $e->getMessage(), 'image' => $imagePath]);
+
+            return '';
+        }
     }
 
-    private function normalizeText(string $text): string
+private function isTextTooShort(string $text): bool
     {
-        $text = str_replace(["\r\n", "\r"], "\n", $text);
-        $text = preg_replace("/([A-Za-z])-\n([A-Za-z])/", '$1$2', $text) ?? $text;
-        $text = preg_replace("/[ \t]+/", ' ', $text) ?? $text;
-        $text = preg_replace("/[ \t]*\n[ \t]*/", "\n", $text) ?? $text;
-        $text = preg_replace("/\n{3,}/", "\n\n", $text) ?? $text;
+        return mb_strlen(trim($text)) < (int) config('resume.ocr.min_text_length', 200);
+    }
 
-        return trim($text);
+    private function commandExists(string $command): bool
+    {
+        $which = PHP_OS_FAMILY === 'Windows' ? 'where' : 'which';
+        exec("{$which} " . escapeshellarg($command) . ' 2>/dev/null', $out, $code);
+
+        return $code === 0;
+    }
+
+    private function removeDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        foreach (glob($dir . '/*') ?: [] as $file) {
+            is_dir($file) ? $this->removeDirectory($file) : unlink($file);
+        }
+
+        rmdir($dir);
     }
 }

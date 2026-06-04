@@ -46,8 +46,7 @@ const AdminAboutPanel = ({
   };
   const activeGroup = GROUPS.find(g => g.id === activeGroupId) || GROUPS[0];
 
-  // ── Sections helpers ──────────────────────────────────────────────────
-  const byKey = useMemo(() => {
+const byKey = useMemo(() => {
     const map = {};
     (homeSectionsForm || []).forEach(s => { map[s.key] = s; });
     return map;
@@ -82,8 +81,7 @@ const AdminAboutPanel = ({
     else window.alert('Unable to save. Please try again.');
   };
 
-  // ── Team members state ────────────────────────────────────────────────
-  const [members, setMembers]         = useState([]);
+const [members, setMembers]         = useState([]);
   const [addForm, setAddForm]         = useState({ name: '', occupation: '', bio: '' });
   const [addImage, setAddImage]       = useState(null);
   const [addLoading, setAddLoading]   = useState(false);
@@ -157,8 +155,7 @@ const AdminAboutPanel = ({
     loadMembers();
   };
 
-  // ── Render ────────────────────────────────────────────────────────────
-  return (
+return (
     <section className="admin-card admin-home-sections-card">
       <div className="admin-card-head">
         <div>
@@ -183,7 +180,7 @@ const AdminAboutPanel = ({
         ))}
       </div>
 
-      {/* Hero & copy */}
+      {}
       {activeGroupId === 'hero_copy' && (
         <form className="admin-form-grid admin-form-grid--single-column admin-home-sections-form" onSubmit={submitCopy}>
           <SectionShell title="Hero & copy" subtitle="Titles, descriptions, and CTAs for the About Us page.">
@@ -235,11 +232,11 @@ const AdminAboutPanel = ({
         </form>
       )}
 
-      {/* Team members */}
+      {}
       {activeGroupId === 'team' && (
         <div className="admin-form-grid admin-form-grid--single-column admin-home-sections-form">
           <SectionShell title="Team members" subtitle="Photos, names, and bios on the About Us page.">
-          {/* Add form */}
+          {}
           <form onSubmit={handleAdd}>
             <div className="admin-form-grid">
               <div className="admin-field">
@@ -266,7 +263,7 @@ const AdminAboutPanel = ({
             </div>
           </form>
 
-          {/* Members table */}
+          {}
           {members.length > 0 && (
             <div style={{ marginTop: 16 }}>
               <p style={{ marginBottom: 12, color: '#7a746d', fontSize: 13 }}>{members.length} member{members.length !== 1 ? 's' : ''} on the About Us page</p>

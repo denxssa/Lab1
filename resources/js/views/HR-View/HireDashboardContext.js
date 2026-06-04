@@ -8,7 +8,7 @@ export const HireDashboardProvider = ({ children }) => {
   const [appsLoading, setAppsLoading] = useState(true);
   const [listingsVersion, setListingsVersion] = useState(0);
   const [hiresVersion,    setHiresVersion]    = useState(0);
-  const [jobFilter, setJobFilter]             = useState(null); // { id, title } | null
+  const [jobFilter, setJobFilter]             = useState(null); 
 
   const refreshListings = () => setListingsVersion((v) => v + 1);
   const refreshHires    = () => setHiresVersion((v) => v + 1);

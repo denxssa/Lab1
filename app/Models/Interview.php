@@ -101,7 +101,7 @@ class Interview extends Model
 
     public function joinUrl(): string
     {
-        return url('/interviews/join/'.$this->access_token);
+        return url('/user-dashboard/interviews/join/'.$this->access_token);
     }
 
     public function toApiArray(): array

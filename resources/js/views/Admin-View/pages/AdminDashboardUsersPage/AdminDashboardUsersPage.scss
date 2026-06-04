@@ -1,6 +1,5 @@
-// ── HR Users Page ─────────────────────────────────────────────────────────────
 
-// Toast notification
+
 .au-toast {
   position: fixed;
   bottom: 24px;
@@ -20,7 +19,6 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-// Status badge
 .au-status-badge {
   display: inline-flex;
   align-items: center;
@@ -31,7 +29,6 @@
   white-space: nowrap;
 }
 
-// Stat row
 .au-stat-row {
   display: flex;
   flex-wrap: wrap;
@@ -47,7 +44,8 @@
   border-radius: 12px;
   padding: 10px 16px;
   font-size: 13px;
-  min-width: 120px;
+  min-width: 0;
+  flex: 1 1 140px;
 
   svg { color: #7a746d; font-size: 15px; }
 
@@ -61,12 +59,44 @@
   span { color: #7a746d; white-space: nowrap; }
 }
 
-// Toolbar
+.admin-card--table {
+  overflow: visible;
+}
+
 .au-toolbar {
   display: flex;
   gap: 12px;
   margin-bottom: 16px;
   flex-wrap: wrap;
+  align-items: center;
+
+  .admin-input-with-icon {
+    flex: 1 1 220px;
+    min-width: 0;
+    max-width: 420px;
+
+    input {
+      width: 100%;
+      height: 38px;
+      border: 1.5px solid #e7dfd4;
+      border-radius: 10px;
+      padding-right: 12px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #fafaf8;
+      box-sizing: border-box;
+
+      &:focus {
+        outline: none;
+        border-color: #111111;
+      }
+    }
+  }
+
+  .au-select {
+    flex-shrink: 0;
+    min-width: 150px;
+  }
 }
 
 .au-select {
@@ -84,10 +114,45 @@
   &:focus { border-color: #111111; }
 }
 
-// Table wrapper
-.au-table-wrap { overflow-x: auto; }
+.au-table-wrap {
+  overflow-x: auto;
+  overflow-y: visible;
+  margin: 0 -4px;
+  padding: 0 4px 8px;
+
+  .admin-table {
+    min-width: 760px;
+  }
+}
 
 .au-muted { color: #9d9590; font-size: 13px; }
+
+.au-cell-email {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.au-cell-company {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.au-cell-date {
+  white-space: nowrap;
+  min-width: 108px;
+}
+
+.au-actions-cell {
+  position: relative;
+  width: 56px;
+  text-align: right;
+  overflow: visible;
+  vertical-align: middle;
+}
 
 .au-empty {
   text-align: center;
@@ -97,7 +162,6 @@
   margin: 0;
 }
 
-// Row action button
 .au-menu-btn {
   background: none;
   border: 1px solid transparent;
@@ -116,19 +180,23 @@
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
-// Dropdown menu
 .au-dropdown {
   position: absolute;
   right: 0;
-  top: 36px;
+  top: calc(100% + 6px);
   background: #ffffff;
   border: 1px solid #e7dfd4;
   border-radius: 14px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
-  z-index: 100;
-  min-width: 170px;
+  z-index: 200;
+  min-width: 190px;
   overflow: hidden;
   padding: 4px;
+
+  &--up {
+    top: auto;
+    bottom: calc(100% + 6px);
+  }
 
   button {
     display: flex;
@@ -161,7 +229,6 @@
   margin: 4px 0;
 }
 
-// Pagination
 .au-pagination {
   display: flex;
   align-items: center;
@@ -173,8 +240,6 @@
   font-size: 13px;
   color: #7a746d;
 }
-
-// ── Modals ────────────────────────────────────────────────────────────────────
 
 .au-overlay {
   position: fixed;

@@ -11,7 +11,8 @@
   padding-bottom: 60px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
+  overflow-x: clip;
 
   @media (max-width: 768px) {
     margin-left: 0;
@@ -42,9 +43,10 @@
 .admin-card-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 16px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
 
   h2 {
     margin: 0;
@@ -56,6 +58,10 @@
     margin: 4px 0 0;
     color: #6f685d;
     font-size: 13px;
+  }
+
+  .admin-btn {
+    flex-shrink: 0;
   }
 }
 

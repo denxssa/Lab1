@@ -15,8 +15,7 @@ const MobileNav = () => {
     setOpenSideDrawer(false);
   }
 
-  
-  let sideDrawer;
+let sideDrawer;
   let backdrop;
 
   if(openSideDrawer){

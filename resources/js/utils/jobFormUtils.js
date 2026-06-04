@@ -24,7 +24,6 @@ export function normalizeJobTypes(types, fallbackType = '') {
   return normalized;
 }
 
-
 export function typesIncludingRemoteFromLocation(types, fallbackType = '', location = '') {
   const normalized = normalizeJobTypes(types, fallbackType);
 

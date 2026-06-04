@@ -18,7 +18,6 @@
   p  { margin: 0; font-size: 15px; color: #7a746d; }
 }
 
-// ── Two-column layout ─────────────────────────────────────────────
 .hire-team-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -28,7 +27,6 @@
   @media (max-width: 860px) { grid-template-columns: 1fr; }
 }
 
-// ── Block ─────────────────────────────────────────────────────────
 .hire-team-block {
   background: #ffffff;
   border: 1px solid #e7dfd4;
@@ -69,7 +67,6 @@
   &:hover { background: #e7dfd4; }
 }
 
-// ── Add form ──────────────────────────────────────────────────────
 .hire-team-add-form {
   display: flex;
   flex-direction: column;
@@ -96,7 +93,6 @@
   }
 }
 
-// ── Photo upload in add-member form ──────────────────────────────
 .hire-member-photo-upload {
   display: flex;
   align-items: center;
@@ -167,14 +163,31 @@
   &:hover { color: #111111; }
 }
 
-// ── Team grid ─────────────────────────────────────────────────────
+.hire-team-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 16px;
+  color: #b0a89e;
+  text-align: center;
+
+  svg { opacity: 0.5; }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    strong { color: #111111; font-weight: 600; }
+  }
+}
+
 .hire-team-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
 }
 
-// ── Card shell ────────────────────────────────────────────────────
 .hire-member-card {
   position: relative;
   width: 130px;
@@ -197,7 +210,6 @@
   &.removing { opacity: 0; transform: scale(0.92); transition: 0.28s ease; }
 }
 
-// ── Avatar / photo ────────────────────────────────────────────────
 .hire-mc-photo-zone {
   width:  72px;
   height: 72px;
@@ -226,7 +238,6 @@
   border-radius: 50%;
 }
 
-// ── Name / role text ──────────────────────────────────────────────
 .hire-mc-banner {
   display: flex;
   flex-direction: column;
@@ -256,7 +267,6 @@
   width: 100%;
 }
 
-// ── Remove button ─────────────────────────────────────────────────
 .hire-member-remove {
   position: absolute;
   top:   6px;
@@ -279,7 +289,6 @@
   &:hover { background: #fdecea; color: #c0392b; }
 }
 
-// ── Add-member placeholder card ───────────────────────────────────
 .hire-member-add-card {
   border: 2px dashed #ccc6be;
   background: none;
@@ -310,7 +319,6 @@
   }
 }
 
-// ── Notes grid ────────────────────────────────────────────────────
 .hire-notes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));

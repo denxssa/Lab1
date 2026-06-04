@@ -72,8 +72,7 @@ class AuthController extends Controller
             ]);
         }
 
-        // HR/Admin invited accounts must complete the first-login flow
-        if (!$user->first_login_completed && $user->account_status === User::STATUS_PENDING) {
+if (!$user->first_login_completed && $user->account_status === User::STATUS_PENDING) {
             Auth::guard('api')->logout();
             return response()->json(['first_login' => true, 'email' => $user->email], 200);
         }

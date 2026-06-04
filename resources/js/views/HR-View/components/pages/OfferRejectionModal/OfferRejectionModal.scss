@@ -21,7 +21,6 @@
   flex-direction: column;
 }
 
-// ── Header ─────────────────────────────────────────────
 .orm-header {
   display: flex;
   align-items: center;
@@ -56,7 +55,6 @@
   &:hover { background: #e7dfd4; color: #111111; }
 }
 
-// ── Body ───────────────────────────────────────────────
 .orm-body {
   padding: 20px 28px;
   display: flex;
@@ -118,7 +116,6 @@
   textarea { resize: vertical; }
 }
 
-// ── Footer ─────────────────────────────────────────────
 .orm-footer {
   display: flex;
   gap: 10px;

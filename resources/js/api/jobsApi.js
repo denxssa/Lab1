@@ -22,14 +22,12 @@ function normalizeTags(tags) {
     return [];
 }
 
-/** True if the job is tagged with this type (it may also have other types). */
 export function jobMatchesTypeFilter(job, filter) {
     const types = typesIncludingRemoteFromLocation(job.types, job.type, job.location);
 
     return types.includes(filter);
 }
 
-/** Job must include every selected type; extra types on the job are allowed. */
 export function jobMatchesAllTypeFilters(job, typeFilters) {
     if (!typeFilters.length) {
         return true;

@@ -18,10 +18,7 @@ class FirstLoginController extends Controller
 {
     use IssuesRefreshToken;
 
-    /**
-     * Step 1: Verify credentials, generate + send a 4-digit code, return an onboarding token.
-     */
-    public function sendCode(Request $request): JsonResponse
+public function sendCode(Request $request): JsonResponse
     {
         $request->validate([
             'email'         => 'required|email',
@@ -64,10 +61,7 @@ class FirstLoginController extends Controller
         return response()->json(['onboarding_token' => $onboardingToken]);
     }
 
-    /**
-     * Step 2: Verify the 4-digit code.
-     */
-    public function verifyCode(Request $request): JsonResponse
+public function verifyCode(Request $request): JsonResponse
     {
         $request->validate([
             'onboarding_token' => 'required|string',
@@ -103,10 +97,7 @@ class FirstLoginController extends Controller
         return response()->json(['onboarding_token' => $request->onboarding_token]);
     }
 
-    /**
-     * Step 3: Set a new password, activate the account, issue a full JWT.
-     */
-    public function setPassword(Request $request): JsonResponse
+public function setPassword(Request $request): JsonResponse
     {
         $request->validate([
             'onboarding_token'      => 'required|string',
@@ -153,10 +144,7 @@ class FirstLoginController extends Controller
         ]);
     }
 
-    /**
-     * Resend a fresh verification code using the existing onboarding token.
-     */
-    public function resendCode(Request $request): JsonResponse
+public function resendCode(Request $request): JsonResponse
     {
         $request->validate(['onboarding_token' => 'required|string']);
 

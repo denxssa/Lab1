@@ -8,11 +8,13 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomePageContentController;
 use App\Http\Controllers\HomePageSectionItemController;
 use App\Http\Controllers\HrController;
+use App\Http\Controllers\HrTeamNoteController;
 use App\Http\Controllers\HrSettingsController;
 use App\Http\Controllers\HrTeamController;
 use App\Http\Controllers\SavedJobController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\JobListingController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\HiresController;
 use App\Http\Controllers\CvProfileController;
@@ -138,15 +140,21 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/api/interviews/{interview}', [InterviewController::class, 'destroy']);
 
     // ── HR dashboard ──────────────────────────────────────────────────────
+    Route::get('/api/hr/overview-stats',                         [HrController::class,       'overviewStats']);
     Route::get('/api/hr/analytics',                              [HrController::class,       'analytics']);
     Route::get('/api/hr/applications',                           [HrController::class,       'applications']);
     Route::put('/api/hr/applications/{id}',                      [HrController::class,       'updateApplication']);
     Route::get('/api/hr/hires',                                  [HrController::class,       'hires']);
+    Route::get('/api/hr/candidates/{userId}/resume/download',     [HrController::class,       'downloadCandidateResume']);
     Route::get('/api/hr/candidates/{userId}',                    [HrController::class,       'candidateProfile']);
     Route::get('/api/hr/job-listings/{jobListingId}/applicants', [HrController::class,       'jobApplicants']);
-    Route::get('/api/hr/team',                                   [HrTeamController::class,   'index']);
-    Route::post('/api/hr/team',                                  [HrTeamController::class,   'store']);
-    Route::delete('/api/hr/team/{id}',                           [HrTeamController::class,   'destroy']);
+    Route::get('/api/hr/team',                                   [HrTeamController::class,     'index']);
+    Route::post('/api/hr/team',                                  [HrTeamController::class,     'store']);
+    Route::delete('/api/hr/team/{id}',                           [HrTeamController::class,     'destroy']);
+    Route::get('/api/hr/team/notes',                             [HrTeamNoteController::class, 'index']);
+    Route::post('/api/hr/team/notes',                            [HrTeamNoteController::class, 'store']);
+    Route::put('/api/hr/team/notes/{id}',                        [HrTeamNoteController::class, 'update']);
+    Route::delete('/api/hr/team/notes/{id}',                     [HrTeamNoteController::class, 'destroy']);
     Route::get('/api/hr/settings',                               [HrSettingsController::class, 'show']);
     Route::put('/api/hr/settings',                               [HrSettingsController::class, 'update']);
     Route::put('/api/hr/account',                                [HrSettingsController::class, 'updateAccount']);
@@ -154,6 +162,11 @@ Route::middleware('auth:api')->group(function () {
 
     // ── Candidate dashboard ───────────────────────────────────────────────
     Route::get('/api/candidate/applications', [HrController::class, 'myApplications']);
+
+    Route::get('/api/notifications', [NotificationController::class, 'index']);
+    Route::get('/api/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllRead']);
+    Route::post('/api/notifications/{notification}/read', [NotificationController::class, 'markRead']);
 
     Route::get('/api/hires', [HiresController::class, 'index']);
     Route::delete('/api/hires/{application}', [HiresController::class, 'destroy']);

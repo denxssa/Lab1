@@ -3,8 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HrTeamMember extends Model
 {
-    protected $fillable = ['name', 'title', 'photo_path'];
+    protected $fillable = ['user_id', 'name', 'title', 'photo_path'];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

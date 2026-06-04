@@ -57,20 +57,25 @@ class JobListingController extends Controller
 
     public function manage(Request $request): JsonResponse
     {
-        if (!$this->canManageJobs($request->user())) {
+        $user = $request->user();
+
+        if (!$this->canManageJobs($user)) {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
-        $jobs = JobListing::query()
+        $query = JobListing::query()
             ->withCount([
                 'applications',
                 'applications as reviewing_count'   => fn ($q) => $q->where('status', 'reviewing'),
                 'applications as shortlisted_count' => fn ($q) => $q->where('status', 'shortlisted'),
             ])
-            ->orderByDesc('created_at')
-            ->get();
+            ->orderByDesc('created_at');
 
-        return response()->json(['jobs' => $jobs]);
+if ($user->role === User::ROLE_HR) {
+            $query->where('user_id', $user->id);
+        }
+
+        return response()->json(['jobs' => $query->get()]);
     }
 
     public function show(JobListing $jobListing): JsonResponse
@@ -115,6 +120,10 @@ class JobListingController extends Controller
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
+        if ($request->user()->role === User::ROLE_HR && $jobListing->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
         if ($request->has('title')) {
             $formRequest = app(UpdateJobListingRequest::class);
             $validated = validator(
@@ -143,6 +152,10 @@ class JobListingController extends Controller
     public function destroy(Request $request, JobListing $jobListing): JsonResponse
     {
         if (!$this->canManageJobs($request->user())) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        if ($request->user()->role === User::ROLE_HR && $jobListing->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 

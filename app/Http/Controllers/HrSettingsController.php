@@ -9,10 +9,15 @@ use Illuminate\Support\Facades\Hash;
 
 class HrSettingsController extends Controller
 {
-    public function show(): JsonResponse
+    
+    private function settingsFor(Request $request): HrSetting
     {
-        $settings = HrSetting::first();
-        return response()->json($settings ?? new HrSetting());
+        return HrSetting::firstOrNew(['user_id' => $request->user()->id]);
+    }
+
+    public function show(Request $request): JsonResponse
+    {
+        return response()->json($this->settingsFor($request));
     }
 
     public function update(Request $request): JsonResponse
@@ -26,7 +31,7 @@ class HrSettingsController extends Controller
             'description'  => 'nullable|string|max:1000',
         ]);
 
-        $settings = HrSetting::firstOrNew([]);
+        $settings = $this->settingsFor($request);
         $settings->fill($request->only(['company_name', 'industry', 'size', 'location', 'website', 'description']));
         $settings->save();
 
@@ -37,7 +42,7 @@ class HrSettingsController extends Controller
     {
         $request->validate(['notifications' => 'required|array']);
 
-        $settings = HrSetting::firstOrNew([]);
+        $settings = $this->settingsFor($request);
         $settings->notifications = $request->notifications;
         $settings->save();
 
@@ -63,6 +68,6 @@ class HrSettingsController extends Controller
 
         $user->save();
 
-        return response()->json(['message' => 'Account updated.']);
+        return response()->json(['message' => 'Account updated.', 'user' => $user->fresh()]);
     }
 }

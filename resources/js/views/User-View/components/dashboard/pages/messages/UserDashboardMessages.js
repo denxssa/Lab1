@@ -117,7 +117,7 @@ const UserDashboardMessages = () => {
     <section className="user-messages-section">
       <div className="user-messages-wrapper">
 
-        {/* ── Left panel ── */}
+        {}
         <div className="user-messages-left">
           <div className="user-messages-left-header">
             <h2>Messages</h2>
@@ -170,7 +170,7 @@ const UserDashboardMessages = () => {
           </div>
         </div>
 
-        {/* ── Right panel ── */}
+        {}
         {active ? (
           <div className="user-messages-right">
             <div className="user-messages-thread-header">

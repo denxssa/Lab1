@@ -23,7 +23,6 @@
   }
 }
 
-// ── Left panel ───────────────────────────────────────────────────
 .user-messages-left {
   display: flex;
   flex-direction: column;
@@ -74,7 +73,6 @@
   margin: 0;
 }
 
-// ── Search ───────────────────────────────────────────────────────
 .user-messages-search {
   display: flex;
   align-items: center;
@@ -104,7 +102,6 @@
   }
 }
 
-// ── Conversation list ─────────────────────────────────────────────
 .user-messages-list {
   flex: 1;
   overflow-y: auto;
@@ -132,7 +129,6 @@
   }
 }
 
-// ── Shared avatar ─────────────────────────────────────────────────
 .user-msg-avatar {
   width: 44px;
   height: 44px;
@@ -201,7 +197,6 @@
   line-height: 1.5;
 }
 
-// ── Right panel ───────────────────────────────────────────────────
 .user-messages-right {
   display: flex;
   flex-direction: column;
@@ -230,7 +225,6 @@
   margin-top: 1px;
 }
 
-// ── Thread ────────────────────────────────────────────────────────
 .user-messages-thread {
   flex: 1;
   overflow-y: auto;
@@ -288,7 +282,6 @@
   padding: 0 4px;
 }
 
-// ── Input bar ─────────────────────────────────────────────────────
 .user-messages-input-bar {
   display: flex;
   align-items: center;
@@ -333,7 +326,6 @@
   &:disabled { opacity: 0.35; cursor: default; }
 }
 
-// ── Empty state ───────────────────────────────────────────────────
 .user-messages-empty-state {
   display: flex;
   align-items: center;
@@ -342,7 +334,6 @@
   p { font-size: 14px; color: #b0a89e; margin: 0; }
 }
 
-// ── Mobile ────────────────────────────────────────────────────────
 @media (max-width: 768px) {
   .user-messages-wrapper {
     min-height: unset;

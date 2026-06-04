@@ -2,7 +2,7 @@ import React from "react";
 import { CgClose } from "react-icons/cg";
 import { FaHome, FaUser, FaFileAlt, FaBriefcase } from "react-icons/fa";
 import { MdWork } from "react-icons/md";
-import { IoIosNotifications } from "react-icons/io";
+import NotificationBell from "../../../../../../components/NotificationBell/NotificationBell";
 
 const Sidebar = (props) => {
   return (
@@ -75,9 +75,7 @@ const Sidebar = (props) => {
       </div>
 
       <div className="sidebar-auth">
-        <button type="button" className="notification-button">
-          <IoIosNotifications />
-        </button>
+        <NotificationBell />
 
         <a href="/" className="contact-us">
           Vesa Susuri

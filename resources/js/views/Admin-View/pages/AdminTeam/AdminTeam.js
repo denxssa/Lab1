@@ -12,8 +12,7 @@ const AdminTeam = () => {
     const [preview, setPreview]       = useState(null);
     const [loading, setLoading]       = useState(false);
 
-    // edit state
-    const [editId, setEditId]                   = useState(null);
+const [editId, setEditId]                   = useState(null);
     const [editName, setEditName]               = useState('');
     const [editOccupation, setEditOccupation]   = useState('');
     const [editBio, setEditBio]                 = useState('');
@@ -104,7 +103,7 @@ const AdminTeam = () => {
     return (
         <main className="admin-page">
 
-            {/* Add Member */}
+            {}
             <section className="admin-card">
                 <div className="admin-card-head">
                     <div>
@@ -157,7 +156,7 @@ const AdminTeam = () => {
                 </form>
             </section>
 
-            {/* Current Members */}
+            {}
             {members.length > 0 && (
                 <section className="admin-card">
                     <div className="admin-card-head">
@@ -179,7 +178,7 @@ const AdminTeam = () => {
                         </thead>
                         <tbody>
                             {members.map(m => editId === m.id ? (
-                                // ── Edit row ──────────────────────────────
+
                                 <tr key={m.id} style={{ background: '#fffdf6' }}>
                                     <td>
                                         <div
@@ -234,7 +233,7 @@ const AdminTeam = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                // ── Normal row ────────────────────────────
+                                
                                 <tr key={m.id}>
                                     <td>
                                         {m.img

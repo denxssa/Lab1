@@ -11,8 +11,8 @@ const HireDashboard = () => {
     <>
       <HireDashboardHeader />
       <HireDashboardStats setActiveTab={setActiveTab} />
-      {/* <HireDashboardApplications activeTab={activeTab} setActiveTab={setActiveTab} /> */}
-      {/* <HireDashboardListings /> */}
+      {}
+      {}
     </>
   );
 };

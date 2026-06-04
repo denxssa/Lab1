@@ -1,3 +1,11 @@
+import {
+  normalizeCertification,
+  normalizeEducation,
+  normalizeExperience,
+  normalizeLanguage,
+  normalizeProject,
+} from './formFieldUtils';
+
 export const buildProfilePayload = ({ personal, skills, experiences, education, languages, projects = [], certifications = [], github }) => ({
   personal: {
     ...(personal || {}),
@@ -16,48 +24,47 @@ export const buildProfilePayload = ({ personal, skills, experiences, education, 
 export const applyProfileToState = (profile, setters) => {
   if (!profile) return;
 
-  const { setPersonal, setSkills, setExperiences, setEducation, setLanguages, setProjects, setCertifications, setGithub } = setters;
+  const {
+    setPersonal,
+    setSkills,
+    setExperiences,
+    setEducation,
+    setLanguages,
+    setProjects,
+    setCertifications,
+    setGithub,
+  } = setters;
 
   if (profile.personal && setPersonal) {
     setPersonal(profile.personal);
   }
+
   if (profile.skills?.length && setSkills) {
     setSkills(profile.skills);
   }
+
   if (profile.experiences?.length && setExperiences) {
-    setExperiences(profile.experiences.map((e, i) => ({
-      ...e,
-      id: e.id ?? Date.now() + i,
-    })));
+    setExperiences(profile.experiences.map((e, i) => normalizeExperience(e, i)));
   }
+
   if (profile.education?.length && setEducation) {
-    setEducation(profile.education.map((e, i) => ({
-      ...e,
-      id: e.id ?? Date.now() + i + 1000,
-    })));
+    setEducation(profile.education.map((e, i) => normalizeEducation(e, i)));
   }
+
   if (profile.languages?.length && setLanguages) {
-    setLanguages(profile.languages.map((l, i) => ({
-      ...l,
-      id: l.id ?? Date.now() + i + 2000,
-    })));
+    setLanguages(profile.languages.map((l, i) => normalizeLanguage(l, i)));
   }
+
   if (profile.projects?.length && setProjects) {
-    setProjects(profile.projects.map((p, i) => ({
-      ...p,
-      id: p.id ?? Date.now() + i + 3000,
-      technologies: Array.isArray(p.technologies) ? p.technologies : [],
-    })));
+    setProjects(profile.projects.map((p, i) => normalizeProject(p, i)));
   }
+
   if (profile.certifications?.length && setCertifications) {
-    setCertifications(profile.certifications.map((c, i) => ({
-      ...c,
-      id: c.id ?? Date.now() + i + 4000,
-    })));
+    setCertifications(profile.certifications.map((c, i) => normalizeCertification(c, i)));
   }
+
   if (setGithub) {
     setGithub((current = {}) => ({
-      ...current,
       profileUrl: profile.personal?.github || current.profileUrl || '',
       repositories: profile.personal?.github_repositories || current.repositories || [],
       portfolioLinks: profile.personal?.portfolio_links || current.portfolioLinks || [],

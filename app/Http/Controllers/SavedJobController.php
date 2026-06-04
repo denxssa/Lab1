@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class SavedJobController extends Controller
 {
-    /** List saved jobs — returns both IDs (for toggle state) and full details (for dashboard) */
+    
     public function index(Request $request): JsonResponse
     {
         $saved = SavedJob::with('jobListing')
@@ -39,8 +39,7 @@ class SavedJobController extends Controller
         ]);
     }
 
-    /** Save a job */
-    public function store(Request $request): JsonResponse
+public function store(Request $request): JsonResponse
     {
         $request->validate(['job_listing_id' => 'required|integer|exists:job_listings,id']);
 
@@ -52,8 +51,7 @@ class SavedJobController extends Controller
         return response()->json(['saved' => true]);
     }
 
-    /** Unsave a job */
-    public function destroy(Request $request, $jobListingId): JsonResponse
+public function destroy(Request $request, $jobListingId): JsonResponse
     {
         SavedJob::where('user_id', $request->user()->id)
             ->where('job_listing_id', $jobListingId)

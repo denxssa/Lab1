@@ -12,11 +12,7 @@ import Footer from '../../components/shared/footer/Footer';
 
 import { filterJobListings, listJobListings, mapJobListing } from '../../../../api/jobsApi';
 
-
-
 const JOBS_PER_PAGE = 6;
-
-
 
 const Jobs = () => {
 
@@ -32,15 +28,11 @@ const Jobs = () => {
 
   const [page, setPage] = useState(1);
 
-
-
-  useEffect(() => {
+useEffect(() => {
 
     let cancelled = false;
 
-
-
-    const load = async () => {
+const load = async () => {
 
       setLoading(true);
 
@@ -68,13 +60,9 @@ const Jobs = () => {
 
     };
 
+load();
 
-
-    load();
-
-
-
-    return () => {
+return () => {
 
       cancelled = true;
 
@@ -82,9 +70,7 @@ const Jobs = () => {
 
   }, []);
 
-
-
-  const filteredJobs = useMemo(
+const filteredJobs = useMemo(
 
     () => filterJobListings(jobs, { typeFilters, searchQuery }),
 
@@ -92,21 +78,15 @@ const Jobs = () => {
 
   );
 
+const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE) || 1;
 
-
-  const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE) || 1;
-
-
-
-  useEffect(() => {
+useEffect(() => {
 
     setPage(1);
 
   }, [typeFilters, searchQuery]);
 
-
-
-  useEffect(() => {
+useEffect(() => {
 
     if (page > totalPages) {
 
@@ -116,9 +96,7 @@ const Jobs = () => {
 
   }, [page, totalPages]);
 
-
-
-  const handleTypeFilterToggle = (filter) => {
+const handleTypeFilterToggle = (filter) => {
 
     if (filter === 'All Types') {
 
@@ -128,9 +106,7 @@ const Jobs = () => {
 
     }
 
-
-
-    setTypeFilters((prev) => (
+setTypeFilters((prev) => (
 
       prev.includes(filter)
 
@@ -157,9 +133,7 @@ const Jobs = () => {
 
   };
 
-
-
-  return (
+return (
 
     <div className="jobs-page">
 
@@ -220,8 +194,5 @@ const Jobs = () => {
 
 };
 
-
-
 export default Jobs;
-
 

@@ -57,11 +57,7 @@ class JobListing extends Model
         });
     }
 
-    /**
-     * @param  array<int, string>|string|null  $input
-     * @return list<string>
-     */
-    public static function normalizeTypes(array|string|null $input): array
+public static function normalizeTypes(array|string|null $input): array
     {
         if (is_string($input)) {
             $input = array_map('trim', explode(',', $input));
@@ -94,11 +90,7 @@ class JobListing extends Model
         return $normalized !== [] ? implode(', ', $normalized) : 'Full-time';
     }
 
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, mixed>
-     */
-    public static function mergeNormalizedInput(array $input): array
+public static function mergeNormalizedInput(array $input): array
     {
         foreach (['title', 'company', 'location', 'salary', 'description'] as $field) {
             if (array_key_exists($field, $input) && is_string($input[$field])) {

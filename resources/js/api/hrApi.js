@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-// ── Applications (HR) ─────────────────────────────────────────────────────────
-
 export function fetchHrApplications() {
     return axios.get('/api/hr/applications').then((r) => r.data.applications);
 }
@@ -18,25 +16,39 @@ export function fetchCandidateProfile(userId) {
     return axios.get(`/api/hr/candidates/${userId}`).then((r) => r.data);
 }
 
-// ── Applications (Candidate) ──────────────────────────────────────────────────
+export async function downloadCandidateResume(userId, filename = 'resume.pdf') {
+    const response = await axios.get(`/api/hr/candidates/${userId}/resume/download`, {
+        responseType: 'blob',
+    });
+
+    const blob = new Blob([response.data], {
+        type: response.headers['content-type'] || 'application/octet-stream',
+    });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+}
 
 export function fetchMyApplications() {
     return axios.get('/api/candidate/applications').then((r) => r.data.applications);
 }
 
-// ── Analytics ─────────────────────────────────────────────────────────────────
+export function fetchHrOverviewStats() {
+    return axios.get('/api/hr/overview-stats').then((r) => r.data.stats);
+}
 
 export function fetchHrAnalytics() {
     return axios.get('/api/hr/analytics').then((r) => r.data);
 }
 
-// ── Hires ─────────────────────────────────────────────────────────────────────
-
 export function fetchHrHires() {
     return axios.get('/api/hr/hires').then((r) => r.data.hires);
 }
-
-// ── Team ──────────────────────────────────────────────────────────────────────
 
 export function fetchHrTeam() {
     return axios.get('/api/hr/team').then((r) => r.data);
@@ -52,7 +64,21 @@ export function removeHrTeamMember(id) {
     return axios.delete(`/api/hr/team/${id}`).then((r) => r.data);
 }
 
-// ── Settings ──────────────────────────────────────────────────────────────────
+export function fetchHrTeamNotes() {
+    return axios.get('/api/hr/team/notes').then((r) => r.data);
+}
+
+export function createHrTeamNote(payload) {
+    return axios.post('/api/hr/team/notes', payload).then((r) => r.data);
+}
+
+export function updateHrTeamNote(id, payload) {
+    return axios.put(`/api/hr/team/notes/${id}`, payload).then((r) => r.data);
+}
+
+export function deleteHrTeamNote(id) {
+    return axios.delete(`/api/hr/team/notes/${id}`).then((r) => r.data);
+}
 
 export function fetchHrSettings() {
     return axios.get('/api/hr/settings').then((r) => r.data);

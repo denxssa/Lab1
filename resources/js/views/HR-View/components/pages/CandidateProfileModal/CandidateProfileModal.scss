@@ -21,7 +21,6 @@
   flex-direction: column;
 }
 
-// ── Header ─────────────────────────────────────────────
 .cpm-header {
   display: flex;
   align-items: flex-start;
@@ -83,7 +82,6 @@
   &:hover { background: #e7dfd4; color: #111111; }
 }
 
-// ── Body ───────────────────────────────────────────────
 .cpm-body {
   display: flex;
   gap: 0;
@@ -99,7 +97,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  // keep left column scrolling with the body
+  
   position: sticky;
   top: 0;
   align-self: flex-start;
@@ -116,7 +114,6 @@
   min-width: 0;
 }
 
-// ── Section ────────────────────────────────────────────
 .cpm-section {
   h4 {
     margin: 0 0 12px;
@@ -128,7 +125,6 @@
   }
 }
 
-// ── Contact ────────────────────────────────────────────
 .cpm-contact-list {
   display: flex;
   flex-direction: column;
@@ -145,7 +141,6 @@
   svg { color: #7a746d; flex-shrink: 0; }
 }
 
-// ── Experience ─────────────────────────────────────────
 .cpm-experience {
   margin: 0;
   font-size: 14px;
@@ -153,7 +148,6 @@
   font-weight: 500;
 }
 
-// ── Skills ─────────────────────────────────────────────
 .cpm-skills {
   display: flex;
   flex-wrap: wrap;
@@ -169,7 +163,6 @@
   font-weight: 500;
 }
 
-// ── Timeline ───────────────────────────────────────────
 .cpm-timeline {
   display: flex;
   flex-direction: column;
@@ -182,8 +175,7 @@
   gap: 12px;
   position: relative;
 
-  // connecting line between items
-  &:not(:last-child) .cpm-timeline-icon-wrap::after {
+&:not(:last-child) .cpm-timeline-icon-wrap::after {
     content: '';
     position: absolute;
     left: 13px;
@@ -228,7 +220,6 @@
   color: #b0a89e;
 }
 
-// ── Summary ────────────────────────────────────────────
 .cpm-summary {
   margin: 0;
   font-size: 14px;
@@ -236,7 +227,6 @@
   line-height: 1.65;
 }
 
-// ── Resume highlights ──────────────────────────────────
 .cpm-resume-block {
   display: flex;
   flex-direction: column;
@@ -258,6 +248,43 @@
   strong { color: #111111; }
 }
 
+.cpm-resume-item__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cpm-resume-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border: 1px solid #111111;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: #333333;
+    border-color: #333333;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.cpm-resume-download-error {
+  margin: 0;
+  font-size: 12px;
+  color: #b42318;
+}
+
 .cpm-resume-dot {
   width: 7px;
   height: 7px;
@@ -267,7 +294,6 @@
   margin-top: 5px;
 }
 
-// ── Footer actions ─────────────────────────────────────
 .cpm-footer {
   display: flex;
   align-items: center;

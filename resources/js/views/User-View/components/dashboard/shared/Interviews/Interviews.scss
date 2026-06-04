@@ -224,12 +224,17 @@
   min-width: 118px;
 }
 
+.interviews--meeting {
+  padding-top: 24px;
+}
+
 .interviews__meeting {
-  overflow: hidden;
-  border: 1px solid #fefefe;
+  overflow: visible;
+  border: 1px solid #e7dfd4;
   border-radius: 18px;
   background: #ffffff;
   box-shadow: 0 6px 18px rgba(17, 17, 17, 0.06);
+  padding: 16px;
 }
 
 .interviews__meeting-header {

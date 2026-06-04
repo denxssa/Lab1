@@ -137,7 +137,6 @@ export function refreshToken() {
     return refreshPromise;
 }
 
-// Restore token on page load
 const stored = getRawToken();
 if (stored && !isTokenExpired()) {
     axios.defaults.headers.common.Authorization = `Bearer ${stored}`;
@@ -211,15 +210,13 @@ export function register(payload) {
 
 export function login(payload) {
     return axios.post('/auth/login', payload).then((res) => {
-        // first_login: true means the account needs the onboarding flow — don't store a token
+        
         if (!res.data.first_login) {
             setToken(res.data);
         }
         return res.data;
     });
 }
-
-// ── First-login onboarding flow ────────────────────────────────────────────────
 
 export function sendFirstLoginCode(payload) {
     return axios.post('/auth/first-login/send-code', payload).then((r) => r.data);

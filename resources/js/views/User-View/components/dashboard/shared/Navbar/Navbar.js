@@ -2,8 +2,8 @@ import React from "react";
 import "./navbar.scss";
 import MobileNav from "../MobileNav/MobileNav";
 import { TbTriangleInvertedFilled } from "react-icons/tb";
-import { IoIosNotifications } from "react-icons/io";
 import { useAuth } from "../../../../../../context/AuthContext";
+import NotificationBell from "../../../../../../components/NotificationBell/NotificationBell";
 
 const Navbar = (props) => {
   const { user } = useAuth();
@@ -59,9 +59,7 @@ const Navbar = (props) => {
       </div>
 
       <div className="nav-auth2">
-        <button type="button" className="notification-button" aria-label="Notifications">
-          <IoIosNotifications className="notification-icon" />
-        </button>
+        <NotificationBell />
         <a href="/" className="contact-us">{user?.name ?? ''}</a>
       </div> 
       <MobileNav />

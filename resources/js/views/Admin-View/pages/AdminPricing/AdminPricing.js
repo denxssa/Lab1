@@ -109,7 +109,7 @@ const AdminPricing = () => {
                 </form>
             </section>
 
-            {/* Current Plans as cards */}
+            {}
             {plans.length > 0 && (
                 <section className="admin-card">
                     <div className="admin-card-head">
@@ -121,7 +121,7 @@ const AdminPricing = () => {
 
                     <div className="apc-grid">
                         {plans.map(p => editId === p.id ? (
-                            // ── Edit card ──
+
                             <div key={p.id} className="apc-card apc-card--editing">
                                 <div className="apc-field">
                                     <label>Name</label>
@@ -161,7 +161,7 @@ const AdminPricing = () => {
                                 </div>
                             </div>
                         ) : (
-                            // ── Display card ──
+                            
                             <div key={p.id} className={`apc-card${p.featured ? ' apc-card--featured' : ''}`}>
                                 {p.featured && <span className="apc-badge">Most Popular</span>}
                                 <h3 className="apc-name">{p.name}</h3>

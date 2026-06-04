@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\JobListing;
+use App\Support\Utf8;
 use Illuminate\Support\Collection;
 
 class JobMatchingService
@@ -11,20 +12,24 @@ class JobMatchingService
     {
     }
 
-    public function match(array $parsedData, ?int $jobListingId = null): array
+    public function match(array $parsedData, ?int $jobListingId = null, bool $skipCvEmbedding = false): array
     {
         $jobs = $this->loadJobs($jobListingId);
 
         if ($jobs->isEmpty()) {
-            return [
+            return Utf8::sanitizeArray([
                 'match_percentage' => 0,
                 'missing_skills' => [],
                 'matched_job' => null,
-            ];
+            ]);
         }
 
-        $cvText = $this->buildCvMatchText($parsedData);
-        $cvEmbedding = $this->aiService->embed($cvText);
+        $cvEmbedding = null;
+
+        if (!$skipCvEmbedding) {
+            $cvText = $this->buildCvMatchText($parsedData);
+            $cvEmbedding = $this->aiService->embed($cvText);
+        }
         $cvSkills = $this->normalizeTokens($parsedData['skills'] ?? []);
 
         $best = null;
@@ -57,7 +62,7 @@ class JobMatchingService
             }
         }
 
-        return [
+        return Utf8::sanitizeArray([
             'match_percentage' => $best['match_percentage'],
             'missing_skills' => $best['missing_skills'],
             'matched_job' => [
@@ -65,7 +70,7 @@ class JobMatchingService
                 'title' => $best['title'],
                 'company' => $best['company'],
             ],
-        ];
+        ]);
     }
 
     public function ensureJobEmbeddings(Collection $jobs): void
@@ -99,9 +104,9 @@ class JobMatchingService
         $parts = [
             $parsedData['name'] ?? '',
             implode(', ', $parsedData['skills'] ?? []),
-            json_encode($parsedData['experience'] ?? []),
-            json_encode($parsedData['education'] ?? []),
-            json_encode($parsedData['projects'] ?? []),
+            Utf8::jsonEncode($parsedData['experience'] ?? []),
+            Utf8::jsonEncode($parsedData['education'] ?? []),
+            Utf8::jsonEncode($parsedData['projects'] ?? []),
         ];
 
         return trim(implode("\n", array_filter($parts)));

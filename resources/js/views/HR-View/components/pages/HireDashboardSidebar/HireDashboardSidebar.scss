@@ -1,4 +1,4 @@
-// ── Layout ───────────────────────────────────────────
+
 .hire-layout {
   display: flex;
   min-height: 100vh;
@@ -19,7 +19,6 @@
   }
 }
 
-// ── Overlay ───────────────────────────────────────────
 .hire-sidebar-overlay {
   display: none;
 
@@ -32,7 +31,6 @@
   }
 }
 
-// ── Sidebar ──────────────────────────────────────────
 .hire-sidebar {
   width: 260px;
   min-height: 100vh;
@@ -58,7 +56,6 @@
   }
 }
 
-// ── Close button (mobile only) ────────────────────────
 .hire-sidebar-close {
   display: none;
   background: none;
@@ -74,7 +71,6 @@
   }
 }
 
-// ── Sidebar internals ────────────────────────────────
 .hire-sidebar-top {
   display: flex;
   flex-direction: column;
@@ -173,7 +169,6 @@
   margin: 4px 0;
 }
 
-// ── Bottom ───────────────────────────────────────────
 .hire-sidebar-bottom {
   display: flex;
   flex-direction: column;

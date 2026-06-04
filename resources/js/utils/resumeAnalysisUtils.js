@@ -1,57 +1,73 @@
+import {
+  normalizeCertification,
+  normalizeEducation,
+  normalizeExperience,
+  normalizeLanguage,
+  normalizeProject,
+  toInputValue,
+} from './formFieldUtils';
+
 export const mapParsedToProfile = (parsed = {}) => {
-  const skills = Array.isArray(parsed.skills) ? parsed.skills.filter(Boolean) : [];
-  const timestamp = Date.now();
+  const personal = parsed.personal_info || {};
+  const source = parsed.personal_info
+    ? {
+        name: personal.full_name || '',
+        email: personal.email || '',
+        phone: personal.phone || '',
+        skills: parsed.skills || [],
+        experience: (parsed.experience || []).map((item) => ({
+          company: item.company || '',
+          role: item.title || item.role || '',
+          start_date: item.start_date || '',
+          end_date: item.end_date || '',
+          description: item.description || '',
+        })),
+        education: (parsed.education || []).map((item) => ({
+          institution: item.institution || '',
+          degree: item.degree || '',
+          field_of_study: item.field_of_study || '',
+          start_date: item.start_date || '',
+          end_date: item.year || item.end_date || '',
+        })),
+        languages: parsed.languages || [],
+        projects: parsed.projects || [],
+        certifications: parsed.certifications || [],
+        github: parsed.github || '',
+        github_repositories: parsed.github_repositories || [],
+        portfolio_links: parsed.portfolio_links || [],
+      }
+    : parsed;
 
-  const experiences = (parsed.experience || []).map((item, index) => ({
-    id: timestamp + index,
-    company: item.company || '',
-    role: item.role || item.title || '',
-    startDate: item.start_date || item.startDate || '',
-    endDate: item.end_date || item.endDate || '',
-    current: !item.end_date && !item.endDate,
-    description: item.description || '',
-  }));
+  const skills = Array.isArray(source.skills)
+    ? source.skills.map((s) => toInputValue(s)).filter(Boolean)
+    : [];
 
-  const education = (parsed.education || []).map((item, index) => ({
-    id: timestamp + index + 1000,
-    school: item.institution || item.school || '',
-    degree: item.degree || '',
-    fieldOfStudy: item.field_of_study || item.fieldOfStudy || item.field || '',
-    startDate: item.start_date || item.startDate || '',
-    endDate: item.end_date || item.endDate || '',
-    current: false,
-  }));
-
-  const languages = (parsed.languages || []).map((item, index) => ({
-    id: timestamp + index + 2000,
-    language: item.language || item.name || '',
-    level: item.level || 'Fluent',
-  }));
-
-  const projects = (parsed.projects || []).map((item, index) => ({
-    id: timestamp + index + 3000,
-    name: item.name || '',
-    description: item.description || '',
-    technologies: Array.isArray(item.technologies) ? item.technologies : [],
-    url: item.url || item.link || '',
-    startDate: item.start_date || item.startDate || '',
-    endDate: item.end_date || item.endDate || '',
-  }));
-
-  const certifications = (parsed.certifications || []).map((item, index) => ({
-    id: timestamp + index + 4000,
-    name: item.name || '',
-    issuer: item.issuer || item.organization || '',
-    year: item.year || item.issue_date || item.issueDate || '',
-  }));
+  const experiences = (source.experience || []).map((item, index) => normalizeExperience(item, index));
+  const education = (source.education || []).map((item, index) => normalizeEducation(item, index));
+  const languages = (source.languages || []).map((item, index) => normalizeLanguage(item, index));
+  const projects = (source.projects || []).map((item, index) => normalizeProject(item, index));
+  const certifications = (source.certifications || []).map((item, index) => normalizeCertification(item, index));
 
   const github = {
-    profileUrl: parsed.github || '',
-    repositories: Array.isArray(parsed.github_repositories) ? parsed.github_repositories : [],
-    portfolioLinks: Array.isArray(parsed.portfolio_links) ? parsed.portfolio_links : [],
+    profileUrl: toInputValue(source.github),
+    repositories: Array.isArray(source.github_repositories) ? source.github_repositories : [],
+    portfolioLinks: Array.isArray(source.portfolio_links) ? source.portfolio_links : [],
   };
 
-  return { skills, experiences, education, languages, projects, certifications, github };
+  return {
+    skills,
+    experiences,
+    education,
+    languages,
+    projects,
+    certifications,
+    github,
+    personal: {
+      fullName: toInputValue(source.name),
+      email: toInputValue(source.email),
+      phone: toInputValue(source.phone),
+    },
+  };
 };
 
 export const ANALYSIS_STEPS = {

@@ -5215,17 +5215,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
 
-
-// ── Stats ──────────────────────────────────────────────────────────────────────
-
 function fetchAdminStats() {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/admin/stats').then(function (r) {
     return r.data;
   });
 }
-
-// ── HR Users ───────────────────────────────────────────────────────────────────
-
 function fetchHrUsers() {
   var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/admin/hr-users', {
@@ -5259,9 +5253,6 @@ function resetHrUserPassword(id) {
     return r.data;
   });
 }
-
-// ── Activity Logs ──────────────────────────────────────────────────────────────
-
 function fetchActivityLogs() {
   var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/admin/logs', {
@@ -5414,8 +5405,6 @@ function refreshToken() {
   });
   return refreshPromise;
 }
-
-// Restore token on page load
 var stored = getRawToken();
 if (stored && !isTokenExpired()) {
   axios__WEBPACK_IMPORTED_MODULE_0__["default"].defaults.headers.common.Authorization = "Bearer ".concat(stored);
@@ -5504,16 +5493,12 @@ function register(payload) {
 }
 function login(payload) {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/auth/login', payload).then(function (res) {
-    // first_login: true means the account needs the onboarding flow — don't store a token
     if (!res.data.first_login) {
       setToken(res.data);
     }
     return res.data;
   });
 }
-
-// ── First-login onboarding flow ────────────────────────────────────────────────
-
 function sendFirstLoginCode(payload) {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/auth/first-login/send-code', payload).then(function (r) {
     return r.data;
@@ -5680,24 +5665,31 @@ function deleteSectionItem(itemId) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   addHrTeamMember: () => (/* binding */ addHrTeamMember),
+/* harmony export */   createHrTeamNote: () => (/* binding */ createHrTeamNote),
+/* harmony export */   deleteHrTeamNote: () => (/* binding */ deleteHrTeamNote),
+/* harmony export */   downloadCandidateResume: () => (/* binding */ downloadCandidateResume),
 /* harmony export */   fetchCandidateProfile: () => (/* binding */ fetchCandidateProfile),
 /* harmony export */   fetchHrAnalytics: () => (/* binding */ fetchHrAnalytics),
 /* harmony export */   fetchHrApplications: () => (/* binding */ fetchHrApplications),
 /* harmony export */   fetchHrHires: () => (/* binding */ fetchHrHires),
+/* harmony export */   fetchHrOverviewStats: () => (/* binding */ fetchHrOverviewStats),
 /* harmony export */   fetchHrSettings: () => (/* binding */ fetchHrSettings),
 /* harmony export */   fetchHrTeam: () => (/* binding */ fetchHrTeam),
+/* harmony export */   fetchHrTeamNotes: () => (/* binding */ fetchHrTeamNotes),
 /* harmony export */   fetchJobApplicants: () => (/* binding */ fetchJobApplicants),
 /* harmony export */   fetchMyApplications: () => (/* binding */ fetchMyApplications),
 /* harmony export */   removeHrTeamMember: () => (/* binding */ removeHrTeamMember),
 /* harmony export */   saveHrAccount: () => (/* binding */ saveHrAccount),
 /* harmony export */   saveHrNotifications: () => (/* binding */ saveHrNotifications),
 /* harmony export */   saveHrSettings: () => (/* binding */ saveHrSettings),
-/* harmony export */   updateHrApplicationStatus: () => (/* binding */ updateHrApplicationStatus)
+/* harmony export */   updateHrApplicationStatus: () => (/* binding */ updateHrApplicationStatus),
+/* harmony export */   updateHrTeamNote: () => (/* binding */ updateHrTeamNote)
 /* harmony export */ });
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
-
-
-// ── Applications (HR) ─────────────────────────────────────────────────────────
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 
 function fetchHrApplications() {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/hr/applications').then(function (r) {
@@ -5721,33 +5713,65 @@ function fetchCandidateProfile(userId) {
     return r.data;
   });
 }
-
-// ── Applications (Candidate) ──────────────────────────────────────────────────
-
+function downloadCandidateResume(_x) {
+  return _downloadCandidateResume.apply(this, arguments);
+}
+function _downloadCandidateResume() {
+  _downloadCandidateResume = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(userId) {
+    var filename,
+      response,
+      blob,
+      url,
+      link,
+      _args = arguments;
+    return _regenerator().w(function (_context) {
+      while (1) switch (_context.n) {
+        case 0:
+          filename = _args.length > 1 && _args[1] !== undefined ? _args[1] : 'resume.pdf';
+          _context.n = 1;
+          return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get("/api/hr/candidates/".concat(userId, "/resume/download"), {
+            responseType: 'blob'
+          });
+        case 1:
+          response = _context.v;
+          blob = new Blob([response.data], {
+            type: response.headers['content-type'] || 'application/octet-stream'
+          });
+          url = window.URL.createObjectURL(blob);
+          link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
+        case 2:
+          return _context.a(2);
+      }
+    }, _callee);
+  }));
+  return _downloadCandidateResume.apply(this, arguments);
+}
 function fetchMyApplications() {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/candidate/applications').then(function (r) {
     return r.data.applications;
   });
 }
-
-// ── Analytics ─────────────────────────────────────────────────────────────────
-
+function fetchHrOverviewStats() {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/hr/overview-stats').then(function (r) {
+    return r.data.stats;
+  });
+}
 function fetchHrAnalytics() {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/hr/analytics').then(function (r) {
     return r.data;
   });
 }
-
-// ── Hires ─────────────────────────────────────────────────────────────────────
-
 function fetchHrHires() {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/hr/hires').then(function (r) {
     return r.data.hires;
   });
 }
-
-// ── Team ──────────────────────────────────────────────────────────────────────
-
 function fetchHrTeam() {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/hr/team').then(function (r) {
     return r.data;
@@ -5767,9 +5791,26 @@ function removeHrTeamMember(id) {
     return r.data;
   });
 }
-
-// ── Settings ──────────────────────────────────────────────────────────────────
-
+function fetchHrTeamNotes() {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/hr/team/notes').then(function (r) {
+    return r.data;
+  });
+}
+function createHrTeamNote(payload) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/api/hr/team/notes', payload).then(function (r) {
+    return r.data;
+  });
+}
+function updateHrTeamNote(id, payload) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].put("/api/hr/team/notes/".concat(id), payload).then(function (r) {
+    return r.data;
+  });
+}
+function deleteHrTeamNote(id) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"]["delete"]("/api/hr/team/notes/".concat(id)).then(function (r) {
+    return r.data;
+  });
+}
 function fetchHrSettings() {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/hr/settings').then(function (r) {
     return r.data;
@@ -5915,14 +5956,10 @@ function normalizeTags(tags) {
   }
   return [];
 }
-
-/** True if the job is tagged with this type (it may also have other types). */
 function jobMatchesTypeFilter(job, filter) {
   var types = (0,_utils_jobFormUtils__WEBPACK_IMPORTED_MODULE_1__.typesIncludingRemoteFromLocation)(job.types, job.type, job.location);
   return types.includes(filter);
 }
-
-/** Job must include every selected type; extra types on the job are allowed. */
 function jobMatchesAllTypeFilters(job, typeFilters) {
   if (!typeFilters.length) {
     return true;
@@ -6095,8 +6132,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
 
-
-/** How often open message views refetch from the API (ms). */
 var MESSAGES_POLL_MS = 4000;
 function listConversations() {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/api/conversations').then(function (response) {
@@ -6205,13 +6240,16 @@ function uploadResume(file) {
   return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/api/resume/upload', formData, {
     headers: {
       Accept: 'application/json'
-    }
+    },
+    timeout: 300000
   }).then(function (r) {
     return r.data;
   });
 }
 function analyzeResume(resumeId) {
-  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post("/api/resume/".concat(resumeId, "/analyze")).then(function (r) {
+  return axios__WEBPACK_IMPORTED_MODULE_0__["default"].post("/api/resume/".concat(resumeId, "/analyze"), null, {
+    timeout: 300000
+  }).then(function (r) {
     return r.data;
   });
 }
@@ -7404,8 +7442,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
-
-// Simple cache so we only fetch once per page load
 var cache = {
   data: null
 };
@@ -7686,25 +7722,27 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   userRoutes: () => (/* binding */ userRoutes)
 /* harmony export */ });
-/* harmony import */ var _views_User_View_UserViewLayout__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../views/User-View/UserViewLayout */ "./resources/js/views/User-View/UserViewLayout.js");
-/* harmony import */ var _views_User_View_pages_Home_Home__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../views/User-View/pages/Home/Home */ "./resources/js/views/User-View/pages/Home/Home.js");
-/* harmony import */ var _views_User_View_pages_About_About__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../views/User-View/pages/About/About */ "./resources/js/views/User-View/pages/About/About.js");
-/* harmony import */ var _views_User_View_pages_Companies_Companies__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../views/User-View/pages/Companies/Companies */ "./resources/js/views/User-View/pages/Companies/Companies.js");
-/* harmony import */ var _views_User_View_pages_CompaniesDetails_CompaniesDetail__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../views/User-View/pages/CompaniesDetails/CompaniesDetail */ "./resources/js/views/User-View/pages/CompaniesDetails/CompaniesDetail.js");
-/* harmony import */ var _views_User_View_pages_Jobs_Jobs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../views/User-View/pages/Jobs/Jobs */ "./resources/js/views/User-View/pages/Jobs/Jobs.js");
-/* harmony import */ var _views_User_View_pages_JobDetailPage_JobDetailPage__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../views/User-View/pages/JobDetailPage/JobDetailPage */ "./resources/js/views/User-View/pages/JobDetailPage/JobDetailPage.js");
-/* harmony import */ var _views_User_View_pages_Contact_Contact__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../views/User-View/pages/Contact/Contact */ "./resources/js/views/User-View/pages/Contact/Contact.js");
-/* harmony import */ var _views_User_View_pages_Pricing_Pricing__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../views/User-View/pages/Pricing/Pricing */ "./resources/js/views/User-View/pages/Pricing/Pricing.js");
-/* harmony import */ var _views_User_View_pages_Login_Login__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../views/User-View/pages/Login/Login */ "./resources/js/views/User-View/pages/Login/Login.js");
-/* harmony import */ var _views_User_View_pages_Signup_Signup__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../views/User-View/pages/Signup/Signup */ "./resources/js/views/User-View/pages/Signup/Signup.js");
-/* harmony import */ var _views_User_View_pages_User_Dashboard_Dashboard_Dashboard_js__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/Dashboard/Dashboard.js */ "./resources/js/views/User-View/pages/User-Dashboard/Dashboard/Dashboard.js");
-/* harmony import */ var _views_User_View_pages_User_Dashboard_AppliedJobs_AppliedJobs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/AppliedJobs/AppliedJobs */ "./resources/js/views/User-View/pages/User-Dashboard/AppliedJobs/AppliedJobs.js");
-/* harmony import */ var _views_User_View_pages_User_Dashboard_SavedJobs_SavedJob__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/SavedJobs/SavedJob */ "./resources/js/views/User-View/pages/User-Dashboard/SavedJobs/SavedJob.js");
-/* harmony import */ var _views_User_View_pages_User_Dashboard_Interview_Interview__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/Interview/Interview */ "./resources/js/views/User-View/pages/User-Dashboard/Interview/Interview.js");
-/* harmony import */ var _views_User_View_pages_User_Dashboard_ProfilePage_ProfilePage__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/ProfilePage/ProfilePage */ "./resources/js/views/User-View/pages/User-Dashboard/ProfilePage/ProfilePage.js");
-/* harmony import */ var _views_User_View_pages_User_Dashboard_Messages_Messagespage__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/Messages/Messagespage */ "./resources/js/views/User-View/pages/User-Dashboard/Messages/Messagespage.js");
-/* harmony import */ var _views_User_View_pages_User_Dashboard_Resume_ResumePage__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/Resume/ResumePage */ "./resources/js/views/User-View/pages/User-Dashboard/Resume/ResumePage.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/development/chunk-UVKPFVEO.mjs");
+/* harmony import */ var _views_User_View_UserViewLayout__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../views/User-View/UserViewLayout */ "./resources/js/views/User-View/UserViewLayout.js");
+/* harmony import */ var _views_User_View_pages_Home_Home__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../views/User-View/pages/Home/Home */ "./resources/js/views/User-View/pages/Home/Home.js");
+/* harmony import */ var _views_User_View_pages_About_About__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../views/User-View/pages/About/About */ "./resources/js/views/User-View/pages/About/About.js");
+/* harmony import */ var _views_User_View_pages_Companies_Companies__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../views/User-View/pages/Companies/Companies */ "./resources/js/views/User-View/pages/Companies/Companies.js");
+/* harmony import */ var _views_User_View_pages_CompaniesDetails_CompaniesDetail__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../views/User-View/pages/CompaniesDetails/CompaniesDetail */ "./resources/js/views/User-View/pages/CompaniesDetails/CompaniesDetail.js");
+/* harmony import */ var _views_User_View_pages_Jobs_Jobs__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../views/User-View/pages/Jobs/Jobs */ "./resources/js/views/User-View/pages/Jobs/Jobs.js");
+/* harmony import */ var _views_User_View_pages_JobDetailPage_JobDetailPage__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../views/User-View/pages/JobDetailPage/JobDetailPage */ "./resources/js/views/User-View/pages/JobDetailPage/JobDetailPage.js");
+/* harmony import */ var _views_User_View_pages_Contact_Contact__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../views/User-View/pages/Contact/Contact */ "./resources/js/views/User-View/pages/Contact/Contact.js");
+/* harmony import */ var _views_User_View_pages_Pricing_Pricing__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../views/User-View/pages/Pricing/Pricing */ "./resources/js/views/User-View/pages/Pricing/Pricing.js");
+/* harmony import */ var _views_User_View_pages_Login_Login__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../views/User-View/pages/Login/Login */ "./resources/js/views/User-View/pages/Login/Login.js");
+/* harmony import */ var _views_User_View_pages_Signup_Signup__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../views/User-View/pages/Signup/Signup */ "./resources/js/views/User-View/pages/Signup/Signup.js");
+/* harmony import */ var _views_User_View_pages_User_Dashboard_Dashboard_Dashboard_js__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/Dashboard/Dashboard.js */ "./resources/js/views/User-View/pages/User-Dashboard/Dashboard/Dashboard.js");
+/* harmony import */ var _views_User_View_pages_User_Dashboard_AppliedJobs_AppliedJobs__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/AppliedJobs/AppliedJobs */ "./resources/js/views/User-View/pages/User-Dashboard/AppliedJobs/AppliedJobs.js");
+/* harmony import */ var _views_User_View_pages_User_Dashboard_SavedJobs_SavedJob__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/SavedJobs/SavedJob */ "./resources/js/views/User-View/pages/User-Dashboard/SavedJobs/SavedJob.js");
+/* harmony import */ var _views_User_View_pages_User_Dashboard_Interview_Interview__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/Interview/Interview */ "./resources/js/views/User-View/pages/User-Dashboard/Interview/Interview.js");
+/* harmony import */ var _views_User_View_pages_User_Dashboard_ProfilePage_ProfilePage__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/ProfilePage/ProfilePage */ "./resources/js/views/User-View/pages/User-Dashboard/ProfilePage/ProfilePage.js");
+/* harmony import */ var _views_User_View_pages_User_Dashboard_Messages_Messagespage__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/Messages/Messagespage */ "./resources/js/views/User-View/pages/User-Dashboard/Messages/Messagespage.js");
+/* harmony import */ var _views_User_View_pages_User_Dashboard_Resume_ResumePage__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../views/User-View/pages/User-Dashboard/Resume/ResumePage */ "./resources/js/views/User-View/pages/User-Dashboard/Resume/ResumePage.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
 
 
 
@@ -7725,67 +7763,76 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var userRoutes = [{
-  element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_UserViewLayout__WEBPACK_IMPORTED_MODULE_0__["default"], {}),
+  element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_UserViewLayout__WEBPACK_IMPORTED_MODULE_1__["default"], {}),
   children: [{
     path: "/",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_Home_Home__WEBPACK_IMPORTED_MODULE_1__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_Home_Home__WEBPACK_IMPORTED_MODULE_2__["default"], {})
   }, {
     path: "/about-us",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_About_About__WEBPACK_IMPORTED_MODULE_2__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_About_About__WEBPACK_IMPORTED_MODULE_3__["default"], {})
   }, {
     path: "/companies",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_Companies_Companies__WEBPACK_IMPORTED_MODULE_3__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_Companies_Companies__WEBPACK_IMPORTED_MODULE_4__["default"], {})
   }, {
     path: "/companies/:id",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_CompaniesDetails_CompaniesDetail__WEBPACK_IMPORTED_MODULE_4__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_CompaniesDetails_CompaniesDetail__WEBPACK_IMPORTED_MODULE_5__["default"], {})
   }, {
     path: "/jobs",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_Jobs_Jobs__WEBPACK_IMPORTED_MODULE_5__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_Jobs_Jobs__WEBPACK_IMPORTED_MODULE_6__["default"], {})
   }, {
     path: "/jobs/:id",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_JobDetailPage_JobDetailPage__WEBPACK_IMPORTED_MODULE_6__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_JobDetailPage_JobDetailPage__WEBPACK_IMPORTED_MODULE_7__["default"], {})
   }, {
     path: "/contact-us",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_Contact_Contact__WEBPACK_IMPORTED_MODULE_7__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_Contact_Contact__WEBPACK_IMPORTED_MODULE_8__["default"], {})
   }, {
     path: "/pricing",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_Pricing_Pricing__WEBPACK_IMPORTED_MODULE_8__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_Pricing_Pricing__WEBPACK_IMPORTED_MODULE_9__["default"], {})
   }, {
     path: "/login",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_Login_Login__WEBPACK_IMPORTED_MODULE_9__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_Login_Login__WEBPACK_IMPORTED_MODULE_10__["default"], {})
   }, {
     path: "/signup",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_Signup_Signup__WEBPACK_IMPORTED_MODULE_10__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_Signup_Signup__WEBPACK_IMPORTED_MODULE_11__["default"], {})
   }, {
     path: "/user-dashboard",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_User_Dashboard_Dashboard_Dashboard_js__WEBPACK_IMPORTED_MODULE_11__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_User_Dashboard_Dashboard_Dashboard_js__WEBPACK_IMPORTED_MODULE_12__["default"], {})
   }, {
     path: "/user-dashboard/dashboard",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_User_Dashboard_Dashboard_Dashboard_js__WEBPACK_IMPORTED_MODULE_11__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_User_Dashboard_Dashboard_Dashboard_js__WEBPACK_IMPORTED_MODULE_12__["default"], {})
   }, {
     path: "/user-dashboard/applied-jobs",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_User_Dashboard_AppliedJobs_AppliedJobs__WEBPACK_IMPORTED_MODULE_12__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_User_Dashboard_AppliedJobs_AppliedJobs__WEBPACK_IMPORTED_MODULE_13__["default"], {})
   }, {
     path: "/user-dashboard/saved-jobs",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_User_Dashboard_SavedJobs_SavedJob__WEBPACK_IMPORTED_MODULE_13__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_User_Dashboard_SavedJobs_SavedJob__WEBPACK_IMPORTED_MODULE_14__["default"], {})
   }, {
     path: "/user-dashboard/interviews",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_User_Dashboard_Interview_Interview__WEBPACK_IMPORTED_MODULE_14__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_User_Dashboard_Interview_Interview__WEBPACK_IMPORTED_MODULE_15__["default"], {})
   }, {
     path: "/user-dashboard/interviews/join/:token",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_User_Dashboard_Interview_Interview__WEBPACK_IMPORTED_MODULE_14__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_User_Dashboard_Interview_Interview__WEBPACK_IMPORTED_MODULE_15__["default"], {})
   }, {
     path: "/user-dashboard/interviews/:roomName",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_User_Dashboard_Interview_Interview__WEBPACK_IMPORTED_MODULE_14__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_User_Dashboard_Interview_Interview__WEBPACK_IMPORTED_MODULE_15__["default"], {})
+  }, {
+    path: "/interviews",
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_0__.Navigate, {
+      to: "/user-dashboard/interviews",
+      replace: true
+    })
+  }, {
+    path: "/interviews/join/:token",
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_User_Dashboard_Interview_Interview__WEBPACK_IMPORTED_MODULE_15__["default"], {})
   }, {
     path: "/user-dashboard/profile",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_User_Dashboard_ProfilePage_ProfilePage__WEBPACK_IMPORTED_MODULE_15__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_User_Dashboard_ProfilePage_ProfilePage__WEBPACK_IMPORTED_MODULE_16__["default"], {})
   }, {
     path: "/user-dashboard/messages",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_User_Dashboard_Messages_Messagespage__WEBPACK_IMPORTED_MODULE_16__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_User_Dashboard_Messages_Messagespage__WEBPACK_IMPORTED_MODULE_17__["default"], {})
   }, {
     path: "/user-dashboard/resume",
-    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_views_User_View_pages_User_Dashboard_Resume_ResumePage__WEBPACK_IMPORTED_MODULE_17__["default"], {})
+    element: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_views_User_View_pages_User_Dashboard_Resume_ResumePage__WEBPACK_IMPORTED_MODULE_18__["default"], {})
   }]
 }];
 
@@ -7879,12 +7926,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   applyProfileToState: () => (/* binding */ applyProfileToState),
 /* harmony export */   buildProfilePayload: () => (/* binding */ buildProfilePayload)
 /* harmony export */ });
+Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+
 var buildProfilePayload = function buildProfilePayload(_ref) {
   var personal = _ref.personal,
     skills = _ref.skills,
@@ -7929,54 +7978,38 @@ var applyProfileToState = function applyProfileToState(profile, setters) {
   }
   if ((_profile$experiences = profile.experiences) !== null && _profile$experiences !== void 0 && _profile$experiences.length && setExperiences) {
     setExperiences(profile.experiences.map(function (e, i) {
-      var _e$id;
-      return _objectSpread(_objectSpread({}, e), {}, {
-        id: (_e$id = e.id) !== null && _e$id !== void 0 ? _e$id : Date.now() + i
-      });
+      return Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(e, i);
     }));
   }
   if ((_profile$education = profile.education) !== null && _profile$education !== void 0 && _profile$education.length && setEducation) {
     setEducation(profile.education.map(function (e, i) {
-      var _e$id2;
-      return _objectSpread(_objectSpread({}, e), {}, {
-        id: (_e$id2 = e.id) !== null && _e$id2 !== void 0 ? _e$id2 : Date.now() + i + 1000
-      });
+      return Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(e, i);
     }));
   }
   if ((_profile$languages = profile.languages) !== null && _profile$languages !== void 0 && _profile$languages.length && setLanguages) {
     setLanguages(profile.languages.map(function (l, i) {
-      var _l$id;
-      return _objectSpread(_objectSpread({}, l), {}, {
-        id: (_l$id = l.id) !== null && _l$id !== void 0 ? _l$id : Date.now() + i + 2000
-      });
+      return Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(l, i);
     }));
   }
   if ((_profile$projects = profile.projects) !== null && _profile$projects !== void 0 && _profile$projects.length && setProjects) {
     setProjects(profile.projects.map(function (p, i) {
-      var _p$id;
-      return _objectSpread(_objectSpread({}, p), {}, {
-        id: (_p$id = p.id) !== null && _p$id !== void 0 ? _p$id : Date.now() + i + 3000,
-        technologies: Array.isArray(p.technologies) ? p.technologies : []
-      });
+      return Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(p, i);
     }));
   }
   if ((_profile$certificatio = profile.certifications) !== null && _profile$certificatio !== void 0 && _profile$certificatio.length && setCertifications) {
     setCertifications(profile.certifications.map(function (c, i) {
-      var _c$id;
-      return _objectSpread(_objectSpread({}, c), {}, {
-        id: (_c$id = c.id) !== null && _c$id !== void 0 ? _c$id : Date.now() + i + 4000
-      });
+      return Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(c, i);
     }));
   }
   if (setGithub) {
     setGithub(function () {
       var _profile$personal, _profile$personal2, _profile$personal3;
       var current = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return _objectSpread(_objectSpread({}, current), {}, {
+      return {
         profileUrl: ((_profile$personal = profile.personal) === null || _profile$personal === void 0 ? void 0 : _profile$personal.github) || current.profileUrl || '',
         repositories: ((_profile$personal2 = profile.personal) === null || _profile$personal2 === void 0 ? void 0 : _profile$personal2.github_repositories) || current.repositories || [],
         portfolioLinks: ((_profile$personal3 = profile.personal) === null || _profile$personal3 === void 0 ? void 0 : _profile$personal3.portfolio_links) || current.portfolioLinks || []
-      });
+      };
     });
   }
 };
@@ -8485,62 +8518,63 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   ANALYSIS_STEPS: () => (/* binding */ ANALYSIS_STEPS),
 /* harmony export */   mapParsedToProfile: () => (/* binding */ mapParsedToProfile)
 /* harmony export */ });
+Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
+
 var mapParsedToProfile = function mapParsedToProfile() {
   var parsed = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-  var skills = Array.isArray(parsed.skills) ? parsed.skills.filter(Boolean) : [];
-  var timestamp = Date.now();
-  var experiences = (parsed.experience || []).map(function (item, index) {
-    return {
-      id: timestamp + index,
-      company: item.company || '',
-      role: item.role || item.title || '',
-      startDate: item.start_date || item.startDate || '',
-      endDate: item.end_date || item.endDate || '',
-      current: !item.end_date && !item.endDate,
-      description: item.description || ''
-    };
+  var personal = parsed.personal_info || {};
+  var source = parsed.personal_info ? {
+    name: personal.full_name || '',
+    email: personal.email || '',
+    phone: personal.phone || '',
+    skills: parsed.skills || [],
+    experience: (parsed.experience || []).map(function (item) {
+      return {
+        company: item.company || '',
+        role: item.title || item.role || '',
+        start_date: item.start_date || '',
+        end_date: item.end_date || '',
+        description: item.description || ''
+      };
+    }),
+    education: (parsed.education || []).map(function (item) {
+      return {
+        institution: item.institution || '',
+        degree: item.degree || '',
+        field_of_study: item.field_of_study || '',
+        start_date: item.start_date || '',
+        end_date: item.year || item.end_date || ''
+      };
+    }),
+    languages: parsed.languages || [],
+    projects: parsed.projects || [],
+    certifications: parsed.certifications || [],
+    github: parsed.github || '',
+    github_repositories: parsed.github_repositories || [],
+    portfolio_links: parsed.portfolio_links || []
+  } : parsed;
+  var skills = Array.isArray(source.skills) ? source.skills.map(function (s) {
+    return Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(s);
+  }).filter(Boolean) : [];
+  var experiences = (source.experience || []).map(function (item, index) {
+    return Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(item, index);
   });
-  var education = (parsed.education || []).map(function (item, index) {
-    return {
-      id: timestamp + index + 1000,
-      school: item.institution || item.school || '',
-      degree: item.degree || '',
-      fieldOfStudy: item.field_of_study || item.fieldOfStudy || item.field || '',
-      startDate: item.start_date || item.startDate || '',
-      endDate: item.end_date || item.endDate || '',
-      current: false
-    };
+  var education = (source.education || []).map(function (item, index) {
+    return Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(item, index);
   });
-  var languages = (parsed.languages || []).map(function (item, index) {
-    return {
-      id: timestamp + index + 2000,
-      language: item.language || item.name || '',
-      level: item.level || 'Fluent'
-    };
+  var languages = (source.languages || []).map(function (item, index) {
+    return Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(item, index);
   });
-  var projects = (parsed.projects || []).map(function (item, index) {
-    return {
-      id: timestamp + index + 3000,
-      name: item.name || '',
-      description: item.description || '',
-      technologies: Array.isArray(item.technologies) ? item.technologies : [],
-      url: item.url || item.link || '',
-      startDate: item.start_date || item.startDate || '',
-      endDate: item.end_date || item.endDate || ''
-    };
+  var projects = (source.projects || []).map(function (item, index) {
+    return Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(item, index);
   });
-  var certifications = (parsed.certifications || []).map(function (item, index) {
-    return {
-      id: timestamp + index + 4000,
-      name: item.name || '',
-      issuer: item.issuer || item.organization || '',
-      year: item.year || item.issue_date || item.issueDate || ''
-    };
+  var certifications = (source.certifications || []).map(function (item, index) {
+    return Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(item, index);
   });
   var github = {
-    profileUrl: parsed.github || '',
-    repositories: Array.isArray(parsed.github_repositories) ? parsed.github_repositories : [],
-    portfolioLinks: Array.isArray(parsed.portfolio_links) ? parsed.portfolio_links : []
+    profileUrl: Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(source.github),
+    repositories: Array.isArray(source.github_repositories) ? source.github_repositories : [],
+    portfolioLinks: Array.isArray(source.portfolio_links) ? source.portfolio_links : []
   };
   return {
     skills: skills,
@@ -8549,7 +8583,12 @@ var mapParsedToProfile = function mapParsedToProfile() {
     languages: languages,
     projects: projects,
     certifications: certifications,
-    github: github
+    github: github,
+    personal: {
+      fullName: Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(source.name),
+      email: Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(source.email),
+      phone: Object(function webpackMissingModule() { var e = new Error("Cannot find module './formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(source.phone)
+    }
   };
 };
 var ANALYSIS_STEPS = {
@@ -8739,8 +8778,6 @@ var AdminAboutPanel = function AdminAboutPanel(_ref) {
   var activeGroup = GROUPS.find(function (g) {
     return g.id === activeGroupId;
   }) || GROUPS[0];
-
-  // ── Sections helpers ──────────────────────────────────────────────────
   var byKey = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
     var map = {};
     (homeSectionsForm || []).forEach(function (s) {
@@ -8839,8 +8876,6 @@ var AdminAboutPanel = function AdminAboutPanel(_ref) {
       return _ref4.apply(this, arguments);
     };
   }();
-
-  // ── Team members state ────────────────────────────────────────────────
   var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState6 = _slicedToArray(_useState5, 2),
     members = _useState6[0],
@@ -9025,8 +9060,6 @@ var AdminAboutPanel = function AdminAboutPanel(_ref) {
       return _ref7.apply(this, arguments);
     };
   }();
-
-  // ── Render ────────────────────────────────────────────────────────────
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("section", {
     className: "admin-card admin-home-sections-card",
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
@@ -10309,8 +10342,6 @@ var AdminPricingPanel = function AdminPricingPanel(_ref) {
     e.preventDefault();
     updatePageContent('pricing', copyForm);
   };
-
-  // Plans state
   var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState6 = _slicedToArray(_useState5, 2),
     plans = _useState6[0],
@@ -12679,7 +12710,6 @@ function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 
 
-// import '../../shared/AdminShared.scss';
 
 var LinksTable = function LinksTable() {
   var _usePlatformAdmin = (0,_context_PlatformAdminContext__WEBPACK_IMPORTED_MODULE_1__.usePlatformAdmin)(),
@@ -13368,12 +13398,15 @@ var TopBar = function TopBar(_ref) {
         className: "admin-topbar-page",
         children: names[location.pathname] || 'Admin Dashboard'
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
-      className: "admin-btn admin-btn-accent",
+    }), location.pathname !== '/admin-dashboard/users' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
+      type: "button",
+      className: "admin-btn admin-btn-accent admin-topbar-invite",
       onClick: function onClick() {
         return navigate('/admin-dashboard/users');
       },
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_2__.FiMail, {}), "Invite HR"]
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_2__.FiMail, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+        children: "Invite HR"
+      })]
     })]
   });
 };
@@ -13591,8 +13624,6 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-// ── Status badge ──────────────────────────────────────────────────────────────
-
 var STATUS_META = {
   active: {
     label: 'Active',
@@ -13600,7 +13631,7 @@ var STATUS_META = {
     color: '#065f46'
   },
   pending_activation: {
-    label: 'Pending Activation',
+    label: 'Pending',
     bg: '#fef3c7',
     color: '#92400e'
   },
@@ -13627,9 +13658,6 @@ function StatusBadge(_ref) {
     children: meta.label
   });
 }
-
-// ── Invite Modal ──────────────────────────────────────────────────────────────
-
 function InviteModal(_ref2) {
   var onClose = _ref2.onClose,
     onCreated = _ref2.onCreated;
@@ -13780,9 +13808,6 @@ function InviteModal(_ref2) {
     })
   });
 }
-
-// ── Edit Modal ────────────────────────────────────────────────────────────────
-
 function EditModal(_ref4) {
   var _user$company;
   var user = _ref4.user,
@@ -13911,11 +13936,8 @@ function EditModal(_ref4) {
     })
   });
 }
-
-// ── Main page ─────────────────────────────────────────────────────────────────
-
 var AdminDashboardUsersPage = function AdminDashboardUsersPage() {
-  var _hrUsers$data, _hrUsers$meta, _meta$total;
+  var _hrUsers$data, _hrUsers$total, _hrUsers$current_page, _hrUsers$last_page;
   var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
       data: [],
       meta: {}
@@ -14115,7 +14137,9 @@ var AdminDashboardUsersPage = function AdminDashboardUsersPage() {
     };
   }();
   var users = (_hrUsers$data = hrUsers.data) !== null && _hrUsers$data !== void 0 ? _hrUsers$data : [];
-  var meta = (_hrUsers$meta = hrUsers.meta) !== null && _hrUsers$meta !== void 0 ? _hrUsers$meta : {};
+  var totalHrUsers = (_hrUsers$total = hrUsers.total) !== null && _hrUsers$total !== void 0 ? _hrUsers$total : users.length;
+  var currentPage = (_hrUsers$current_page = hrUsers.current_page) !== null && _hrUsers$current_page !== void 0 ? _hrUsers$current_page : 1;
+  var lastPage = (_hrUsers$last_page = hrUsers.last_page) !== null && _hrUsers$last_page !== void 0 ? _hrUsers$last_page : 1;
   var fmt = function fmt(iso) {
     return iso ? new Date(iso).toLocaleDateString('en-US', {
       month: 'short',
@@ -14172,7 +14196,7 @@ var AdminDashboardUsersPage = function AdminDashboardUsersPage() {
         className: "au-stat-row",
         children: [{
           label: 'Total HR users',
-          value: (_meta$total = meta.total) !== null && _meta$total !== void 0 ? _meta$total : '—',
+          value: totalHrUsers,
           Icon: react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiUser
         }, {
           label: 'Active',
@@ -14228,7 +14252,7 @@ var AdminDashboardUsersPage = function AdminDashboardUsersPage() {
         })
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("section", {
-      className: "admin-card",
+      className: "admin-card admin-card--table",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
         className: "au-toolbar",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
@@ -14293,42 +14317,45 @@ var AdminDashboardUsersPage = function AdminDashboardUsersPage() {
               })]
             })
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("tbody", {
-            children: users.map(function (user) {
+            children: users.map(function (user, index) {
               var _user$company2;
+              var menuOpensUp = index >= users.length - 2;
               return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("tr", {
                 children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("td", {
                   children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("strong", {
                     children: user.name
                   })
                 }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("td", {
-                  className: "au-muted",
+                  className: "au-muted au-cell-email",
                   children: user.email
                 }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("td", {
+                  className: "au-cell-company",
                   children: (_user$company2 = user.company) !== null && _user$company2 !== void 0 ? _user$company2 : '—'
                 }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("td", {
                   children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(StatusBadge, {
                     status: user.account_status
                   })
                 }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("td", {
-                  className: "au-muted",
+                  className: "au-muted au-cell-date",
                   children: fmt(user.last_login_at)
                 }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("td", {
-                  className: "au-muted",
+                  className: "au-muted au-cell-date",
                   children: fmt(user.created_at)
                 }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("td", {
-                  style: {
-                    position: 'relative'
-                  },
+                  className: "au-actions-cell",
                   children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
+                    type: "button",
                     className: "au-menu-btn",
                     onClick: function onClick(e) {
                       e.stopPropagation();
                       setOpenMenu(openMenu === user.id ? null : user.id);
                     },
                     disabled: actionLoad[user.id],
+                    "aria-label": "Actions for ".concat(user.name),
+                    "aria-expanded": openMenu === user.id,
                     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiMoreVertical, {})
                   }), openMenu === user.id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-                    className: "au-dropdown",
+                    className: "au-dropdown".concat(menuOpensUp ? ' au-dropdown--up' : ''),
                     onMouseDown: function onMouseDown(e) {
                       return e.stopPropagation();
                     },
@@ -14363,7 +14390,7 @@ var AdminDashboardUsersPage = function AdminDashboardUsersPage() {
             })
           })]
         })
-      }), meta.last_page > 1 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+      }), lastPage > 1 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
         className: "au-pagination",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
           className: "admin-btn admin-btn-light",
@@ -14375,7 +14402,7 @@ var AdminDashboardUsersPage = function AdminDashboardUsersPage() {
           disabled: page <= 1,
           children: "\u2190 Prev"
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("span", {
-          children: ["Page ", meta.current_page, " of ", meta.last_page]
+          children: ["Page ", currentPage, " of ", lastPage]
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
           className: "admin-btn admin-btn-light",
           onClick: function onClick() {
@@ -14383,7 +14410,7 @@ var AdminDashboardUsersPage = function AdminDashboardUsersPage() {
               return p + 1;
             });
           },
-          disabled: page >= meta.last_page,
+          disabled: page >= lastPage,
           children: "Next \u2192"
         })]
       })]
@@ -14732,10 +14759,7 @@ var AdminPricing = function AdminPricing() {
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
         className: "apc-grid",
         children: plans.map(function (p) {
-          return editId === p.id ?
-          /*#__PURE__*/
-          // ── Edit card ──
-          (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+          return editId === p.id ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "apc-card apc-card--editing",
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
               className: "apc-field",
@@ -14840,10 +14864,7 @@ var AdminPricing = function AdminPricing() {
                 children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_2__.FiX, {}), " Cancel"]
               })]
             })]
-          }, p.id) :
-          /*#__PURE__*/
-          // ── Display card ──
-          (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+          }, p.id) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "apc-card".concat(p.featured ? ' apc-card--featured' : ''),
             children: [p.featured && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
               className: "apc-badge",
@@ -14953,8 +14974,6 @@ var AdminTeam = function AdminTeam() {
     _useState12 = _slicedToArray(_useState11, 2),
     loading = _useState12[0],
     setLoading = _useState12[1];
-
-  // edit state
   var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState14 = _slicedToArray(_useState13, 2),
     editId = _useState14[0],
@@ -15219,10 +15238,7 @@ var AdminTeam = function AdminTeam() {
           })
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tbody", {
           children: members.map(function (m) {
-            return editId === m.id ?
-            /*#__PURE__*/
-            // ── Edit row ──────────────────────────────
-            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("tr", {
+            return editId === m.id ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("tr", {
               style: {
                 background: '#fffdf6'
               },
@@ -15343,10 +15359,7 @@ var AdminTeam = function AdminTeam() {
                   })]
                 })
               })]
-            }, m.id) :
-            /*#__PURE__*/
-            // ── Normal row ────────────────────────────
-            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("tr", {
+            }, m.id) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("tr", {
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("td", {
                 children: m.img ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("img", {
                   src: m.img,
@@ -15497,8 +15510,6 @@ function FirstLoginPage() {
     _useState2 = _slicedToArray(_useState, 2),
     step = _useState2[0],
     setStep = _useState2[1];
-
-  // Step 1
   var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)((_location$state$email = (_location$state = location.state) === null || _location$state === void 0 ? void 0 : _location$state.email) !== null && _location$state$email !== void 0 ? _location$state$email : ''),
     _useState4 = _slicedToArray(_useState3, 2),
     email = _useState4[0],
@@ -15511,8 +15522,6 @@ function FirstLoginPage() {
     _useState8 = _slicedToArray(_useState7, 2),
     showTempPw = _useState8[0],
     setShowTempPw = _useState8[1];
-
-  // Step 2
   var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState0 = _slicedToArray(_useState9, 2),
     code = _useState0[0],
@@ -15525,8 +15534,6 @@ function FirstLoginPage() {
     _useState12 = _slicedToArray(_useState11, 2),
     resendTimer = _useState12[0],
     setResendTimer = _useState12[1];
-
-  // Step 3
   var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
     _useState14 = _slicedToArray(_useState13, 2),
     password = _useState14[0],
@@ -15555,8 +15562,6 @@ function FirstLoginPage() {
     _useState26 = _slicedToArray(_useState25, 2),
     notice = _useState26[0],
     setNotice = _useState26[1];
-
-  // ── Countdown helper ──────────────────────────────────────────────────────
   var startCountdown = function startCountdown() {
     var secs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 60;
     setResendTimer(secs);
@@ -15570,8 +15575,6 @@ function FirstLoginPage() {
       });
     }, 1000);
   };
-
-  // ── Step 1 ────────────────────────────────────────────────────────────────
   var handleSendCode = /*#__PURE__*/function () {
     var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(e) {
       var data, _err$response, _ref2, _d$errors$email$, _d$errors, d, _t;
@@ -15613,8 +15616,6 @@ function FirstLoginPage() {
       return _ref.apply(this, arguments);
     };
   }();
-
-  // ── Step 2 ────────────────────────────────────────────────────────────────
   var handleVerifyCode = /*#__PURE__*/function () {
     var _ref3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(e) {
       var _err$response$data$me, _err$response2, _t2;
@@ -15689,8 +15690,6 @@ function FirstLoginPage() {
       return _ref4.apply(this, arguments);
     };
   }();
-
-  // ── Step 3 ────────────────────────────────────────────────────────────────
   var handleSetPassword = /*#__PURE__*/function () {
     var _ref5 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(e) {
       var unmet, _data$user, data, _err$response4, _ref6, _d$errors$password$jo, _d$errors2, d, _t4;
@@ -15750,8 +15749,6 @@ function FirstLoginPage() {
       return _ref5.apply(this, arguments);
     };
   }();
-
-  // ── Render ────────────────────────────────────────────────────────────────
   var pwStrength = PW_RULES.filter(function (r) {
     return r.test(password);
   }).length;
@@ -16205,8 +16202,7 @@ var HireDashboardProvider = function HireDashboardProvider(_ref) {
   var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState0 = _slicedToArray(_useState9, 2),
     jobFilter = _useState0[0],
-    setJobFilter = _useState0[1]; // { id, title } | null
-
+    setJobFilter = _useState0[1];
   var refreshListings = function refreshListings() {
     return setListingsVersion(function (v) {
       return v + 1;
@@ -16331,9 +16327,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _api_hrApi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../api/hrApi */ "./resources/js/api/hrApi.js");
-/* harmony import */ var _CandidateProfileModal_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./CandidateProfileModal.scss */ "./resources/js/views/HR-View/components/pages/CandidateProfileModal/CandidateProfileModal.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
+/* harmony import */ var _api_hrApi__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../api/hrApi */ "./resources/js/api/hrApi.js");
+/* harmony import */ var _CandidateProfileModal_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./CandidateProfileModal.scss */ "./resources/js/views/HR-View/components/pages/CandidateProfileModal/CandidateProfileModal.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -16344,7 +16345,6 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
-// Turns "2026-06" or "2026-06-15" → "Jun 2026", leaves other strings as-is
 
 var fmtDate = function fmtDate(raw) {
   if (!raw) return '';
@@ -16354,7 +16354,7 @@ var fmtDate = function fmtDate(raw) {
   return "".concat(months[parseInt(m[2], 10) - 1], " ").concat(m[1]);
 };
 var stageIcon = function stageIcon(stage) {
-  if (stage === 'Applied') return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+  if (stage === 'Applied') return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
     width: "13",
     height: "13",
     viewBox: "0 0 24 24",
@@ -16363,13 +16363,13 @@ var stageIcon = function stageIcon(stage) {
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
       d: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("polyline", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("polyline", {
       points: "22,6 12,13 2,6"
     })]
   });
-  if (stage === 'Reviewed') return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+  if (stage === 'Reviewed') return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
     width: "13",
     height: "13",
     viewBox: "0 0 24 24",
@@ -16378,15 +16378,15 @@ var stageIcon = function stageIcon(stage) {
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
       d: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
       cx: "12",
       cy: "12",
       r: "3"
     })]
   });
-  if (stage === 'Shortlisted') return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
+  if (stage === 'Shortlisted') return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
     width: "13",
     height: "13",
     viewBox: "0 0 24 24",
@@ -16395,11 +16395,11 @@ var stageIcon = function stageIcon(stage) {
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("polygon", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("polygon", {
       points: "12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
     })
   });
-  if (stage === 'Hired') return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
+  if (stage === 'Hired') return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
     width: "13",
     height: "13",
     viewBox: "0 0 24 24",
@@ -16408,11 +16408,11 @@ var stageIcon = function stageIcon(stage) {
     strokeWidth: "2.5",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
       d: "M20 6L9 17l-5-5"
     })
   });
-  if (stage === 'Rejected') return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+  if (stage === 'Rejected') return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
     width: "13",
     height: "13",
     viewBox: "0 0 24 24",
@@ -16421,19 +16421,19 @@ var stageIcon = function stageIcon(stage) {
     strokeWidth: "2.5",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
       x1: "18",
       y1: "6",
       x2: "6",
       y2: "18"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
       x1: "6",
       y1: "6",
       x2: "18",
       y2: "18"
     })]
   });
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
     style: {
       width: 8,
       height: 8,
@@ -16444,7 +16444,7 @@ var stageIcon = function stageIcon(stage) {
   });
 };
 var CandidateProfileModal = function CandidateProfileModal(_ref) {
-  var _candidate$candidate_2, _profile$name, _profile$initials, _ref2, _profile$email, _ref3, _profile$phone, _ref4, _profile$location, _ref5, _profile$linkedin, _ref6, _profile$summary, _ref7, _profile$headline, _ref8, _profile$skills, _profile$experiences, _profile$education, _profile$resume, _candidate$status, _resume$ats_rating;
+  var _candidate$candidate_2, _profile$name, _profile$initials, _ref2, _profile$email, _ref3, _profile$phone, _ref4, _profile$location, _ref5, _profile$linkedin, _ref6, _profile$summary, _ref7, _profile$headline, _ref8, _profile$skills, _profile$experiences, _profile$education, _profile$resume, _ref9, _profile$id, _candidate$status, _resume$ats_rating;
   var candidate = _ref.candidate,
     onClose = _ref.onClose,
     onSchedule = _ref.onSchedule,
@@ -16462,21 +16462,27 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
     _useState6 = _slicedToArray(_useState5, 2),
     error = _useState6[0],
     setError = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    downloading = _useState8[0],
+    setDownloading = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState0 = _slicedToArray(_useState9, 2),
+    downloadError = _useState0[0],
+    setDownloadError = _useState0[1];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     var _candidate$candidate_;
     var userId = (_candidate$candidate_ = candidate === null || candidate === void 0 ? void 0 : candidate.candidate_user_id) !== null && _candidate$candidate_ !== void 0 ? _candidate$candidate_ : candidate === null || candidate === void 0 ? void 0 : candidate.id;
     if (!userId) return;
     setLoading(true);
     setError('');
-    (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.fetchCandidateProfile)(userId).then(setProfile)["catch"](function () {
+    (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_2__.fetchCandidateProfile)(userId).then(setProfile)["catch"](function () {
       return setError('Could not load candidate profile.');
     })["finally"](function () {
       return setLoading(false);
     });
   }, [(_candidate$candidate_2 = candidate === null || candidate === void 0 ? void 0 : candidate.candidate_user_id) !== null && _candidate$candidate_2 !== void 0 ? _candidate$candidate_2 : candidate === null || candidate === void 0 ? void 0 : candidate.id]);
   if (!candidate) return null;
-
-  // Merge fetched profile with application-level data for display
   var name = (_profile$name = profile === null || profile === void 0 ? void 0 : profile.name) !== null && _profile$name !== void 0 ? _profile$name : candidate.name;
   var initials = (_profile$initials = profile === null || profile === void 0 ? void 0 : profile.initials) !== null && _profile$initials !== void 0 ? _profile$initials : candidate.initials;
   var email = (_ref2 = (_profile$email = profile === null || profile === void 0 ? void 0 : profile.email) !== null && _profile$email !== void 0 ? _profile$email : candidate.email) !== null && _ref2 !== void 0 ? _ref2 : '—';
@@ -16489,37 +16495,75 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
   var experiences = (_profile$experiences = profile === null || profile === void 0 ? void 0 : profile.experiences) !== null && _profile$experiences !== void 0 ? _profile$experiences : [];
   var education = (_profile$education = profile === null || profile === void 0 ? void 0 : profile.education) !== null && _profile$education !== void 0 ? _profile$education : [];
   var resume = (_profile$resume = profile === null || profile === void 0 ? void 0 : profile.resume) !== null && _profile$resume !== void 0 ? _profile$resume : null;
+  var candidateUserId = (_ref9 = (_profile$id = profile === null || profile === void 0 ? void 0 : profile.id) !== null && _profile$id !== void 0 ? _profile$id : candidate === null || candidate === void 0 ? void 0 : candidate.candidate_user_id) !== null && _ref9 !== void 0 ? _ref9 : candidate === null || candidate === void 0 ? void 0 : candidate.id;
+  var handleDownloadResume = /*#__PURE__*/function () {
+    var _ref0 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+      var _t;
+      return _regenerator().w(function (_context) {
+        while (1) switch (_context.p = _context.n) {
+          case 0:
+            if (!(!candidateUserId || !(resume !== null && resume !== void 0 && resume.filename))) {
+              _context.n = 1;
+              break;
+            }
+            return _context.a(2);
+          case 1:
+            setDownloading(true);
+            setDownloadError('');
+            _context.p = 2;
+            _context.n = 3;
+            return (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_2__.downloadCandidateResume)(candidateUserId, resume.filename);
+          case 3:
+            _context.n = 5;
+            break;
+          case 4:
+            _context.p = 4;
+            _t = _context.v;
+            setDownloadError('Could not download resume. The file may be missing.');
+          case 5:
+            _context.p = 5;
+            setDownloading(false);
+            return _context.f(5);
+          case 6:
+            return _context.a(2);
+        }
+      }, _callee, null, [[2, 4, 5, 6]]);
+    }));
+    return function handleDownloadResume() {
+      return _ref0.apply(this, arguments);
+    };
+  }();
   var mostRecentExp = experiences[0];
   var experienceLabel = mostRecentExp ? "".concat(mostRecentExp.role).concat(mostRecentExp.company ? ' at ' + mostRecentExp.company : '') : candidate.experience !== '—' ? candidate.experience : '';
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
     className: "cpm-overlay",
     onClick: onClose,
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "cpm-modal",
       onClick: function onClick(e) {
         return e.stopPropagation();
       },
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
         className: "cpm-header",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
           className: "cpm-avatar",
           children: initials
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "cpm-identity",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h2", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h2", {
             children: name
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
             children: headline || "".concat(candidate.role, " \xB7 ").concat(candidate.company)
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
             className: "cpm-status-badge status-".concat(((_candidate$status = candidate.status) !== null && _candidate$status !== void 0 ? _candidate$status : '').toLowerCase()),
             children: candidate.status
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
           className: "cpm-close",
           onClick: onClose,
           children: "\u2715"
         })]
-      }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         style: {
           padding: '40px 32px',
           textAlign: 'center',
@@ -16527,26 +16571,26 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
           fontSize: 14
         },
         children: "Loading profile\u2026"
-      }), error && !loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      }), error && !loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         style: {
           padding: '20px 32px',
           color: '#c0392b',
           fontSize: 13
         },
         children: error
-      }), !loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      }), !loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
         className: "cpm-body",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "cpm-left",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "cpm-section",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h4", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
               children: "Contact"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "cpm-contact-list",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                 className: "cpm-contact-row",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
                   width: "14",
                   height: "14",
                   viewBox: "0 0 24 24",
@@ -16555,17 +16599,17 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
                   strokeWidth: "2",
                   strokeLinecap: "round",
                   strokeLinejoin: "round",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
                     d: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("polyline", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("polyline", {
                     points: "22,6 12,13 2,6"
                   })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                   children: email
                 })]
-              }), phone && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              }), phone && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                 className: "cpm-contact-row",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
                   width: "14",
                   height: "14",
                   viewBox: "0 0 24 24",
@@ -16574,15 +16618,15 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
                   strokeWidth: "2",
                   strokeLinecap: "round",
                   strokeLinejoin: "round",
-                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
                     d: "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.85a16 16 0 0 0 6.07 6.07l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"
                   })
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                   children: phone
                 })]
-              }), location && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              }), location && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                 className: "cpm-contact-row",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
                   width: "14",
                   height: "14",
                   viewBox: "0 0 24 24",
@@ -16591,19 +16635,19 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
                   strokeWidth: "2",
                   strokeLinecap: "round",
                   strokeLinejoin: "round",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
                     d: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
                     cx: "12",
                     cy: "10",
                     r: "3"
                   })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                   children: location
                 })]
-              }), linkedin && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              }), linkedin && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                 className: "cpm-contact-row",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
                   width: "14",
                   height: "14",
                   viewBox: "0 0 24 24",
@@ -16612,62 +16656,62 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
                   strokeWidth: "2",
                   strokeLinecap: "round",
                   strokeLinejoin: "round",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
                     d: "M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("rect", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
                     x: "2",
                     y: "9",
                     width: "4",
                     height: "12"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
                     cx: "4",
                     cy: "4",
                     r: "2"
                   })]
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                   children: linkedin
                 })]
               })]
             })]
-          }), experienceLabel && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), experienceLabel && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "cpm-section",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h4", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
               children: "Latest Experience"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
               className: "cpm-experience",
               children: experienceLabel
             })]
-          }), skills.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), skills.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "cpm-section",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h4", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
               children: "Skills"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
               className: "cpm-skills",
               children: skills.map(function (s) {
-                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                   className: "cpm-skill",
                   children: s
                 }, s);
               })
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "cpm-section",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h4", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
               children: "Application Timeline"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
               className: "cpm-timeline",
               children: (candidate.history || []).map(function (h, i) {
-                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                   className: "cpm-timeline-row",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
                     className: "cpm-timeline-icon-wrap",
                     children: stageIcon(h.stage)
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                     className: "cpm-timeline-info",
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                       className: "cpm-timeline-stage",
                       children: h.stage
-                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                       className: "cpm-timeline-date",
                       children: h.date
                     })]
@@ -16676,40 +16720,40 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
               })
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "cpm-right",
-          children: [summary && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          children: [summary && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "cpm-section",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h4", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
               children: "About"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
               className: "cpm-summary",
               children: summary
             })]
-          }), experiences.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), experiences.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "cpm-section",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h4", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
               children: "Work Experience"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
               className: "cpm-resume-block",
               children: experiences.map(function (exp, i) {
-                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                   className: "cpm-resume-item",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
                     className: "cpm-resume-dot"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
                       children: exp.role
-                    }), exp.company && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+                    }), exp.company && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("span", {
                       children: [" at ", exp.company]
-                    }), (exp.start_date || exp.end_date) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                    }), (exp.start_date || exp.end_date) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                       style: {
                         fontSize: 12,
                         color: '#b0a89e',
                         marginTop: 2
                       },
                       children: [fmtDate(exp.start_date), " \u2014 ", exp.is_current ? 'Present' : fmtDate(exp.end_date)]
-                    }), exp.description && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                    }), exp.description && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
                       style: {
                         fontSize: 12,
                         color: '#666',
@@ -16721,29 +16765,29 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
                 }, i);
               })
             })]
-          }), education.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), education.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "cpm-section",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h4", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
               children: "Education"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
               className: "cpm-resume-block",
               children: education.map(function (edu, i) {
-                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                   className: "cpm-resume-item",
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
                     className: "cpm-resume-dot"
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
                       children: edu.degree
-                    }), edu.field_of_study && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+                    }), edu.field_of_study && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("span", {
                       children: [" in ", edu.field_of_study]
-                    }), edu.institution && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                    }), edu.institution && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
                       style: {
                         fontSize: 12,
                         color: '#666'
                       },
                       children: edu.institution
-                    }), (edu.start_date || edu.end_date) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                    }), (edu.start_date || edu.end_date) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                       style: {
                         fontSize: 12,
                         color: '#b0a89e'
@@ -16754,26 +16798,27 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
                 }, i);
               })
             })]
-          }), resume && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), resume && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "cpm-section",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h4", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h4", {
               children: "Resume"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "cpm-resume-block",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                 className: "cpm-resume-item",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
                   className: "cpm-resume-dot"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+                  className: "cpm-resume-item__body",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("strong", {
                     children: resume.filename
-                  }), resume.analyzed_at && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                  }), resume.analyzed_at && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                     style: {
                       fontSize: 12,
                       color: '#b0a89e'
                     },
                     children: ["Analyzed ", resume.analyzed_at]
-                  }), ((_resume$ats_rating = resume.ats_rating) === null || _resume$ats_rating === void 0 ? void 0 : _resume$ats_rating.score) !== undefined && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                  }), ((_resume$ats_rating = resume.ats_rating) === null || _resume$ats_rating === void 0 ? void 0 : _resume$ats_rating.score) !== undefined && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
                     style: {
                       fontSize: 12,
                       color: '#2d7a5a',
@@ -16781,10 +16826,23 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
                     },
                     children: ["ATS Score: ", resume.ats_rating.score]
                   })]
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
+                  type: "button",
+                  className: "cpm-resume-download",
+                  onClick: handleDownloadResume,
+                  disabled: downloading,
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiDownload, {
+                    size: 14,
+                    "aria-hidden": "true"
+                  }), downloading ? 'Downloading…' : 'Download']
                 })]
-              })
+              }), downloadError && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+                className: "cpm-resume-download-error",
+                role: "alert",
+                children: downloadError
+              })]
             })]
-          }), !summary && experiences.length === 0 && education.length === 0 && !resume && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          }), !summary && experiences.length === 0 && education.length === 0 && !resume && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             style: {
               padding: '20px 0',
               color: '#b0a89e',
@@ -16793,12 +16851,12 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
             children: "This candidate has not filled in their profile yet."
           })]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
         className: "cpm-footer",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("button", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
           className: "cpm-action-secondary",
           onClick: onSchedule,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
             width: "14",
             height: "14",
             viewBox: "0 0 24 24",
@@ -16807,33 +16865,33 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
             strokeWidth: "2",
             strokeLinecap: "round",
             strokeLinejoin: "round",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("rect", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
               x: "3",
               y: "4",
               width: "18",
               height: "18",
               rx: "2"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
               x1: "16",
               y1: "2",
               x2: "16",
               y2: "6"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
               x1: "8",
               y1: "2",
               x2: "8",
               y2: "6"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
               x1: "3",
               y1: "10",
               x2: "21",
               y2: "10"
             })]
           }), "Schedule Interview"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("button", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
           className: "cpm-action-offer",
           onClick: onOffer,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
             width: "14",
             height: "14",
             viewBox: "0 0 24 24",
@@ -16842,13 +16900,13 @@ var CandidateProfileModal = function CandidateProfileModal(_ref) {
             strokeWidth: "2",
             strokeLinecap: "round",
             strokeLinejoin: "round",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
               d: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("polyline", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("polyline", {
               points: "22,6 12,13 2,6"
             })]
           }), "Send Offer"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
           className: "cpm-action-reject",
           onClick: onReject,
           children: "Send Rejection"
@@ -17190,8 +17248,6 @@ var HireDashboardApplications = function HireDashboardApplications(_ref) {
     _useState12 = _slicedToArray(_useState11, 2),
     savedNote = _useState12[0],
     setSavedNote = _useState12[1];
-
-  // Modal states
   var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState14 = _slicedToArray(_useState13, 2),
     showProfile = _useState14[0],
@@ -17203,8 +17259,7 @@ var HireDashboardApplications = function HireDashboardApplications(_ref) {
   var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState18 = _slicedToArray(_useState17, 2),
     offerModal = _useState18[0],
-    setOfferModal = _useState18[1]; // 'offer' | 'rejection' | null
-
+    setOfferModal = _useState18[1];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     if (openDropdown === null) return;
     var handler = function handler(e) {
@@ -19703,8 +19758,6 @@ var HireDashboardSettings = function HireDashboardSettings() {
     _useState14 = _slicedToArray(_useState13, 2),
     notifications = _useState14[0],
     setNotifications = _useState14[1];
-
-  // Load settings from API on mount
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.fetchHrSettings)().then(function (data) {
       if (data && data.company_name) {
@@ -20375,8 +20428,6 @@ var HireDashboardSidebar = function HireDashboardSidebar(_ref) {
   var _useHireDashboard = (0,_HireDashboardContext__WEBPACK_IMPORTED_MODULE_4__.useHireDashboard)(),
     apps = _useHireDashboard.apps;
   var company = localStorage.getItem('user_company') || (user === null || user === void 0 ? void 0 : user.company) || 'Your Company';
-
-  // Real badge counts
   var reviewingCount = apps.filter(function (a) {
     return a.status === 'Reviewing';
   }).length;
@@ -20592,41 +20643,51 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
-/* harmony import */ var _context_PlatformAdminContext__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../context/PlatformAdminContext */ "./resources/js/context/PlatformAdminContext.js");
+/* harmony import */ var _api_hrApi__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../api/hrApi */ "./resources/js/api/hrApi.js");
 /* harmony import */ var _HireDashboardStats_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./HireDashboardStats.scss */ "./resources/js/views/HR-View/components/pages/HireDashboardStats/HireDashboardStats.scss");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
 
 
-var iconMap = {
+var ICON_MAP = {
   FiClipboard: react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiClipboard,
   FiInbox: react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiInbox,
   FiCalendar: react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiCalendar,
   FiCheckCircle: react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiCheckCircle
 };
+var ACTIONS = {
+  postings: 'listings',
+  applications: 'all',
+  interviews: 'interviews',
+  hires: 'hires'
+};
 var HireDashboardStats = function HireDashboardStats(_ref) {
   var setActiveTab = _ref.setActiveTab;
-  var _usePlatformAdmin = (0,_context_PlatformAdminContext__WEBPACK_IMPORTED_MODULE_2__.usePlatformAdmin)(),
-    data = _usePlatformAdmin.data;
-  var stats = data.hireDashboardCards.map(function (item, index) {
-    var Icon = iconMap[item.icon] || react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiClipboard;
-    return _objectSpread(_objectSpread({}, item), {}, {
-      action: index === 0 ? 'listings' : index === 1 ? 'all' : 'shortlisted',
-      icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(Icon, {
-        color: "#ffffff",
-        size: 22
-      })
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    _useState2 = _slicedToArray(_useState, 2),
+    stats = _useState2[0],
+    setStats = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+    _useState4 = _slicedToArray(_useState3, 2),
+    loading = _useState4[0],
+    setLoading = _useState4[1];
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_2__.fetchHrOverviewStats)().then(setStats)["catch"](function () {
+      return setStats([]);
+    })["finally"](function () {
+      return setLoading(false);
     });
-  });
-  var handleClick = function handleClick(action) {
+  }, []);
+  var handleClick = function handleClick(id) {
+    var action = ACTIONS[id];
     if (action === 'listings') {
       var _document$getElementB;
       (_document$getElementB = document.getElementById('hire-listings-anchor')) === null || _document$getElementB === void 0 || _document$getElementB.scrollIntoView({
@@ -20634,31 +20695,57 @@ var HireDashboardStats = function HireDashboardStats(_ref) {
       });
     } else if (action === 'all') {
       var _document$getElementB2;
-      setActiveTab('All');
+      setActiveTab === null || setActiveTab === void 0 || setActiveTab('All');
       (_document$getElementB2 = document.getElementById('hire-applications-anchor')) === null || _document$getElementB2 === void 0 || _document$getElementB2.scrollIntoView({
-        behavior: 'smooth'
-      });
-    } else if (action === 'shortlisted') {
-      var _document$getElementB3;
-      setActiveTab('Shortlisted');
-      (_document$getElementB3 = document.getElementById('hire-applications-anchor')) === null || _document$getElementB3 === void 0 || _document$getElementB3.scrollIntoView({
         behavior: 'smooth'
       });
     }
   };
+  var displayStats = loading ? [{
+    id: 'postings',
+    label: 'Active Postings',
+    value: '—',
+    sub: 'Loading…',
+    icon: 'FiClipboard'
+  }, {
+    id: 'applications',
+    label: 'Applications',
+    value: '—',
+    sub: 'Loading…',
+    icon: 'FiInbox'
+  }, {
+    id: 'interviews',
+    label: 'Interviews Set',
+    value: '—',
+    sub: 'Loading…',
+    icon: 'FiCalendar'
+  }, {
+    id: 'hires',
+    label: 'Hires This Month',
+    value: '—',
+    sub: 'Loading…',
+    icon: 'FiCheckCircle'
+  }] : stats !== null && stats !== void 0 ? stats : [];
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("section", {
     className: "hire-dashboard-stats-section",
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
       className: "hire-stats-wrapper",
-      children: stats.map(function (s) {
+      children: displayStats.map(function (s) {
+        var Icon = ICON_MAP[s.icon] || react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiClipboard;
         return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "hire-stat-card",
           onClick: function onClick() {
-            return handleClick(s.action);
+            return handleClick(s.id);
+          },
+          style: {
+            cursor: ACTIONS[s.id] ? 'pointer' : 'default'
           },
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             className: "hire-stat-icon",
-            children: s.icon
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(Icon, {
+              color: "#ffffff",
+              size: 22
+            })
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "hire-stat-info",
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
@@ -20672,7 +20759,7 @@ var HireDashboardStats = function HireDashboardStats(_ref) {
               children: s.sub
             })]
           })]
-        }, s.label);
+        }, s.id);
       })
     })
   });
@@ -20722,28 +20809,6 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 var AVATAR_COLORS = ['#111111', '#3b5bdb', '#2d7a5a', '#9a7000', '#c0392b', '#6741d9'];
-var DEFAULT_MEMBERS = [{
-  id: 'default-1',
-  name: 'Denisa Gjuraj',
-  title: 'HR Manager',
-  initials: 'DG',
-  photo: null,
-  isDefault: true
-}, {
-  id: 'default-2',
-  name: 'Migjen Prenaj',
-  title: 'Talent Acquisition',
-  initials: 'MP',
-  photo: null,
-  isDefault: true
-}, {
-  id: 'default-3',
-  name: 'John Doe',
-  title: 'Recruiter',
-  initials: 'JD',
-  photo: null,
-  isDefault: true
-}];
 var PinIcon = function PinIcon() {
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
     width: "15",
@@ -20761,8 +20826,7 @@ var getInitials = function getInitials(name) {
   }).join('').slice(0, 2).toUpperCase();
 };
 var HireDashboardTeam = function HireDashboardTeam() {
-  // ── Hiring Team ──────────────────────────────────────────────────────
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(DEFAULT_MEMBERS),
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState2 = _slicedToArray(_useState, 2),
     team = _useState2[0],
     setTeam = _useState2[1];
@@ -20793,8 +20857,7 @@ var HireDashboardTeam = function HireDashboardTeam() {
     setRemovingId = _useState10[1];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.fetchHrTeam)().then(function (data) {
-      // Use DB data if any exists; otherwise keep the defaults
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         setTeam(data.map(function (m) {
           return {
             id: m.id,
@@ -20847,8 +20910,7 @@ var HireDashboardTeam = function HireDashboardTeam() {
           case 3:
             saved = _context.v;
             setTeam(function (prev) {
-              var _prev$;
-              return [].concat(_toConsumableArray((_prev$ = prev[0]) !== null && _prev$ !== void 0 && _prev$.isDefault ? [] : prev), [{
+              return [].concat(_toConsumableArray(prev), [{
                 id: saved.id,
                 name: saved.name,
                 title: saved.title,
@@ -20887,23 +20949,11 @@ var HireDashboardTeam = function HireDashboardTeam() {
       return _regenerator().w(function (_context2) {
         while (1) switch (_context2.p = _context2.n) {
           case 0:
-            if (!String(id).startsWith('default-')) {
-              _context2.n = 1;
-              break;
-            }
-            // Just remove from local state — defaults aren't in the DB
-            setTeam(function (prev) {
-              return prev.filter(function (m) {
-                return m.id !== id;
-              });
-            });
-            return _context2.a(2);
-          case 1:
             setRemovingId(id);
-            _context2.p = 2;
-            _context2.n = 3;
+            _context2.p = 1;
+            _context2.n = 2;
             return (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.removeHrTeamMember)(id);
-          case 3:
+          case 2:
             setTimeout(function () {
               setTeam(function (prev) {
                 return prev.filter(function (m) {
@@ -20912,48 +20962,22 @@ var HireDashboardTeam = function HireDashboardTeam() {
               });
               setRemovingId(null);
             }, 280);
-            _context2.n = 5;
+            _context2.n = 4;
             break;
-          case 4:
-            _context2.p = 4;
+          case 3:
+            _context2.p = 3;
             _t2 = _context2.v;
             setRemovingId(null);
-          case 5:
+          case 4:
             return _context2.a(2);
         }
-      }, _callee2, null, [[2, 4]]);
+      }, _callee2, null, [[1, 3]]);
     }));
     return function removeMember(_x) {
       return _ref2.apply(this, arguments);
     };
   }();
-
-  // ── Team Notes (local — not persisted) ───────────────────────────────
-  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([{
-      id: 1,
-      from: 'Denisa',
-      to: 'Migjen',
-      content: 'Review shortlisted candidates for the Frontend role before Friday.',
-      done: false
-    }, {
-      id: 2,
-      from: 'John',
-      to: 'Denisa',
-      content: 'Can you schedule the panel interview for the Data Scientist role?',
-      done: false
-    }, {
-      id: 3,
-      from: 'Migjen',
-      to: 'John',
-      content: 'Reminder: send rejection emails to candidates from last week.',
-      done: true
-    }, {
-      id: 4,
-      from: 'Denisa',
-      to: 'All',
-      content: 'Weekly sync moved to Thursday 2 PM this week.',
-      done: false
-    }]),
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState12 = _slicedToArray(_useState11, 2),
     notes = _useState12[0],
     setNotes = _useState12[1];
@@ -20969,36 +20993,161 @@ var HireDashboardTeam = function HireDashboardTeam() {
     _useState16 = _slicedToArray(_useState15, 2),
     newNote = _useState16[0],
     setNewNote = _useState16[1];
-  var addNote = function addNote() {
-    if (!newNote.content.trim()) return;
-    setNotes([_objectSpread(_objectSpread({
-      id: Date.now()
-    }, newNote), {}, {
-      done: false
-    })].concat(_toConsumableArray(notes)));
-    setNewNote({
-      from: '',
-      to: '',
-      content: ''
-    });
-    setShowAddNote(false);
-  };
-  var toggleDone = function toggleDone(id) {
-    return setNotes(function (prev) {
-      return prev.map(function (n) {
-        return n.id === id ? _objectSpread(_objectSpread({}, n), {}, {
-          done: !n.done
-        }) : n;
-      });
-    });
-  };
-  var deleteNote = function deleteNote(id) {
-    return setNotes(function (prev) {
-      return prev.filter(function (n) {
-        return n.id !== id;
-      });
-    });
-  };
+  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState18 = _slicedToArray(_useState17, 2),
+    savingNote = _useState18[0],
+    setSavingNote = _useState18[1];
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.fetchHrTeamNotes)().then(function (data) {
+      if (Array.isArray(data)) {
+        setNotes(data.map(function (n) {
+          var _n$from_name, _n$to_name;
+          return {
+            id: n.id,
+            from: (_n$from_name = n.from_name) !== null && _n$from_name !== void 0 ? _n$from_name : '',
+            to: (_n$to_name = n.to_name) !== null && _n$to_name !== void 0 ? _n$to_name : '',
+            content: n.content,
+            done: n.done
+          };
+        }));
+      }
+    })["catch"](function () {});
+  }, []);
+  var addNote = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      var saved, _t3;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.p = _context3.n) {
+          case 0:
+            if (newNote.content.trim()) {
+              _context3.n = 1;
+              break;
+            }
+            return _context3.a(2);
+          case 1:
+            setSavingNote(true);
+            _context3.p = 2;
+            _context3.n = 3;
+            return (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.createHrTeamNote)({
+              content: newNote.content.trim(),
+              from_name: newNote.from.trim(),
+              to_name: newNote.to.trim()
+            });
+          case 3:
+            saved = _context3.v;
+            setNotes(function (prev) {
+              var _saved$from_name, _saved$to_name;
+              return [{
+                id: saved.id,
+                from: (_saved$from_name = saved.from_name) !== null && _saved$from_name !== void 0 ? _saved$from_name : '',
+                to: (_saved$to_name = saved.to_name) !== null && _saved$to_name !== void 0 ? _saved$to_name : '',
+                content: saved.content,
+                done: saved.done
+              }].concat(_toConsumableArray(prev));
+            });
+            setNewNote({
+              from: '',
+              to: '',
+              content: ''
+            });
+            setShowAddNote(false);
+            _context3.n = 5;
+            break;
+          case 4:
+            _context3.p = 4;
+            _t3 = _context3.v;
+          case 5:
+            _context3.p = 5;
+            setSavingNote(false);
+            return _context3.f(5);
+          case 6:
+            return _context3.a(2);
+        }
+      }, _callee3, null, [[2, 4, 5, 6]]);
+    }));
+    return function addNote() {
+      return _ref3.apply(this, arguments);
+    };
+  }();
+  var toggleDone = /*#__PURE__*/function () {
+    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(id) {
+      var note, next, _t4;
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.p = _context4.n) {
+          case 0:
+            note = notes.find(function (n) {
+              return n.id === id;
+            });
+            if (note) {
+              _context4.n = 1;
+              break;
+            }
+            return _context4.a(2);
+          case 1:
+            next = !note.done;
+            setNotes(function (prev) {
+              return prev.map(function (n) {
+                return n.id === id ? _objectSpread(_objectSpread({}, n), {}, {
+                  done: next
+                }) : n;
+              });
+            });
+            _context4.p = 2;
+            _context4.n = 3;
+            return (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.updateHrTeamNote)(id, {
+              done: next
+            });
+          case 3:
+            _context4.n = 5;
+            break;
+          case 4:
+            _context4.p = 4;
+            _t4 = _context4.v;
+            setNotes(function (prev) {
+              return prev.map(function (n) {
+                return n.id === id ? _objectSpread(_objectSpread({}, n), {}, {
+                  done: note.done
+                }) : n;
+              });
+            });
+          case 5:
+            return _context4.a(2);
+        }
+      }, _callee4, null, [[2, 4]]);
+    }));
+    return function toggleDone(_x2) {
+      return _ref4.apply(this, arguments);
+    };
+  }();
+  var deleteNote = /*#__PURE__*/function () {
+    var _ref5 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(id) {
+      var _t5;
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.p = _context5.n) {
+          case 0:
+            setNotes(function (prev) {
+              return prev.filter(function (n) {
+                return n.id !== id;
+              });
+            });
+            _context5.p = 1;
+            _context5.n = 2;
+            return (0,_api_hrApi__WEBPACK_IMPORTED_MODULE_1__.deleteHrTeamNote)(id);
+          case 2:
+            _context5.n = 4;
+            break;
+          case 3:
+            _context5.p = 3;
+            _t5 = _context5.v;
+          case 4:
+            return _context5.a(2);
+        }
+      }, _callee5, null, [[1, 3]]);
+    }));
+    return function deleteNote(_x3) {
+      return _ref5.apply(this, arguments);
+    };
+  }();
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("section", {
     className: "hire-team-section",
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
@@ -21131,6 +21280,33 @@ var HireDashboardTeam = function HireDashboardTeam() {
                 },
                 children: "Cancel"
               })]
+            })]
+          }), teamLoaded && team.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            className: "hire-team-empty",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+              width: "32",
+              height: "32",
+              viewBox: "0 0 24 24",
+              fill: "none",
+              stroke: "currentColor",
+              strokeWidth: "1.5",
+              strokeLinecap: "round",
+              strokeLinejoin: "round",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                d: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "9",
+                cy: "7",
+                r: "4"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                d: "M23 21v-2a4 4 0 0 0-3-3.87"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                d: "M16 3.13a4 4 0 0 1 0 7.75"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("p", {
+              children: ["No team members yet.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "Click ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+                children: "Add"
+              }), " to build your hiring team."]
             })]
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
             className: "hire-team-grid",
@@ -21277,7 +21453,8 @@ var HireDashboardTeam = function HireDashboardTeam() {
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
                 className: "hire-team-confirm",
                 onClick: addNote,
-                children: "Post Note"
+                disabled: savingNote,
+                children: savingNote ? 'Saving…' : 'Post Note'
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
                 className: "hire-team-cancel",
                 onClick: function onClick() {
@@ -21285,6 +21462,39 @@ var HireDashboardTeam = function HireDashboardTeam() {
                 },
                 children: "Cancel"
               })]
+            })]
+          }), notes.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            className: "hire-team-empty",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+              width: "28",
+              height: "28",
+              viewBox: "0 0 24 24",
+              fill: "none",
+              stroke: "currentColor",
+              strokeWidth: "1.5",
+              strokeLinecap: "round",
+              strokeLinejoin: "round",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                d: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("polyline", {
+                points: "14 2 14 8 20 8"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+                x1: "16",
+                y1: "13",
+                x2: "8",
+                y2: "13"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+                x1: "16",
+                y1: "17",
+                x2: "8",
+                y2: "17"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("polyline", {
+                points: "10 9 9 9 8 9"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("p", {
+              children: ["No notes yet.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "Click ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+                children: "New Note"
+              }), " to leave a message for your team."]
             })]
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
             className: "hire-notes-grid",
@@ -21360,12 +21570,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _PostJobModal_PostJobModal__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../PostJobModal/PostJobModal */ "./resources/js/views/HR-View/components/pages/PostJobModal/PostJobModal.js");
 /* harmony import */ var _HireDashboardContext__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../HireDashboardContext */ "./resources/js/views/HR-View/HireDashboardContext.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -21389,106 +21593,16 @@ var PAGE_NAMES = {
   '/hire-dashboard/team': 'Team',
   '/hire-dashboard/settings': 'Settings'
 };
-var SEED_NOTIFS = [{
-  id: 1,
-  icon: '📄',
-  text: 'Alex Rivera applied to Senior Frontend Dev',
-  time: '2m ago',
-  read: false
-}, {
-  id: 2,
-  icon: '📅',
-  text: 'Interview with Fatima Al-Zahra scheduled for 3 PM',
-  time: '15m ago',
-  read: false
-}, {
-  id: 3,
-  icon: '💬',
-  text: 'New message from Liam Nguyen',
-  time: '1h ago',
-  read: false
-}, {
-  id: 4,
-  icon: '👥',
-  text: '3 new applications for UX Designer role',
-  time: '2h ago',
-  read: true
-}, {
-  id: 5,
-  icon: '✅',
-  text: 'Priya Sharma accepted the offer letter',
-  time: '1d ago',
-  read: true
-}];
-var BellIcon = function BellIcon() {
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
-    width: "19",
-    height: "19",
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: "2",
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-      d: "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
-      d: "M13.73 21a2 2 0 0 1-3.46 0"
-    })]
-  });
-};
 var HireDashboardTopBar = function HireDashboardTopBar(_ref) {
   var onOpenSidebar = _ref.onOpenSidebar;
   var _useHireDashboard = (0,_HireDashboardContext__WEBPACK_IMPORTED_MODULE_4__.useHireDashboard)(),
     refreshListings = _useHireDashboard.refreshListings;
   var location = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_1__.useLocation)();
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(SEED_NOTIFS),
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState2 = _slicedToArray(_useState, 2),
-    notifs = _useState2[0],
-    setNotifs = _useState2[1];
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    bellOpen = _useState4[0],
-    setBellOpen = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState6 = _slicedToArray(_useState5, 2),
-    showPostJob = _useState6[0],
-    setShowPostJob = _useState6[1];
-  var dropRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+    showPostJob = _useState2[0],
+    setShowPostJob = _useState2[1];
   var pageName = PAGE_NAMES[location.pathname] || 'Dashboard';
-  var unread = notifs.filter(function (n) {
-    return !n.read;
-  }).length;
-
-  // close dropdown on outside click
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    if (!bellOpen) return;
-    var handler = function handler(e) {
-      if (dropRef.current && !dropRef.current.contains(e.target)) setBellOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return function () {
-      return document.removeEventListener('mousedown', handler);
-    };
-  }, [bellOpen]);
-  var markRead = function markRead(id) {
-    return setNotifs(function (prev) {
-      return prev.map(function (n) {
-        return n.id === id ? _objectSpread(_objectSpread({}, n), {}, {
-          read: true
-        }) : n;
-      });
-    });
-  };
-  var markAll = function markAll() {
-    return setNotifs(function (prev) {
-      return prev.map(function (n) {
-        return _objectSpread(_objectSpread({}, n), {}, {
-          read: true
-        });
-      });
-    });
-  };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "hire-topbar",
@@ -21525,60 +21639,9 @@ var HireDashboardTopBar = function HireDashboardTopBar(_ref) {
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
         className: "hire-topbar-page",
         children: pageName
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
         className: "hire-topbar-right",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-          className: "hire-topbar-bell-wrap",
-          ref: dropRef,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
-            className: "hire-topbar-bell".concat(bellOpen ? ' active' : ''),
-            onClick: function onClick() {
-              return setBellOpen(function (o) {
-                return !o;
-              });
-            },
-            "aria-label": "Notifications",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(BellIcon, {}), unread > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-              className: "hire-bell-badge",
-              children: unread
-            })]
-          }), bellOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-            className: "hire-notif-dropdown",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-              className: "hire-notif-head",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-                children: "Notifications"
-              }), unread > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
-                className: "hire-notif-mark-all",
-                onClick: markAll,
-                children: "Mark all read"
-              })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
-              className: "hire-notif-list",
-              children: notifs.map(function (n) {
-                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-                  className: "hire-notif-item".concat(n.read ? '' : ' unread'),
-                  onClick: function onClick() {
-                    return markRead(n.id);
-                  },
-                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-                    className: "hire-notif-icon",
-                    children: n.icon
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
-                    className: "hire-notif-body",
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
-                      children: n.text
-                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-                      children: n.time
-                    })]
-                  }), !n.read && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
-                    className: "hire-notif-dot"
-                  })]
-                }, n.id);
-              })
-            })]
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
           className: "hire-topbar-post-btn",
           onClick: function onClick() {
             return setShowPostJob(true);
@@ -21604,7 +21667,7 @@ var HireDashboardTopBar = function HireDashboardTopBar(_ref) {
               y2: "12"
             })]
           }), "Post a Job"]
-        })]
+        })
       })]
     }), showPostJob && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_PostJobModal_PostJobModal__WEBPACK_IMPORTED_MODULE_3__["default"], {
       onClose: function onClose() {
@@ -24330,8 +24393,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
-/* harmony import */ var _Education_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Education.scss */ "./resources/js/views/User-View/components/dashboard/pages/education/Education.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+Object(function webpackMissingModule() { var e = new Error("Cannot find module '../../../../../../utils/formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
+/* harmony import */ var _Education_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Education.scss */ "./resources/js/views/User-View/components/dashboard/pages/education/Education.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -24352,6 +24416,7 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
+
 var initialEducation = [{
   id: 1,
   school: 'University of Prishtina',
@@ -24368,7 +24433,9 @@ function Education(_ref) {
     _useState2 = _slicedToArray(_useState, 2),
     internalEducation = _useState2[0],
     setInternalEducation = _useState2[1];
-  var education = controlledEducation !== null && controlledEducation !== void 0 ? controlledEducation : internalEducation;
+  var education = (controlledEducation !== null && controlledEducation !== void 0 ? controlledEducation : internalEducation).map(function (edu, index) {
+    return Object(function webpackMissingModule() { var e = new Error("Cannot find module '../../../../../../utils/formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(edu, index);
+  });
   var setEducation = onEducationChange !== null && onEducationChange !== void 0 ? onEducationChange : setInternalEducation;
   var handleChange = function handleChange(id, field, value) {
     setEducation(function (prev) {
@@ -24397,38 +24464,38 @@ function Education(_ref) {
       });
     });
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
     className: "education",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "education__header",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         className: "education__icon",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiBookOpen, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiBookOpen, {
           size: 18
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
           className: "education__title",
           children: "Education"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
           className: "education__subtitle",
           children: "Add, edit, or remove your education history"
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "education__body",
       children: [education.map(function (edu, index) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "education__item",
-          children: [index > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          children: [index > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             className: "education__divider"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "education__row",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "education__field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
                 children: "School"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
                 type: "text",
                 value: edu.school,
                 onChange: function onChange(e) {
@@ -24436,11 +24503,11 @@ function Education(_ref) {
                 },
                 placeholder: "e.g. University of Prishtina"
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "education__field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
                 children: "Degree"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
                 type: "text",
                 value: edu.degree,
                 onChange: function onChange(e) {
@@ -24448,37 +24515,37 @@ function Education(_ref) {
                 },
                 placeholder: "e.g. BSc Computer Science"
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-              className: "education__field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
-                children: "Field of study"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
-                type: "text",
-                value: edu.fieldOfStudy || '',
-                onChange: function onChange(e) {
-                  return handleChange(edu.id, 'fieldOfStudy', e.target.value);
-                },
-                placeholder: "e.g. Computer Science"
-              })]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+            className: "education__field",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
+              children: "Field of study"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+              type: "text",
+              value: edu.fieldOfStudy || '',
+              onChange: function onChange(e) {
+                return handleChange(edu.id, 'fieldOfStudy', e.target.value);
+              },
+              placeholder: "e.g. Computer Science"
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "education__row",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "education__field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
                 children: "Start date"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
                 type: "month",
                 value: edu.startDate,
                 onChange: function onChange(e) {
                   return handleChange(edu.id, 'startDate', e.target.value);
                 }
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "education__field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
                 children: "End date"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
                 type: "month",
                 value: edu.endDate,
                 onChange: function onChange(e) {
@@ -24487,33 +24554,33 @@ function Education(_ref) {
                 disabled: edu.current
               })]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "education__current",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
               type: "checkbox",
               id: "current-edu-".concat(edu.id),
               checked: edu.current,
               onChange: function onChange(e) {
                 return handleChange(edu.id, 'current', e.target.checked);
               }
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
               htmlFor: "current-edu-".concat(edu.id),
               children: "I currently study here"
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("button", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
             className: "education__remove",
             onClick: function onClick() {
               return handleRemove(edu.id);
             },
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiTrash2, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiTrash2, {
               size: 14
             }), " Remove"]
           })]
         }, edu.id);
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("button", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
         className: "education__add",
         onClick: handleAdd,
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiPlus, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiPlus, {
           size: 16
         }), " Add education"]
       })]
@@ -25858,8 +25925,11 @@ function ResumeUpload(_ref) {
     if (!selectedFile) {
       return;
     }
-    if (selectedFile.type !== 'application/pdf') {
-      setLocalError('Only PDF files are allowed.');
+    var allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+    var allowedExtensions = ['.pdf', '.doc', '.docx'];
+    var extension = selectedFile.name.includes('.') ? selectedFile.name.slice(selectedFile.name.lastIndexOf('.')).toLowerCase() : '';
+    if (!allowedTypes.includes(selectedFile.type) && !allowedExtensions.includes(extension)) {
+      setLocalError('Only PDF or Word (.docx) files are allowed.');
       return;
     }
     if (selectedFile.size > MAX_SIZE_KB * 1024) {
@@ -25895,7 +25965,7 @@ function ResumeUpload(_ref) {
           children: "Resume / CV"
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
           className: "resume-upload__subtitle",
-          children: "Upload your latest resume (PDF, max 5MB)"
+          children: "Upload your latest resume (PDF or DOCX, max 5MB)"
         })]
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
@@ -25954,13 +26024,13 @@ function ResumeUpload(_ref) {
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiUpload, {
           size: 28
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("p", {
-          children: ["Drag and drop your PDF here or ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          children: ["Drag and drop your CV here or ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
             children: "browse"
           })]
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
           id: "resume-input",
           type: "file",
-          accept: ".pdf,application/pdf",
+          accept: ".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           onChange: handleChange,
           style: {
             display: 'none'
@@ -26459,8 +26529,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_icons_fi__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-icons/fi */ "./node_modules/react-icons/fi/index.mjs");
-/* harmony import */ var _WorkExperience_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./WorkExperience.scss */ "./resources/js/views/User-View/components/dashboard/pages/work-experience/WorkExperience.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+Object(function webpackMissingModule() { var e = new Error("Cannot find module '../../../../../../utils/formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
+/* harmony import */ var _WorkExperience_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./WorkExperience.scss */ "./resources/js/views/User-View/components/dashboard/pages/work-experience/WorkExperience.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -26481,6 +26552,7 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
+
 var initialExperiences = [{
   id: 1,
   company: 'Tech Co.',
@@ -26497,7 +26569,9 @@ function WorkExperience(_ref) {
     _useState2 = _slicedToArray(_useState, 2),
     internalExperiences = _useState2[0],
     setInternalExperiences = _useState2[1];
-  var experiences = controlledExperiences !== null && controlledExperiences !== void 0 ? controlledExperiences : internalExperiences;
+  var experiences = (controlledExperiences !== null && controlledExperiences !== void 0 ? controlledExperiences : internalExperiences).map(function (exp, index) {
+    return Object(function webpackMissingModule() { var e = new Error("Cannot find module '../../../../../../utils/formFieldUtils'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(exp, index);
+  });
   var setExperiences = onExperiencesChange !== null && onExperiencesChange !== void 0 ? onExperiencesChange : setInternalExperiences;
   var handleChange = function handleChange(id, field, value) {
     setExperiences(function (prev) {
@@ -26526,38 +26600,38 @@ function WorkExperience(_ref) {
       });
     });
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
     className: "work-experience",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "work-experience__header",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         className: "work-experience__icon",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiBriefcase, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiBriefcase, {
           size: 18
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h3", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
           className: "work-experience__title",
           children: "Work experience"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
           className: "work-experience__subtitle",
           children: "Add, edit, or remove your work experience"
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "work-experience__body",
       children: [experiences.map(function (exp, index) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
           className: "work-experience__item",
-          children: [index > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          children: [index > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
             className: "work-experience__divider"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "work-experience__row",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "work-experience__field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
                 children: "Company"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
                 type: "text",
                 value: exp.company,
                 onChange: function onChange(e) {
@@ -26565,11 +26639,11 @@ function WorkExperience(_ref) {
                 },
                 placeholder: "e.g. Tech Co."
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "work-experience__field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
                 children: "Role"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
                 type: "text",
                 value: exp.role,
                 onChange: function onChange(e) {
@@ -26578,24 +26652,24 @@ function WorkExperience(_ref) {
                 placeholder: "e.g. Frontend Developer"
               })]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "work-experience__row",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "work-experience__field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
                 children: "Start date"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
                 type: "month",
                 value: exp.startDate,
                 onChange: function onChange(e) {
                   return handleChange(exp.id, 'startDate', e.target.value);
                 }
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
               className: "work-experience__field",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
                 children: "End date"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
                 type: "month",
                 value: exp.endDate,
                 onChange: function onChange(e) {
@@ -26604,24 +26678,24 @@ function WorkExperience(_ref) {
                 disabled: exp.current
               })]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "work-experience__current",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
               type: "checkbox",
               id: "current-".concat(exp.id),
               checked: exp.current,
               onChange: function onChange(e) {
                 return handleChange(exp.id, 'current', e.target.checked);
               }
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
               htmlFor: "current-".concat(exp.id),
               children: "I currently work here"
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
             className: "work-experience__field",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("label", {
               children: "Description"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("textarea", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("textarea", {
               rows: 3,
               value: exp.description,
               onChange: function onChange(e) {
@@ -26629,20 +26703,20 @@ function WorkExperience(_ref) {
               },
               placeholder: "What did you do there?"
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("button", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
             className: "work-experience__remove",
             onClick: function onClick() {
               return handleRemove(exp.id);
             },
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiTrash2, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiTrash2, {
               size: 14
             }), " Remove"]
           })]
         }, exp.id);
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("button", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
         className: "work-experience__add",
         onClick: handleAdd,
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiPlus, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_icons_fi__WEBPACK_IMPORTED_MODULE_1__.FiPlus, {
           size: 16
         }), " Add experience"]
       })]
@@ -26670,8 +26744,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _HR_View_components_pages_InterviewMeeting_InterviewMeeting__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../HR-View/components/pages/InterviewMeeting/InterviewMeeting */ "./resources/js/views/HR-View/components/pages/InterviewMeeting/InterviewMeeting.js");
 /* harmony import */ var _api_interviewsApi__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../../../api/interviewsApi */ "./resources/js/api/interviewsApi.js");
 /* harmony import */ var _utils_interviewUtils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../../../utils/interviewUtils */ "./resources/js/utils/interviewUtils.js");
-/* harmony import */ var _Interviews_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Interviews.scss */ "./resources/js/views/User-View/components/dashboard/shared/Interviews/Interviews.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+Object(function webpackMissingModule() { var e = new Error("Cannot find module '../../../../../../utils/interviewRoutes'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
+/* harmony import */ var _Interviews_scss__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./Interviews.scss */ "./resources/js/views/User-View/components/dashboard/shared/Interviews/Interviews.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
@@ -26682,6 +26757,7 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) 
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+
 
 
 
@@ -26745,73 +26821,76 @@ var Interviews = function Interviews() {
     }
   }, [token, loadInterviews]);
   if (token) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("main", {
-      className: "interviews",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_HR_View_components_pages_InterviewMeeting_InterviewMeeting__WEBPACK_IMPORTED_MODULE_3__["default"], {
-        token: token,
-        onLeave: function onLeave() {
-          return navigate('/interviews');
-        }
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("main", {
+      className: "interviews interviews--meeting",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+        className: "interviews__meeting",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_HR_View_components_pages_InterviewMeeting_InterviewMeeting__WEBPACK_IMPORTED_MODULE_3__["default"], {
+          token: token,
+          onLeave: function onLeave() {
+            return navigate(Object(function webpackMissingModule() { var e = new Error("Cannot find module '../../../../../../utils/interviewRoutes'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+          }
+        })
       })
     });
   }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("main", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("main", {
     className: "interviews",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("section", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("section", {
       className: "interviews__header",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("h1", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("h1", {
           children: "Interviews"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
           children: "Your scheduled interviews with secure join links."
         })]
       })
-    }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+    }), loading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
       className: "interviews__empty",
       children: "Loading interviews\u2026"
-    }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+    }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
       className: "interviews__empty interviews__empty--error",
       children: error
-    }), !loading && !error && interviews.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+    }), !loading && !error && interviews.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
       className: "interviews__empty",
       children: "No interviews scheduled yet."
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("section", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("section", {
       className: "interviews__list",
       "aria-label": "Scheduled interviews",
       children: interviews.map(function (interview) {
         var _interview$hr_user;
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("article", {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("article", {
           className: "interviews__card",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
             className: "interviews__card-icon",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_2__.FaCalendarAlt, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_2__.FaCalendarAlt, {
               "aria-hidden": "true"
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
             className: "interviews__card-content",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("h3", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("h3", {
               children: interview.title
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
               children: interview.company || ((_interview$hr_user = interview.hr_user) === null || _interview$hr_user === void 0 ? void 0 : _interview$hr_user.name)
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("span", {
               children: (0,_utils_interviewUtils__WEBPACK_IMPORTED_MODULE_5__.formatInterviewDate)(interview.scheduled_at)
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("span", {
               className: "interviews__status interviews__status--".concat(interview.status),
               children: (0,_utils_interviewUtils__WEBPACK_IMPORTED_MODULE_5__.formatStatusLabel)(interview.status)
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("span", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("span", {
               className: "interviews__type",
-              children: [interview.type === 'video' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_2__.FaVideo, {
+              children: [interview.type === 'video' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_2__.FaVideo, {
                 "aria-hidden": "true"
-              }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_2__.FaMapMarkerAlt, {
+              }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_2__.FaMapMarkerAlt, {
                 "aria-hidden": "true"
               }), (0,_utils_interviewUtils__WEBPACK_IMPORTED_MODULE_5__.typeLabel)(interview.type), interview.type === 'in_person' && interview.location ? " \xB7 ".concat(interview.location) : '']
             })]
-          }), interview.type === 'video' && interview.status !== 'cancelled' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("button", {
+          }), interview.type === 'video' && interview.status !== 'cancelled' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("button", {
             type: "button",
             onClick: function onClick() {
-              return navigate("/interviews/join/".concat(interview.access_token));
+              return navigate(Object(function webpackMissingModule() { var e = new Error("Cannot find module '../../../../../../utils/interviewRoutes'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())(interview.access_token));
             },
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_2__.FaExternalLinkAlt, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_icons_fa__WEBPACK_IMPORTED_MODULE_2__.FaExternalLinkAlt, {
               "aria-hidden": "true"
             }), "Join"]
           })]
@@ -26871,9 +26950,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/development/chunk-UVKPFVEO.mjs");
-/* harmony import */ var _context_AuthContext__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../../context/AuthContext */ "./resources/js/context/AuthContext.js");
-/* harmony import */ var _UserDashboardSidebar_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./UserDashboardSidebar.scss */ "./resources/js/views/User-View/components/dashboard/shared/UserDashboardSidebar/UserDashboardSidebar.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+Object(function webpackMissingModule() { var e = new Error("Cannot find module '../../../../../../components/NotificationBell/NotificationBell'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
+/* harmony import */ var _context_AuthContext__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../../context/AuthContext */ "./resources/js/context/AuthContext.js");
+/* harmony import */ var _UserDashboardSidebar_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./UserDashboardSidebar.scss */ "./resources/js/views/User-View/components/dashboard/shared/UserDashboardSidebar/UserDashboardSidebar.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
@@ -26889,10 +26969,11 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 
 
+
 var mainNav = [{
   label: 'Overview',
   path: '/user-dashboard/dashboard',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -26901,22 +26982,22 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("rect", {
       x: "3",
       y: "3",
       width: "7",
       height: "7"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("rect", {
       x: "14",
       y: "3",
       width: "7",
       height: "7"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("rect", {
       x: "3",
       y: "14",
       width: "7",
       height: "7"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("rect", {
       x: "14",
       y: "14",
       width: "7",
@@ -26926,7 +27007,7 @@ var mainNav = [{
 }, {
   label: 'Resume',
   path: '/user-dashboard/resume',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -26935,21 +27016,21 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
       d: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("polyline", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("polyline", {
       points: "14 2 14 8 20 8"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
       x1: "16",
       y1: "13",
       x2: "8",
       y2: "13"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
       x1: "16",
       y1: "17",
       x2: "8",
       y2: "17"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
       x1: "10",
       y1: "9",
       x2: "8",
@@ -26959,7 +27040,7 @@ var mainNav = [{
 }, {
   label: 'Profile',
   path: '/user-dashboard/profile',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -26968,9 +27049,9 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
       d: "M20 21a8 8 0 0 0-16 0"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("circle", {
       cx: "12",
       cy: "7",
       r: "4"
@@ -26979,7 +27060,7 @@ var mainNav = [{
 }, {
   label: 'Applied Jobs',
   path: '/user-dashboard/applied-jobs',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -26988,22 +27069,22 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("rect", {
       x: "2",
       y: "7",
       width: "20",
       height: "14",
       rx: "2"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
       d: "M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
       d: "M9 14l2 2 4-4"
     })]
   })
 }, {
   label: 'Saved Jobs',
   path: '/user-dashboard/saved-jobs',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -27012,14 +27093,14 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
       d: "M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"
     })
   })
 }, {
   label: 'Interviews',
   path: '/user-dashboard/interviews',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -27028,23 +27109,23 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("rect", {
       x: "3",
       y: "4",
       width: "18",
       height: "18",
       rx: "2"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
       x1: "16",
       y1: "2",
       x2: "16",
       y2: "6"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
       x1: "8",
       y1: "2",
       x2: "8",
       y2: "6"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
       x1: "3",
       y1: "10",
       x2: "21",
@@ -27055,7 +27136,7 @@ var mainNav = [{
   label: 'Messages',
   path: '/user-dashboard/messages',
   badge: 3,
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -27064,7 +27145,7 @@ var mainNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
       d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
     })
   })
@@ -27072,7 +27153,7 @@ var mainNav = [{
 var bottomNav = [{
   label: 'Home',
   path: '/',
-  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+  icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
@@ -27081,11 +27162,11 @@ var bottomNav = [{
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
       d: "M3 11l9-8 9 8"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
       d: "M5 10v10h14V10"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
       d: "M9 20v-6h6v6"
     })]
   })
@@ -27097,9 +27178,10 @@ function UserDashboardSidebar() {
     setOpen = _useState2[1];
   var navigate = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_1__.useNavigate)();
   var location = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_1__.useLocation)();
-  var _useAuth = (0,_context_AuthContext__WEBPACK_IMPORTED_MODULE_2__.useAuth)(),
+  var _useAuth = (0,_context_AuthContext__WEBPACK_IMPORTED_MODULE_3__.useAuth)(),
     user = _useAuth.user,
     logout = _useAuth.logout;
+  var showNotifications = (user === null || user === void 0 ? void 0 : user.role) === 'candidate' || !(user !== null && user !== void 0 && user.role);
   var displayName = (user === null || user === void 0 ? void 0 : user.name) || localStorage.getItem('user_name') || 'Candidate';
   var initials = displayName.split(' ').map(function (word) {
     return word[0];
@@ -27129,70 +27211,78 @@ function UserDashboardSidebar() {
   var isActive = function isActive(path) {
     return location.pathname === path || path === '/user-dashboard/interviews' && location.pathname.startsWith('/user-dashboard/interviews/');
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.Fragment, {
-    children: [!open && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
-      className: "user-dashboard-hamburger",
-      onClick: function onClick() {
-        return setOpen(true);
-      },
-      "aria-label": "Open dashboard menu",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
-        width: "22",
-        height: "22",
-        viewBox: "0 0 24 24",
-        fill: "none",
-        stroke: "currentColor",
-        strokeWidth: "2",
-        strokeLinecap: "round",
-        strokeLinejoin: "round",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
-          x1: "3",
-          y1: "6",
-          x2: "21",
-          y2: "6"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
-          x1: "3",
-          y1: "12",
-          x2: "21",
-          y2: "12"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
-          x1: "3",
-          y1: "18",
-          x2: "21",
-          y2: "18"
-        })]
-      })
-    }), open && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
+    children: [!open && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+      className: "user-dashboard-mobile-bar",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
+        className: "user-dashboard-hamburger",
+        onClick: function onClick() {
+          return setOpen(true);
+        },
+        "aria-label": "Open dashboard menu",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
+          width: "22",
+          height: "22",
+          viewBox: "0 0 24 24",
+          fill: "none",
+          stroke: "currentColor",
+          strokeWidth: "2",
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+            x1: "3",
+            y1: "6",
+            x2: "21",
+            y2: "6"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+            x1: "3",
+            y1: "12",
+            x2: "21",
+            y2: "12"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
+            x1: "3",
+            y1: "18",
+            x2: "21",
+            y2: "18"
+          })]
+        })
+      }), showNotifications && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+        className: "user-dashboard-mobile-bar__notif",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(Object(function webpackMissingModule() { var e = new Error("Cannot find module '../../../../../../components/NotificationBell/NotificationBell'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()), {
+          variant: "sidebar"
+        })
+      })]
+    }), open && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
       className: "user-dashboard-sidebar-overlay",
       onClick: function onClick() {
         return setOpen(false);
       }
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("aside", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("aside", {
       className: "user-dashboard-sidebar".concat(open ? ' open' : ''),
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
         className: "user-dashboard-sidebar__top",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
           className: "user-dashboard-sidebar__brand",
           onClick: function onClick() {
             return handleNav('/');
           },
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "user-dashboard-sidebar__brand-text",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
               className: "user-dashboard-sidebar__app",
               children: "BEE HIRED"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
               className: "user-dashboard-sidebar__section",
               children: "Candidate Dashboard"
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
             className: "user-dashboard-sidebar__close",
             onClick: function onClick(event) {
               event.stopPropagation();
               setOpen(false);
             },
             "aria-label": "Close dashboard menu",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
               width: "18",
               height: "18",
               viewBox: "0 0 24 24",
@@ -27201,12 +27291,12 @@ function UserDashboardSidebar() {
               strokeWidth: "2",
               strokeLinecap: "round",
               strokeLinejoin: "round",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
                 x1: "18",
                 y1: "6",
                 x2: "6",
                 y2: "18"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
                 x1: "6",
                 y1: "6",
                 x2: "18",
@@ -27214,68 +27304,76 @@ function UserDashboardSidebar() {
               })]
             })
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("nav", {
+        }), showNotifications && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+          className: "user-dashboard-sidebar__notif-row",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
+            className: "user-dashboard-sidebar__notif-label",
+            children: "Notifications"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(Object(function webpackMissingModule() { var e = new Error("Cannot find module '../../../../../../components/NotificationBell/NotificationBell'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()), {
+            variant: "sidebar"
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("nav", {
           className: "user-dashboard-sidebar__nav",
           children: mainNav.map(function (item) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
               className: "user-dashboard-sidebar__nav-item".concat(isActive(item.path) ? ' active' : ''),
               onClick: function onClick() {
                 return handleNav(item.path);
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
                 className: "user-dashboard-sidebar__nav-icon",
                 children: item.icon
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
                 className: "user-dashboard-sidebar__nav-label",
                 children: item.label
-              }), item.badge && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              }), item.badge && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
                 className: "user-dashboard-sidebar__nav-badge",
                 children: item.badge
               })]
             }, item.path);
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
           className: "user-dashboard-sidebar__divider"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("nav", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("nav", {
           className: "user-dashboard-sidebar__nav",
           children: bottomNav.map(function (item) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
               className: "user-dashboard-sidebar__nav-item".concat(isActive(item.path) ? ' active' : ''),
               onClick: function onClick() {
                 return handleNav(item.path);
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
                 className: "user-dashboard-sidebar__nav-icon",
                 children: item.icon
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
                 className: "user-dashboard-sidebar__nav-label",
                 children: item.label
               })]
             }, item.path);
           })
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
         className: "user-dashboard-sidebar__bottom",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
           className: "user-dashboard-sidebar__user",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
             className: "user-dashboard-sidebar__avatar",
             children: initials
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "user-dashboard-sidebar__user-info",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
               className: "user-dashboard-sidebar__user-name",
               children: displayName
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
               className: "user-dashboard-sidebar__user-role",
               children: (user === null || user === void 0 ? void 0 : user.email) || 'Candidate'
             })]
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("button", {
           className: "user-dashboard-sidebar__signout",
           type: "button",
           onClick: handleSignOut,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("svg", {
             width: "16",
             height: "16",
             viewBox: "0 0 24 24",
@@ -27284,11 +27382,11 @@ function UserDashboardSidebar() {
             strokeWidth: "2",
             strokeLinecap: "round",
             strokeLinejoin: "round",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("path", {
               d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("polyline", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("polyline", {
               points: "16 17 21 12 16 7"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("line", {
               x1: "21",
               y1: "12",
               x2: "9",
@@ -32909,9 +33007,7 @@ var ResumePage = function ResumePage() {
     var _data$resume;
     if (data !== null && data !== void 0 && data.ats) setAts(data.ats);
     if (data !== null && data !== void 0 && data.job_match) setJobMatch(data.job_match);
-    var parsed = (data === null || data === void 0 ? void 0 : data.parsed) || (data === null || data === void 0 || (_data$resume = data.resume) === null || _data$resume === void 0 ? void 0 : _data$resume.parsed_data);
-    if (parsed) {
-      var mapped = (0,_utils_resumeAnalysisUtils__WEBPACK_IMPORTED_MODULE_14__.mapParsedToProfile)(parsed);
+    var applyMapped = function applyMapped(mapped) {
       if (mapped.skills.length) setSkills(mapped.skills);
       if (mapped.experiences.length) setExperiences(mapped.experiences);
       if (mapped.education.length) setEducation(mapped.education);
@@ -32921,6 +33017,22 @@ var ResumePage = function ResumePage() {
       if (mapped.github.profileUrl || mapped.github.repositories.length || mapped.github.portfolioLinks.length) {
         setGithub(mapped.github);
       }
+    };
+    if (data !== null && data !== void 0 && data.profile) {
+      (0,_utils_cvProfileUtils__WEBPACK_IMPORTED_MODULE_15__.applyProfileToState)(data.profile, {
+        setSkills: setSkills,
+        setExperiences: setExperiences,
+        setEducation: setEducation,
+        setLanguages: setLanguages,
+        setProjects: setProjects,
+        setCertifications: setCertifications,
+        setGithub: setGithub
+      });
+      return;
+    }
+    var parsed = (data === null || data === void 0 ? void 0 : data.structured) || (data === null || data === void 0 ? void 0 : data.parsed) || (data === null || data === void 0 || (_data$resume = data.resume) === null || _data$resume === void 0 ? void 0 : _data$resume.parsed_data);
+    if (parsed) {
+      applyMapped((0,_utils_resumeAnalysisUtils__WEBPACK_IMPORTED_MODULE_14__.mapParsedToProfile)(parsed));
     }
   }, []);
   var loadProfile = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
@@ -33003,7 +33115,7 @@ var ResumePage = function ResumePage() {
   }, [loadProfile, loadExistingResume]);
   var runAnalysis = /*#__PURE__*/function () {
     var _ref3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(selectedFile) {
-      var uploadResult, id, analysisResult, _err$response, _err$response2, message, _t3, _t4;
+      var uploadResult, id, analysisResult, _err$response, data, validationMessage, message, _t3, _t4;
       return _regenerator().w(function (_context3) {
         while (1) switch (_context3.p = _context3.n) {
           case 0:
@@ -33032,42 +33144,32 @@ var ResumePage = function ResumePage() {
           case 5:
             analysisResult = _t3;
             applyAnalysisResult(analysisResult);
-            if (!analysisResult.profile) {
+            if (analysisResult.profile) {
               _context3.n = 6;
               break;
             }
-            (0,_utils_cvProfileUtils__WEBPACK_IMPORTED_MODULE_15__.applyProfileToState)(analysisResult.profile, {
-              setSkills: setSkills,
-              setExperiences: setExperiences,
-              setEducation: setEducation,
-              setLanguages: setLanguages,
-              setProjects: setProjects,
-              setCertifications: setCertifications,
-              setGithub: setGithub
-            });
-            _context3.n = 7;
-            break;
-          case 6:
-            _context3.n = 7;
+            _context3.n = 6;
             return loadProfile();
-          case 7:
+          case 6:
             setProfileSaved(true);
-            _context3.n = 9;
+            _context3.n = 8;
             break;
+          case 7:
+            _context3.p = 7;
+            _t4 = _context3.v;
+            data = _t4 === null || _t4 === void 0 || (_err$response = _t4.response) === null || _err$response === void 0 ? void 0 : _err$response.data;
+            validationMessage = data !== null && data !== void 0 && data.errors ? Object.values(data.errors).flat().find(Boolean) : null;
+            message = !(_t4 !== null && _t4 !== void 0 && _t4.response) ? 'Server stopped responding (timed out or crashed). Run: php artisan serve — then try again.' : (data === null || data === void 0 ? void 0 : data.error) || validationMessage || (data === null || data === void 0 ? void 0 : data.message) || 'Failed to analyze resume. Please try again.';
+            setAnalysisError(message);
           case 8:
             _context3.p = 8;
-            _t4 = _context3.v;
-            message = (_t4 === null || _t4 === void 0 || (_err$response = _t4.response) === null || _err$response === void 0 || (_err$response = _err$response.data) === null || _err$response === void 0 ? void 0 : _err$response.error) || (_t4 === null || _t4 === void 0 || (_err$response2 = _t4.response) === null || _err$response2 === void 0 || (_err$response2 = _err$response2.data) === null || _err$response2 === void 0 ? void 0 : _err$response2.message) || 'Failed to analyze resume. Please try again.';
-            setAnalysisError(message);
-          case 9:
-            _context3.p = 9;
             setLoading(false);
             setLoadingMessage('');
-            return _context3.f(9);
-          case 10:
+            return _context3.f(8);
+          case 9:
             return _context3.a(2);
         }
-      }, _callee3, null, [[1, 8, 9, 10]]);
+      }, _callee3, null, [[1, 7, 8, 9]]);
     }));
     return function runAnalysis(_x) {
       return _ref3.apply(this, arguments);
@@ -33099,7 +33201,7 @@ var ResumePage = function ResumePage() {
   }();
   var handleSave = /*#__PURE__*/function () {
     var _ref5 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
-      var payload, _err$response3, _t5;
+      var payload, _err$response2, _t5;
       return _regenerator().w(function (_context5) {
         while (1) switch (_context5.p = _context5.n) {
           case 0:
@@ -33125,7 +33227,7 @@ var ResumePage = function ResumePage() {
           case 3:
             _context5.p = 3;
             _t5 = _context5.v;
-            setSaveMessage((_t5 === null || _t5 === void 0 || (_err$response3 = _t5.response) === null || _err$response3 === void 0 || (_err$response3 = _err$response3.data) === null || _err$response3 === void 0 ? void 0 : _err$response3.message) || 'Failed to save profile.');
+            setSaveMessage((_t5 === null || _t5 === void 0 || (_err$response2 = _t5.response) === null || _err$response2 === void 0 || (_err$response2 = _err$response2.data) === null || _err$response2 === void 0 ? void 0 : _err$response2.message) || 'Failed to save profile.');
           case 4:
             _context5.p = 4;
             setSaving(false);
@@ -35315,7 +35417,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".admin-layout {\n  display: flex;\n  min-height: 100vh;\n  background: #fafaf8;\n}\n\n.admin-layout-content {\n  margin-left: 260px;\n  flex: 1;\n  min-width: 0;\n  padding-bottom: 60px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n@media (max-width: 768px) {\n  .admin-layout-content {\n    margin-left: 0;\n  }\n}\n\n.admin-page {\n  width: 100%;\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 32px 32px 0;\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n}\n@media (max-width: 768px) {\n  .admin-page {\n    padding: 20px 16px 0;\n  }\n}\n\n.admin-card {\n  background: #fff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 24px;\n}\n\n.admin-card-head {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 10px;\n  margin-bottom: 12px;\n}\n.admin-card-head h2 {\n  margin: 0;\n  font-size: 19px;\n  color: #111;\n}\n.admin-card-head p {\n  margin: 4px 0 0;\n  color: #6f685d;\n  font-size: 13px;\n}\n\n.admin-kpi-grid {\n  display: grid;\n  grid-template-columns: repeat(4, minmax(0, 1fr));\n  gap: 10px;\n}\n@media (max-width: 900px) {\n  .admin-kpi-grid {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n}\n\n.admin-kpi {\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 24px;\n  background: #ffffff;\n}\n.admin-kpi span {\n  font-size: 12px;\n  color: #6f685d;\n}\n.admin-kpi strong {\n  display: block;\n  margin-top: 6px;\n  font-size: 24px;\n  color: #111;\n}\n\n.admin-table {\n  width: 100%;\n  border-collapse: collapse;\n}\n.admin-table th,\n.admin-table td {\n  text-align: left;\n  padding: 11px 8px;\n  border-top: 1px solid #f4f1ea;\n  font-size: 13px;\n  color: #2f2f2f;\n}\n.admin-table th {\n  border-top: none;\n  font-size: 12px;\n  color: #7c7468;\n}\n.admin-table input,\n.admin-table select {\n  border: 1px solid #e7e1d5;\n  border-radius: 10px;\n  height: 34px;\n  padding: 0 9px;\n  font-size: 13px;\n  font-family: inherit;\n  background: #ffffff;\n}\n.admin-table input[type=number] {\n  width: 78px;\n}\n\n.admin-actions {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.admin-form-grid .admin-actions {\n  grid-column: 1/-1;\n  position: relative;\n  z-index: 5;\n}\n\n.admin-page-content-card {\n  position: relative;\n  z-index: 2;\n  margin-bottom: 8px;\n}\n\n.admin-page-content-form {\n  gap: 12px;\n  padding-bottom: 8px;\n}\n\n.admin-nav-visibility-card {\n  position: relative;\n  z-index: 1;\n  margin-top: 8px;\n}\n\n.admin-btn {\n  border: none;\n  border-radius: 10px;\n  height: 36px;\n  padding: 0 12px;\n  font-size: 12px;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n}\n\n.admin-btn-dark {\n  background: #111;\n  color: #fff;\n}\n\n.admin-btn-accent {\n  background: #fdd535;\n  color: #111;\n}\n\n.admin-btn-light {\n  background: #f4f1ea;\n  color: #111;\n}\n\n.admin-form-grid {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 10px;\n}\n@media (max-width: 900px) {\n  .admin-form-grid {\n    grid-template-columns: 1fr;\n  }\n}\n\n.admin-form-grid--single-column {\n  grid-template-columns: 1fr;\n}\n\n.admin-field {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n}\n.admin-field label {\n  font-size: 12px;\n  color: #7c7468;\n  font-weight: 600;\n}\n.admin-field input,\n.admin-field select,\n.admin-field textarea {\n  border: 1px solid #e7e1d5;\n  border-radius: 10px;\n  padding: 0 10px;\n  font-size: 13px;\n  font-family: inherit;\n  background: #ffffff;\n  color: #111111;\n  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;\n}\n.admin-field input:focus,\n.admin-field select:focus,\n.admin-field textarea:focus {\n  outline: none;\n  border-color: #111111;\n  box-shadow: 0 0 0 3px rgba(253, 213, 53, 0.24);\n}\n.admin-field input,\n.admin-field select {\n  height: 38px;\n}\n.admin-field textarea {\n  min-height: 92px;\n  padding: 10px;\n  resize: vertical;\n}\n.admin-field input[type=file] {\n  height: auto;\n  min-height: 38px;\n  padding: 6px;\n  color: #6f685d;\n}\n.admin-field input[type=file]::file-selector-button {\n  border: 0;\n  border-radius: 8px;\n  background: #111111;\n  color: #ffffff;\n  padding: 7px 10px;\n  margin-right: 10px;\n  font-family: inherit;\n  font-size: 12px;\n  font-weight: 700;\n  cursor: pointer;\n}\n.admin-field small {\n  color: #7c7468;\n  font-size: 12px;\n}\n\n.admin-input-with-icon {\n  position: relative;\n}\n.admin-input-with-icon svg {\n  position: absolute;\n  left: 11px;\n  top: 50%;\n  transform: translateY(-50%);\n  color: #7a746d;\n  pointer-events: none;\n}\n.admin-input-with-icon input {\n  width: 100%;\n  padding-left: 34px;\n}\n\n.admin-content-picker {\n  display: grid;\n  grid-template-columns: repeat(6, minmax(0, 1fr));\n  gap: 10px;\n}\n@media (max-width: 1000px) {\n  .admin-content-picker {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n@media (max-width: 640px) {\n  .admin-content-picker {\n    grid-template-columns: 1fr;\n  }\n}\n\n.admin-content-tab {\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  background: #ffffff;\n  color: #111111;\n  min-height: 76px;\n  padding: 14px;\n  cursor: pointer;\n  display: flex;\n  flex-direction: column;\n  align-items: flex-start;\n  justify-content: center;\n  gap: 5px;\n  font-family: inherit;\n  text-align: left;\n  transition: 0.2s ease;\n}\n.admin-content-tab span {\n  font-size: 14px;\n  font-weight: 700;\n}\n.admin-content-tab small {\n  color: #7a746d;\n  font-size: 12px;\n}\n.admin-content-tab:hover, .admin-content-tab.active {\n  background: #f2efea;\n  border-color: #d4cdc5;\n}\n.admin-content-tab.active {\n  box-shadow: inset 0 0 0 2px #fdd535;\n}\n\n.admin-icon-badge {\n  width: 32px;\n  height: 32px;\n  border-radius: 9px;\n  background: #fdd535;\n  color: #fff;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 15px;\n}\n\n.admin-home-sections-card {\n  padding: 28px;\n}\n\n.admin-home-tabs {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 10px;\n  margin: 18px 0;\n}\n\n.admin-home-tab {\n  min-height: 72px;\n  padding: 13px 14px;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  background: #fafaf8;\n  color: #111111;\n  cursor: pointer;\n  font-family: inherit;\n  text-align: left;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  gap: 5px;\n  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;\n}\n.admin-home-tab span {\n  font-size: 14px;\n  font-weight: 800;\n  line-height: 1.25;\n}\n.admin-home-tab small {\n  color: #6f685d;\n  font-size: 12px;\n  line-height: 1.3;\n}\n.admin-home-tab:hover {\n  border-color: #d5cabd;\n  background: #ffffff;\n  transform: translateY(-1px);\n}\n.admin-home-tab.active {\n  border-color: #111111;\n  background: #ffffff;\n  box-shadow: inset 0 0 0 2px #fdd535, 0 10px 22px rgba(38, 32, 22, 0.06);\n}\n\n.admin-home-sections-form {\n  gap: 18px;\n}\n\n.admin-home-save-row {\n  position: sticky;\n  bottom: 16px;\n  z-index: 2;\n  justify-content: flex-end;\n  padding: 14px;\n  margin-top: 2px;\n  background: rgba(255, 255, 255, 0.88);\n  border: 1px solid #eee6da;\n  border-radius: 16px;\n  backdrop-filter: blur(10px);\n}\n\n.admin-home-section-block {\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  padding: 20px;\n  background: linear-gradient(180deg, #fffdfa 0%, #fafaf8 100%);\n  box-shadow: 0 14px 30px rgba(38, 32, 22, 0.04);\n}\n\n.admin-home-section-block__head {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n  padding-bottom: 14px;\n  margin-bottom: 16px;\n  border-bottom: 1px solid #eee6da;\n}\n.admin-home-section-block__head h3 {\n  margin: 0;\n  font-size: 18px;\n  color: #111;\n}\n.admin-home-section-block__head p {\n  margin: 0;\n  font-size: 13px;\n  color: #6f685d;\n}\n\n.admin-home-section-block__body {\n  display: flex;\n  flex-direction: column;\n  gap: 14px;\n}\n\n.admin-home-subblock {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  margin-top: 0;\n  padding-top: 0;\n  border-top: 0;\n}\n.admin-home-subblock + .admin-home-subblock {\n  padding-top: 18px;\n  border-top: 1px solid #eee6da;\n}\n\n.admin-home-subheading {\n  margin: 0;\n  font-size: 15px;\n  color: #111;\n}\n\n.admin-home-row {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 8px;\n  margin-bottom: 0;\n}\n.admin-home-row label {\n  color: #111111;\n  font-size: 14px;\n}\n\n.admin-field--tight {\n  margin-top: 8px;\n  padding-top: 8px;\n  border-top: 1px solid #eee9e0;\n}\n\n.admin-home-item-card {\n  padding: 16px;\n  border: 1px solid #ede6dc;\n  border-radius: 14px;\n  background: #ffffff;\n  box-shadow: 0 8px 18px rgba(38, 32, 22, 0.035);\n}\n\n.admin-home-item-card__head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 12px;\n}\n.admin-home-item-card__head strong {\n  min-width: 0;\n  color: #111111;\n  font-size: 14px;\n  line-height: 1.3;\n  overflow-wrap: anywhere;\n}\n.admin-home-item-card__head small {\n  color: #6f685d;\n  font-size: 12px;\n}\n\n.admin-home-field-grid {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 12px;\n}\n.admin-home-field-grid .admin-field--full {\n  grid-column: 1/-1;\n}\n\n.admin-btn-danger {\n  color: #9f1d1d;\n  background: #fbf1ed;\n}\n.admin-btn-danger:hover {\n  background: #f7e3dd;\n}\n\n@media (max-width: 720px) {\n  .admin-home-sections-card {\n    padding: 18px;\n  }\n  .admin-home-tabs {\n    grid-template-columns: 1fr;\n  }\n  .admin-home-section-block {\n    padding: 16px;\n  }\n  .admin-home-field-grid {\n    grid-template-columns: 1fr;\n  }\n  .admin-home-row,\n  .admin-home-item-card__head {\n    align-items: flex-start;\n    flex-direction: column;\n  }\n  .admin-home-row .admin-btn,\n  .admin-home-item-card__head .admin-btn {\n    width: 100%;\n    justify-content: center;\n  }\n  .admin-home-save-row {\n    bottom: 8px;\n  }\n}\n.admin-badge {\n  padding: 4px 12px;\n  border-radius: 999px;\n  background: #fef9e7;\n  border: 1px solid #fdd535;\n  color: #92700a;\n  font-size: 13px;\n  font-weight: 600;\n}\n\n.admin-empty {\n  padding: 24px 0;\n  text-align: center;\n  color: #9a9080;\n  font-size: 14px;\n}\n\n.admin-empty-state {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 10px;\n  padding: 48px 0;\n  color: #b8ae9f;\n}\n.admin-empty-state svg {\n  font-size: 36px;\n}\n.admin-empty-state p {\n  margin: 0;\n  font-size: 15px;\n}\n\n.admin-messages-list {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  margin-top: 16px;\n}\n\n.admin-message-item {\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  overflow: hidden;\n  transition: border-color 0.15s ease;\n}\n.admin-message-item.open {\n  border-color: #fdd535;\n}\n\n.admin-message-header {\n  width: 100%;\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 14px 18px;\n  background: none;\n  border: none;\n  cursor: pointer;\n  text-align: left;\n}\n.admin-message-header:hover {\n  background: #fafaf8;\n}\n\n.admin-message-icon {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 32px;\n  height: 32px;\n  border-radius: 8px;\n  background: #fef9e7;\n  color: #f0bf22;\n  font-size: 15px;\n  flex-shrink: 0;\n}\n\n.admin-message-name {\n  font-size: 14px;\n  font-weight: 600;\n  color: #11141a;\n  min-width: 140px;\n}\n\n.admin-message-email {\n  font-size: 13px;\n  color: #6f685d;\n  flex: 1;\n}\n\n.admin-message-date {\n  font-size: 12px;\n  color: #b8ae9f;\n  white-space: nowrap;\n}\n\n.admin-message-body {\n  padding: 0 18px 18px 62px;\n  font-size: 14px;\n  color: #3f4652;\n  line-height: 1.7;\n  white-space: pre-wrap;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".admin-layout {\n  display: flex;\n  min-height: 100vh;\n  background: #fafaf8;\n}\n\n.admin-layout-content {\n  margin-left: 260px;\n  flex: 1;\n  min-width: 0;\n  padding-bottom: 60px;\n  display: flex;\n  flex-direction: column;\n  align-items: stretch;\n  overflow-x: clip;\n}\n@media (max-width: 768px) {\n  .admin-layout-content {\n    margin-left: 0;\n  }\n}\n\n.admin-page {\n  width: 100%;\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 32px 32px 0;\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n}\n@media (max-width: 768px) {\n  .admin-page {\n    padding: 20px 16px 0;\n  }\n}\n\n.admin-card {\n  background: #fff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 24px;\n}\n\n.admin-card-head {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-start;\n  gap: 16px;\n  margin-bottom: 12px;\n  flex-wrap: wrap;\n}\n.admin-card-head h2 {\n  margin: 0;\n  font-size: 19px;\n  color: #111;\n}\n.admin-card-head p {\n  margin: 4px 0 0;\n  color: #6f685d;\n  font-size: 13px;\n}\n.admin-card-head .admin-btn {\n  flex-shrink: 0;\n}\n\n.admin-kpi-grid {\n  display: grid;\n  grid-template-columns: repeat(4, minmax(0, 1fr));\n  gap: 10px;\n}\n@media (max-width: 900px) {\n  .admin-kpi-grid {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n}\n\n.admin-kpi {\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 24px;\n  background: #ffffff;\n}\n.admin-kpi span {\n  font-size: 12px;\n  color: #6f685d;\n}\n.admin-kpi strong {\n  display: block;\n  margin-top: 6px;\n  font-size: 24px;\n  color: #111;\n}\n\n.admin-table {\n  width: 100%;\n  border-collapse: collapse;\n}\n.admin-table th,\n.admin-table td {\n  text-align: left;\n  padding: 11px 8px;\n  border-top: 1px solid #f4f1ea;\n  font-size: 13px;\n  color: #2f2f2f;\n}\n.admin-table th {\n  border-top: none;\n  font-size: 12px;\n  color: #7c7468;\n}\n.admin-table input,\n.admin-table select {\n  border: 1px solid #e7e1d5;\n  border-radius: 10px;\n  height: 34px;\n  padding: 0 9px;\n  font-size: 13px;\n  font-family: inherit;\n  background: #ffffff;\n}\n.admin-table input[type=number] {\n  width: 78px;\n}\n\n.admin-actions {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.admin-form-grid .admin-actions {\n  grid-column: 1/-1;\n  position: relative;\n  z-index: 5;\n}\n\n.admin-page-content-card {\n  position: relative;\n  z-index: 2;\n  margin-bottom: 8px;\n}\n\n.admin-page-content-form {\n  gap: 12px;\n  padding-bottom: 8px;\n}\n\n.admin-nav-visibility-card {\n  position: relative;\n  z-index: 1;\n  margin-top: 8px;\n}\n\n.admin-btn {\n  border: none;\n  border-radius: 10px;\n  height: 36px;\n  padding: 0 12px;\n  font-size: 12px;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n}\n\n.admin-btn-dark {\n  background: #111;\n  color: #fff;\n}\n\n.admin-btn-accent {\n  background: #fdd535;\n  color: #111;\n}\n\n.admin-btn-light {\n  background: #f4f1ea;\n  color: #111;\n}\n\n.admin-form-grid {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 10px;\n}\n@media (max-width: 900px) {\n  .admin-form-grid {\n    grid-template-columns: 1fr;\n  }\n}\n\n.admin-form-grid--single-column {\n  grid-template-columns: 1fr;\n}\n\n.admin-field {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n}\n.admin-field label {\n  font-size: 12px;\n  color: #7c7468;\n  font-weight: 600;\n}\n.admin-field input,\n.admin-field select,\n.admin-field textarea {\n  border: 1px solid #e7e1d5;\n  border-radius: 10px;\n  padding: 0 10px;\n  font-size: 13px;\n  font-family: inherit;\n  background: #ffffff;\n  color: #111111;\n  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;\n}\n.admin-field input:focus,\n.admin-field select:focus,\n.admin-field textarea:focus {\n  outline: none;\n  border-color: #111111;\n  box-shadow: 0 0 0 3px rgba(253, 213, 53, 0.24);\n}\n.admin-field input,\n.admin-field select {\n  height: 38px;\n}\n.admin-field textarea {\n  min-height: 92px;\n  padding: 10px;\n  resize: vertical;\n}\n.admin-field input[type=file] {\n  height: auto;\n  min-height: 38px;\n  padding: 6px;\n  color: #6f685d;\n}\n.admin-field input[type=file]::file-selector-button {\n  border: 0;\n  border-radius: 8px;\n  background: #111111;\n  color: #ffffff;\n  padding: 7px 10px;\n  margin-right: 10px;\n  font-family: inherit;\n  font-size: 12px;\n  font-weight: 700;\n  cursor: pointer;\n}\n.admin-field small {\n  color: #7c7468;\n  font-size: 12px;\n}\n\n.admin-input-with-icon {\n  position: relative;\n}\n.admin-input-with-icon svg {\n  position: absolute;\n  left: 11px;\n  top: 50%;\n  transform: translateY(-50%);\n  color: #7a746d;\n  pointer-events: none;\n}\n.admin-input-with-icon input {\n  width: 100%;\n  padding-left: 34px;\n}\n\n.admin-content-picker {\n  display: grid;\n  grid-template-columns: repeat(6, minmax(0, 1fr));\n  gap: 10px;\n}\n@media (max-width: 1000px) {\n  .admin-content-picker {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n@media (max-width: 640px) {\n  .admin-content-picker {\n    grid-template-columns: 1fr;\n  }\n}\n\n.admin-content-tab {\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  background: #ffffff;\n  color: #111111;\n  min-height: 76px;\n  padding: 14px;\n  cursor: pointer;\n  display: flex;\n  flex-direction: column;\n  align-items: flex-start;\n  justify-content: center;\n  gap: 5px;\n  font-family: inherit;\n  text-align: left;\n  transition: 0.2s ease;\n}\n.admin-content-tab span {\n  font-size: 14px;\n  font-weight: 700;\n}\n.admin-content-tab small {\n  color: #7a746d;\n  font-size: 12px;\n}\n.admin-content-tab:hover, .admin-content-tab.active {\n  background: #f2efea;\n  border-color: #d4cdc5;\n}\n.admin-content-tab.active {\n  box-shadow: inset 0 0 0 2px #fdd535;\n}\n\n.admin-icon-badge {\n  width: 32px;\n  height: 32px;\n  border-radius: 9px;\n  background: #fdd535;\n  color: #fff;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 15px;\n}\n\n.admin-home-sections-card {\n  padding: 28px;\n}\n\n.admin-home-tabs {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 10px;\n  margin: 18px 0;\n}\n\n.admin-home-tab {\n  min-height: 72px;\n  padding: 13px 14px;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  background: #fafaf8;\n  color: #111111;\n  cursor: pointer;\n  font-family: inherit;\n  text-align: left;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  gap: 5px;\n  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;\n}\n.admin-home-tab span {\n  font-size: 14px;\n  font-weight: 800;\n  line-height: 1.25;\n}\n.admin-home-tab small {\n  color: #6f685d;\n  font-size: 12px;\n  line-height: 1.3;\n}\n.admin-home-tab:hover {\n  border-color: #d5cabd;\n  background: #ffffff;\n  transform: translateY(-1px);\n}\n.admin-home-tab.active {\n  border-color: #111111;\n  background: #ffffff;\n  box-shadow: inset 0 0 0 2px #fdd535, 0 10px 22px rgba(38, 32, 22, 0.06);\n}\n\n.admin-home-sections-form {\n  gap: 18px;\n}\n\n.admin-home-save-row {\n  position: sticky;\n  bottom: 16px;\n  z-index: 2;\n  justify-content: flex-end;\n  padding: 14px;\n  margin-top: 2px;\n  background: rgba(255, 255, 255, 0.88);\n  border: 1px solid #eee6da;\n  border-radius: 16px;\n  backdrop-filter: blur(10px);\n}\n\n.admin-home-section-block {\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  padding: 20px;\n  background: linear-gradient(180deg, #fffdfa 0%, #fafaf8 100%);\n  box-shadow: 0 14px 30px rgba(38, 32, 22, 0.04);\n}\n\n.admin-home-section-block__head {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n  padding-bottom: 14px;\n  margin-bottom: 16px;\n  border-bottom: 1px solid #eee6da;\n}\n.admin-home-section-block__head h3 {\n  margin: 0;\n  font-size: 18px;\n  color: #111;\n}\n.admin-home-section-block__head p {\n  margin: 0;\n  font-size: 13px;\n  color: #6f685d;\n}\n\n.admin-home-section-block__body {\n  display: flex;\n  flex-direction: column;\n  gap: 14px;\n}\n\n.admin-home-subblock {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  margin-top: 0;\n  padding-top: 0;\n  border-top: 0;\n}\n.admin-home-subblock + .admin-home-subblock {\n  padding-top: 18px;\n  border-top: 1px solid #eee6da;\n}\n\n.admin-home-subheading {\n  margin: 0;\n  font-size: 15px;\n  color: #111;\n}\n\n.admin-home-row {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 8px;\n  margin-bottom: 0;\n}\n.admin-home-row label {\n  color: #111111;\n  font-size: 14px;\n}\n\n.admin-field--tight {\n  margin-top: 8px;\n  padding-top: 8px;\n  border-top: 1px solid #eee9e0;\n}\n\n.admin-home-item-card {\n  padding: 16px;\n  border: 1px solid #ede6dc;\n  border-radius: 14px;\n  background: #ffffff;\n  box-shadow: 0 8px 18px rgba(38, 32, 22, 0.035);\n}\n\n.admin-home-item-card__head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 12px;\n}\n.admin-home-item-card__head strong {\n  min-width: 0;\n  color: #111111;\n  font-size: 14px;\n  line-height: 1.3;\n  overflow-wrap: anywhere;\n}\n.admin-home-item-card__head small {\n  color: #6f685d;\n  font-size: 12px;\n}\n\n.admin-home-field-grid {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 12px;\n}\n.admin-home-field-grid .admin-field--full {\n  grid-column: 1/-1;\n}\n\n.admin-btn-danger {\n  color: #9f1d1d;\n  background: #fbf1ed;\n}\n.admin-btn-danger:hover {\n  background: #f7e3dd;\n}\n\n@media (max-width: 720px) {\n  .admin-home-sections-card {\n    padding: 18px;\n  }\n  .admin-home-tabs {\n    grid-template-columns: 1fr;\n  }\n  .admin-home-section-block {\n    padding: 16px;\n  }\n  .admin-home-field-grid {\n    grid-template-columns: 1fr;\n  }\n  .admin-home-row,\n  .admin-home-item-card__head {\n    align-items: flex-start;\n    flex-direction: column;\n  }\n  .admin-home-row .admin-btn,\n  .admin-home-item-card__head .admin-btn {\n    width: 100%;\n    justify-content: center;\n  }\n  .admin-home-save-row {\n    bottom: 8px;\n  }\n}\n.admin-badge {\n  padding: 4px 12px;\n  border-radius: 999px;\n  background: #fef9e7;\n  border: 1px solid #fdd535;\n  color: #92700a;\n  font-size: 13px;\n  font-weight: 600;\n}\n\n.admin-empty {\n  padding: 24px 0;\n  text-align: center;\n  color: #9a9080;\n  font-size: 14px;\n}\n\n.admin-empty-state {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 10px;\n  padding: 48px 0;\n  color: #b8ae9f;\n}\n.admin-empty-state svg {\n  font-size: 36px;\n}\n.admin-empty-state p {\n  margin: 0;\n  font-size: 15px;\n}\n\n.admin-messages-list {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  margin-top: 16px;\n}\n\n.admin-message-item {\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  overflow: hidden;\n  transition: border-color 0.15s ease;\n}\n.admin-message-item.open {\n  border-color: #fdd535;\n}\n\n.admin-message-header {\n  width: 100%;\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 14px 18px;\n  background: none;\n  border: none;\n  cursor: pointer;\n  text-align: left;\n}\n.admin-message-header:hover {\n  background: #fafaf8;\n}\n\n.admin-message-icon {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 32px;\n  height: 32px;\n  border-radius: 8px;\n  background: #fef9e7;\n  color: #f0bf22;\n  font-size: 15px;\n  flex-shrink: 0;\n}\n\n.admin-message-name {\n  font-size: 14px;\n  font-weight: 600;\n  color: #11141a;\n  min-width: 140px;\n}\n\n.admin-message-email {\n  font-size: 13px;\n  color: #6f685d;\n  flex: 1;\n}\n\n.admin-message-date {\n  font-size: 12px;\n  color: #b8ae9f;\n  white-space: nowrap;\n}\n\n.admin-message-body {\n  padding: 0 18px 18px 62px;\n  font-size: 14px;\n  color: #3f4652;\n  line-height: 1.7;\n  white-space: pre-wrap;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -35387,7 +35489,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".admin-topbar {\n  width: 100%;\n  align-self: stretch;\n  height: 48px;\n  background: rgba(250, 250, 248, 0.75);\n  border-bottom: 1px solid #e7dfd4;\n  backdrop-filter: blur(12px);\n  -webkit-backdrop-filter: blur(12px);\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: 0 32px;\n  position: sticky;\n  top: 0;\n  z-index: 100;\n  box-sizing: border-box;\n}\n@media (max-width: 768px) {\n  .admin-topbar {\n    padding: 0 16px;\n  }\n}\n\n.admin-topbar-page {\n  font-size: 15px;\n  font-weight: 600;\n  color: #111111;\n}\n\n.admin-topbar-hamburger {\n  display: none;\n  align-items: center;\n  justify-content: center;\n  background: none;\n  border: 1px solid #e7dfd4;\n  border-radius: 8px;\n  width: 34px;\n  height: 34px;\n  flex-shrink: 0;\n  cursor: pointer;\n  color: #111111;\n  font-size: 16px;\n  transition: 0.2s ease;\n}\n.admin-topbar-hamburger:hover {\n  background: #f2efea;\n  border-color: #c8c2bb;\n}\n@media (max-width: 768px) {\n  .admin-topbar-hamburger {\n    display: flex;\n  }\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".admin-topbar {\n  width: 100%;\n  align-self: stretch;\n  min-height: 48px;\n  background: rgba(250, 250, 248, 0.75);\n  border-bottom: 1px solid #e7dfd4;\n  backdrop-filter: blur(12px);\n  -webkit-backdrop-filter: blur(12px);\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  padding: 8px 32px;\n  position: sticky;\n  top: 0;\n  z-index: 100;\n  box-sizing: border-box;\n  flex-shrink: 0;\n}\n@media (max-width: 768px) {\n  .admin-topbar {\n    padding: 8px 16px;\n  }\n}\n\n.admin-topbar-invite {\n  white-space: nowrap;\n}\n@media (max-width: 480px) {\n  .admin-topbar-invite span {\n    display: none;\n  }\n}\n\n.admin-topbar-page {\n  font-size: 15px;\n  font-weight: 600;\n  color: #111111;\n}\n\n.admin-topbar-hamburger {\n  display: none;\n  align-items: center;\n  justify-content: center;\n  background: none;\n  border: 1px solid #e7dfd4;\n  border-radius: 8px;\n  width: 34px;\n  height: 34px;\n  flex-shrink: 0;\n  cursor: pointer;\n  color: #111111;\n  font-size: 16px;\n  transition: 0.2s ease;\n}\n.admin-topbar-hamburger:hover {\n  background: #f2efea;\n  border-color: #c8c2bb;\n}\n@media (max-width: 768px) {\n  .admin-topbar-hamburger {\n    display: flex;\n  }\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -35411,7 +35513,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".au-toast {\n  position: fixed;\n  bottom: 24px;\n  right: 24px;\n  background: #111111;\n  color: #ffffff;\n  padding: 12px 20px;\n  border-radius: 12px;\n  font-size: 13px;\n  font-weight: 500;\n  z-index: 9999;\n  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);\n  animation: au-toast-in 0.2s ease;\n}\n\n@keyframes au-toast-in {\n  from {\n    opacity: 0;\n    transform: translateY(8px);\n  }\n  to {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.au-status-badge {\n  display: inline-flex;\n  align-items: center;\n  border-radius: 999px;\n  padding: 3px 10px;\n  font-size: 12px;\n  font-weight: 600;\n  white-space: nowrap;\n}\n\n.au-stat-row {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 10px;\n  margin-top: 16px;\n}\n\n.au-stat-chip {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  background: #f5f4f0;\n  border-radius: 12px;\n  padding: 10px 16px;\n  font-size: 13px;\n  min-width: 120px;\n}\n.au-stat-chip svg {\n  color: #7a746d;\n  font-size: 15px;\n}\n.au-stat-chip strong {\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n  line-height: 1;\n}\n.au-stat-chip span {\n  color: #7a746d;\n  white-space: nowrap;\n}\n\n.au-toolbar {\n  display: flex;\n  gap: 12px;\n  margin-bottom: 16px;\n  flex-wrap: wrap;\n}\n\n.au-select {\n  height: 38px;\n  border: 1.5px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 0 12px;\n  font-size: 13px;\n  color: #111111;\n  background: #fafaf8;\n  outline: none;\n  font-family: inherit;\n  cursor: pointer;\n}\n.au-select:focus {\n  border-color: #111111;\n}\n\n.au-table-wrap {\n  overflow-x: auto;\n}\n\n.au-muted {\n  color: #9d9590;\n  font-size: 13px;\n}\n\n.au-empty {\n  text-align: center;\n  color: #b0a89e;\n  font-size: 14px;\n  padding: 40px 0;\n  margin: 0;\n}\n\n.au-menu-btn {\n  background: none;\n  border: 1px solid transparent;\n  border-radius: 8px;\n  width: 32px;\n  height: 32px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  color: #7a746d;\n  font-size: 16px;\n  transition: 0.15s ease;\n}\n.au-menu-btn:hover {\n  background: #f5f4f0;\n  border-color: #e7dfd4;\n  color: #111111;\n}\n.au-menu-btn:disabled {\n  opacity: 0.4;\n  cursor: not-allowed;\n}\n\n.au-dropdown {\n  position: absolute;\n  right: 0;\n  top: 36px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);\n  z-index: 100;\n  min-width: 170px;\n  overflow: hidden;\n  padding: 4px;\n}\n.au-dropdown button {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  background: none;\n  border: none;\n  padding: 9px 14px;\n  border-radius: 10px;\n  font-size: 13px;\n  font-weight: 500;\n  color: #111111;\n  cursor: pointer;\n  text-align: left;\n  font-family: inherit;\n  transition: 0.12s ease;\n}\n.au-dropdown button:hover {\n  background: #f5f4f0;\n}\n.au-dropdown button svg {\n  font-size: 14px;\n  color: #7a746d;\n  flex-shrink: 0;\n}\n.au-dropdown button.au-danger {\n  color: #dc2626;\n}\n.au-dropdown button.au-danger svg {\n  color: #dc2626;\n}\n.au-dropdown button.au-danger:hover {\n  background: #fef2f2;\n}\n\n.au-dropdown-divider {\n  height: 1px;\n  background: #f0ece6;\n  margin: 4px 0;\n}\n\n.au-pagination {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 12px;\n  margin-top: 20px;\n  padding-top: 16px;\n  border-top: 1px solid #f2efe9;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.au-overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.45);\n  z-index: 500;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 24px;\n}\n\n.au-modal {\n  background: #ffffff;\n  border-radius: 20px;\n  width: 100%;\n  max-width: 460px;\n  padding: 28px 28px 24px;\n  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);\n}\n\n.au-modal-head {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 20px;\n}\n.au-modal-head h2 {\n  margin: 0 0 4px;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n.au-modal-head p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.au-modal-close {\n  background: none;\n  border: none;\n  font-size: 18px;\n  color: #b0a89e;\n  cursor: pointer;\n  padding: 0;\n  line-height: 1;\n  flex-shrink: 0;\n  margin-top: 2px;\n}\n.au-modal-close:hover {\n  color: #111111;\n}\n\n.au-form {\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n}\n\n.au-modal-actions {\n  display: flex;\n  justify-content: flex-end;\n  gap: 10px;\n  margin-top: 4px;\n}\n\n.au-alert {\n  border-radius: 10px;\n  padding: 10px 14px;\n  font-size: 13px;\n  line-height: 1.5;\n  margin-bottom: 4px;\n}\n.au-alert-error {\n  background: #fef2f2;\n  color: #991b1b;\n  border: 1px solid #fecaca;\n}\n.au-alert-success {\n  background: #f0fdf4;\n  color: #166534;\n  border: 1px solid #bbf7d0;\n}\n\n.au-required {\n  color: #dc2626;\n  margin-left: 2px;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".au-toast {\n  position: fixed;\n  bottom: 24px;\n  right: 24px;\n  background: #111111;\n  color: #ffffff;\n  padding: 12px 20px;\n  border-radius: 12px;\n  font-size: 13px;\n  font-weight: 500;\n  z-index: 9999;\n  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);\n  animation: au-toast-in 0.2s ease;\n}\n\n@keyframes au-toast-in {\n  from {\n    opacity: 0;\n    transform: translateY(8px);\n  }\n  to {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.au-status-badge {\n  display: inline-flex;\n  align-items: center;\n  border-radius: 999px;\n  padding: 3px 10px;\n  font-size: 12px;\n  font-weight: 600;\n  white-space: nowrap;\n}\n\n.au-stat-row {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 10px;\n  margin-top: 16px;\n}\n\n.au-stat-chip {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  background: #f5f4f0;\n  border-radius: 12px;\n  padding: 10px 16px;\n  font-size: 13px;\n  min-width: 0;\n  flex: 1 1 140px;\n}\n.au-stat-chip svg {\n  color: #7a746d;\n  font-size: 15px;\n}\n.au-stat-chip strong {\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n  line-height: 1;\n}\n.au-stat-chip span {\n  color: #7a746d;\n  white-space: nowrap;\n}\n\n.admin-card--table {\n  overflow: visible;\n}\n\n.au-toolbar {\n  display: flex;\n  gap: 12px;\n  margin-bottom: 16px;\n  flex-wrap: wrap;\n  align-items: center;\n}\n.au-toolbar .admin-input-with-icon {\n  flex: 1 1 220px;\n  min-width: 0;\n  max-width: 420px;\n}\n.au-toolbar .admin-input-with-icon input {\n  width: 100%;\n  height: 38px;\n  border: 1.5px solid #e7dfd4;\n  border-radius: 10px;\n  padding-right: 12px;\n  font-size: 13px;\n  font-family: inherit;\n  background: #fafaf8;\n  box-sizing: border-box;\n}\n.au-toolbar .admin-input-with-icon input:focus {\n  outline: none;\n  border-color: #111111;\n}\n.au-toolbar .au-select {\n  flex-shrink: 0;\n  min-width: 150px;\n}\n\n.au-select {\n  height: 38px;\n  border: 1.5px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 0 12px;\n  font-size: 13px;\n  color: #111111;\n  background: #fafaf8;\n  outline: none;\n  font-family: inherit;\n  cursor: pointer;\n}\n.au-select:focus {\n  border-color: #111111;\n}\n\n.au-table-wrap {\n  overflow-x: auto;\n  overflow-y: visible;\n  margin: 0 -4px;\n  padding: 0 4px 8px;\n}\n.au-table-wrap .admin-table {\n  min-width: 760px;\n}\n\n.au-muted {\n  color: #9d9590;\n  font-size: 13px;\n}\n\n.au-cell-email {\n  max-width: 220px;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.au-cell-company {\n  max-width: 140px;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.au-cell-date {\n  white-space: nowrap;\n  min-width: 108px;\n}\n\n.au-actions-cell {\n  position: relative;\n  width: 56px;\n  text-align: right;\n  overflow: visible;\n  vertical-align: middle;\n}\n\n.au-empty {\n  text-align: center;\n  color: #b0a89e;\n  font-size: 14px;\n  padding: 40px 0;\n  margin: 0;\n}\n\n.au-menu-btn {\n  background: none;\n  border: 1px solid transparent;\n  border-radius: 8px;\n  width: 32px;\n  height: 32px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  color: #7a746d;\n  font-size: 16px;\n  transition: 0.15s ease;\n}\n.au-menu-btn:hover {\n  background: #f5f4f0;\n  border-color: #e7dfd4;\n  color: #111111;\n}\n.au-menu-btn:disabled {\n  opacity: 0.4;\n  cursor: not-allowed;\n}\n\n.au-dropdown {\n  position: absolute;\n  right: 0;\n  top: calc(100% + 6px);\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);\n  z-index: 200;\n  min-width: 190px;\n  overflow: hidden;\n  padding: 4px;\n}\n.au-dropdown--up {\n  top: auto;\n  bottom: calc(100% + 6px);\n}\n.au-dropdown button {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  background: none;\n  border: none;\n  padding: 9px 14px;\n  border-radius: 10px;\n  font-size: 13px;\n  font-weight: 500;\n  color: #111111;\n  cursor: pointer;\n  text-align: left;\n  font-family: inherit;\n  transition: 0.12s ease;\n}\n.au-dropdown button:hover {\n  background: #f5f4f0;\n}\n.au-dropdown button svg {\n  font-size: 14px;\n  color: #7a746d;\n  flex-shrink: 0;\n}\n.au-dropdown button.au-danger {\n  color: #dc2626;\n}\n.au-dropdown button.au-danger svg {\n  color: #dc2626;\n}\n.au-dropdown button.au-danger:hover {\n  background: #fef2f2;\n}\n\n.au-dropdown-divider {\n  height: 1px;\n  background: #f0ece6;\n  margin: 4px 0;\n}\n\n.au-pagination {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 12px;\n  margin-top: 20px;\n  padding-top: 16px;\n  border-top: 1px solid #f2efe9;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.au-overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.45);\n  z-index: 500;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 24px;\n}\n\n.au-modal {\n  background: #ffffff;\n  border-radius: 20px;\n  width: 100%;\n  max-width: 460px;\n  padding: 28px 28px 24px;\n  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);\n}\n\n.au-modal-head {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 20px;\n}\n.au-modal-head h2 {\n  margin: 0 0 4px;\n  font-size: 18px;\n  font-weight: 700;\n  color: #111111;\n}\n.au-modal-head p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.au-modal-close {\n  background: none;\n  border: none;\n  font-size: 18px;\n  color: #b0a89e;\n  cursor: pointer;\n  padding: 0;\n  line-height: 1;\n  flex-shrink: 0;\n  margin-top: 2px;\n}\n.au-modal-close:hover {\n  color: #111111;\n}\n\n.au-form {\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n}\n\n.au-modal-actions {\n  display: flex;\n  justify-content: flex-end;\n  gap: 10px;\n  margin-top: 4px;\n}\n\n.au-alert {\n  border-radius: 10px;\n  padding: 10px 14px;\n  font-size: 13px;\n  line-height: 1.5;\n  margin-bottom: 4px;\n}\n.au-alert-error {\n  background: #fef2f2;\n  color: #991b1b;\n  border: 1px solid #fecaca;\n}\n.au-alert-success {\n  background: #f0fdf4;\n  color: #166534;\n  border: 1px solid #bbf7d0;\n}\n\n.au-required {\n  color: #dc2626;\n  margin-left: 2px;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -35483,7 +35585,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".cpm-overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.45);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 9999;\n  padding: 24px;\n}\n\n.cpm-modal {\n  background: #ffffff;\n  border-radius: 24px;\n  width: 100%;\n  max-width: 860px;\n  max-height: 90vh;\n  overflow: hidden;\n  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.16);\n  display: flex;\n  flex-direction: column;\n}\n\n.cpm-header {\n  display: flex;\n  align-items: flex-start;\n  gap: 18px;\n  padding: 32px 32px 24px;\n  border-bottom: 1px solid #e7dfd4;\n}\n\n.cpm-avatar {\n  width: 60px;\n  height: 60px;\n  background: #111111;\n  color: #ffffff;\n  border-radius: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 18px;\n  font-weight: 800;\n  flex-shrink: 0;\n}\n\n.cpm-identity {\n  flex: 1;\n  min-width: 0;\n}\n.cpm-identity h2 {\n  margin: 0 0 4px;\n  font-size: 20px;\n  font-weight: 700;\n  color: #111111;\n}\n.cpm-identity p {\n  margin: 0 0 10px;\n  font-size: 14px;\n  color: #7a746d;\n}\n\n.cpm-status-badge {\n  display: inline-block;\n  padding: 4px 12px;\n  border-radius: 999px;\n  font-size: 12px;\n  font-weight: 600;\n}\n.cpm-status-badge.status-shortlisted {\n  background: #e8f5ee;\n  color: #2d7a5a;\n}\n.cpm-status-badge.status-reviewing {\n  background: #fdf6e3;\n  color: #9a7000;\n}\n.cpm-status-badge.status-rejected {\n  background: #fdecea;\n  color: #c0392b;\n}\n.cpm-status-badge.status-hired {\n  background: #e8f5ee;\n  color: #2d7a5a;\n}\n\n.cpm-close {\n  background: #f2efea;\n  border: none;\n  border-radius: 999px;\n  width: 36px;\n  height: 36px;\n  font-size: 14px;\n  cursor: pointer;\n  color: #7a746d;\n  flex-shrink: 0;\n  transition: 0.2s ease;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.cpm-close:hover {\n  background: #e7dfd4;\n  color: #111111;\n}\n\n.cpm-body {\n  display: flex;\n  gap: 0;\n  flex: 1;\n  min-height: 0;\n  overflow-y: auto;\n}\n\n.cpm-left {\n  flex: 0 0 280px;\n  border-right: 1px solid #e7dfd4;\n  padding: 28px 24px;\n  display: flex;\n  flex-direction: column;\n  gap: 24px;\n  position: sticky;\n  top: 0;\n  align-self: flex-start;\n  max-height: 100%;\n  overflow-y: auto;\n}\n\n.cpm-right {\n  flex: 1;\n  padding: 28px 28px;\n  display: flex;\n  flex-direction: column;\n  gap: 24px;\n  min-width: 0;\n}\n\n.cpm-section h4 {\n  margin: 0 0 12px;\n  font-size: 11px;\n  font-weight: 700;\n  color: #b0a89e;\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n}\n\n.cpm-contact-list {\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n}\n\n.cpm-contact-row {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  font-size: 13px;\n  color: #111111;\n}\n.cpm-contact-row svg {\n  color: #7a746d;\n  flex-shrink: 0;\n}\n\n.cpm-experience {\n  margin: 0;\n  font-size: 14px;\n  color: #111111;\n  font-weight: 500;\n}\n\n.cpm-skills {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n.cpm-skill {\n  background: #f2efea;\n  color: #111111;\n  border-radius: 999px;\n  padding: 5px 12px;\n  font-size: 12px;\n  font-weight: 500;\n}\n\n.cpm-timeline {\n  display: flex;\n  flex-direction: column;\n  gap: 0;\n}\n\n.cpm-timeline-row {\n  display: flex;\n  align-items: flex-start;\n  gap: 12px;\n  position: relative;\n}\n.cpm-timeline-row:not(:last-child) .cpm-timeline-icon-wrap::after {\n  content: \"\";\n  position: absolute;\n  left: 13px;\n  top: 28px;\n  width: 1px;\n  height: calc(100% - 4px);\n  background: #e7dfd4;\n}\n\n.cpm-timeline-icon-wrap {\n  position: relative;\n  width: 28px;\n  height: 28px;\n  border-radius: 999px;\n  background: #f2efea;\n  border: 1px solid #e7dfd4;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-shrink: 0;\n  color: #7a746d;\n  margin-bottom: 16px;\n}\n\n.cpm-timeline-info {\n  display: flex;\n  flex-direction: column;\n  gap: 1px;\n  padding-top: 5px;\n  padding-bottom: 16px;\n}\n\n.cpm-timeline-stage {\n  font-size: 13px;\n  font-weight: 600;\n  color: #111111;\n}\n\n.cpm-timeline-date {\n  font-size: 12px;\n  color: #b0a89e;\n}\n\n.cpm-summary {\n  margin: 0;\n  font-size: 14px;\n  color: #444444;\n  line-height: 1.65;\n}\n\n.cpm-resume-block {\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n  background: #fafaf8;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  padding: 16px 18px;\n}\n\n.cpm-resume-item {\n  display: flex;\n  align-items: flex-start;\n  gap: 10px;\n  font-size: 13px;\n  color: #444444;\n  line-height: 1.5;\n}\n.cpm-resume-item strong {\n  color: #111111;\n}\n\n.cpm-resume-dot {\n  width: 7px;\n  height: 7px;\n  background: #fdd535;\n  border-radius: 999px;\n  flex-shrink: 0;\n  margin-top: 5px;\n}\n\n.cpm-footer {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 20px 32px;\n  border-top: 1px solid #e7dfd4;\n  flex-wrap: wrap;\n}\n\n.cpm-action-secondary {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  background: #f2efea;\n  color: #111111;\n  border: none;\n  border-radius: 999px;\n  padding: 11px 20px;\n  font-size: 14px;\n  font-weight: 600;\n  cursor: pointer;\n  transition: 0.2s ease;\n  font-family: inherit;\n}\n.cpm-action-secondary:hover {\n  background: #e7dfd4;\n}\n\n.cpm-action-offer {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  background: #111111;\n  color: #ffffff;\n  border: none;\n  border-radius: 999px;\n  padding: 11px 20px;\n  font-size: 14px;\n  font-weight: 600;\n  cursor: pointer;\n  transition: 0.2s ease;\n  font-family: inherit;\n  margin-left: auto;\n}\n.cpm-action-offer:hover {\n  background: #333333;\n}\n\n.cpm-action-reject {\n  background: none;\n  color: #c0392b;\n  border: 1px solid #f5c6c2;\n  border-radius: 999px;\n  padding: 11px 20px;\n  font-size: 14px;\n  font-weight: 600;\n  cursor: pointer;\n  transition: 0.2s ease;\n  font-family: inherit;\n}\n.cpm-action-reject:hover {\n  background: #fdecea;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".cpm-overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.45);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 9999;\n  padding: 24px;\n}\n\n.cpm-modal {\n  background: #ffffff;\n  border-radius: 24px;\n  width: 100%;\n  max-width: 860px;\n  max-height: 90vh;\n  overflow: hidden;\n  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.16);\n  display: flex;\n  flex-direction: column;\n}\n\n.cpm-header {\n  display: flex;\n  align-items: flex-start;\n  gap: 18px;\n  padding: 32px 32px 24px;\n  border-bottom: 1px solid #e7dfd4;\n}\n\n.cpm-avatar {\n  width: 60px;\n  height: 60px;\n  background: #111111;\n  color: #ffffff;\n  border-radius: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 18px;\n  font-weight: 800;\n  flex-shrink: 0;\n}\n\n.cpm-identity {\n  flex: 1;\n  min-width: 0;\n}\n.cpm-identity h2 {\n  margin: 0 0 4px;\n  font-size: 20px;\n  font-weight: 700;\n  color: #111111;\n}\n.cpm-identity p {\n  margin: 0 0 10px;\n  font-size: 14px;\n  color: #7a746d;\n}\n\n.cpm-status-badge {\n  display: inline-block;\n  padding: 4px 12px;\n  border-radius: 999px;\n  font-size: 12px;\n  font-weight: 600;\n}\n.cpm-status-badge.status-shortlisted {\n  background: #e8f5ee;\n  color: #2d7a5a;\n}\n.cpm-status-badge.status-reviewing {\n  background: #fdf6e3;\n  color: #9a7000;\n}\n.cpm-status-badge.status-rejected {\n  background: #fdecea;\n  color: #c0392b;\n}\n.cpm-status-badge.status-hired {\n  background: #e8f5ee;\n  color: #2d7a5a;\n}\n\n.cpm-close {\n  background: #f2efea;\n  border: none;\n  border-radius: 999px;\n  width: 36px;\n  height: 36px;\n  font-size: 14px;\n  cursor: pointer;\n  color: #7a746d;\n  flex-shrink: 0;\n  transition: 0.2s ease;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.cpm-close:hover {\n  background: #e7dfd4;\n  color: #111111;\n}\n\n.cpm-body {\n  display: flex;\n  gap: 0;\n  flex: 1;\n  min-height: 0;\n  overflow-y: auto;\n}\n\n.cpm-left {\n  flex: 0 0 280px;\n  border-right: 1px solid #e7dfd4;\n  padding: 28px 24px;\n  display: flex;\n  flex-direction: column;\n  gap: 24px;\n  position: sticky;\n  top: 0;\n  align-self: flex-start;\n  max-height: 100%;\n  overflow-y: auto;\n}\n\n.cpm-right {\n  flex: 1;\n  padding: 28px 28px;\n  display: flex;\n  flex-direction: column;\n  gap: 24px;\n  min-width: 0;\n}\n\n.cpm-section h4 {\n  margin: 0 0 12px;\n  font-size: 11px;\n  font-weight: 700;\n  color: #b0a89e;\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n}\n\n.cpm-contact-list {\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n}\n\n.cpm-contact-row {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  font-size: 13px;\n  color: #111111;\n}\n.cpm-contact-row svg {\n  color: #7a746d;\n  flex-shrink: 0;\n}\n\n.cpm-experience {\n  margin: 0;\n  font-size: 14px;\n  color: #111111;\n  font-weight: 500;\n}\n\n.cpm-skills {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n.cpm-skill {\n  background: #f2efea;\n  color: #111111;\n  border-radius: 999px;\n  padding: 5px 12px;\n  font-size: 12px;\n  font-weight: 500;\n}\n\n.cpm-timeline {\n  display: flex;\n  flex-direction: column;\n  gap: 0;\n}\n\n.cpm-timeline-row {\n  display: flex;\n  align-items: flex-start;\n  gap: 12px;\n  position: relative;\n}\n.cpm-timeline-row:not(:last-child) .cpm-timeline-icon-wrap::after {\n  content: \"\";\n  position: absolute;\n  left: 13px;\n  top: 28px;\n  width: 1px;\n  height: calc(100% - 4px);\n  background: #e7dfd4;\n}\n\n.cpm-timeline-icon-wrap {\n  position: relative;\n  width: 28px;\n  height: 28px;\n  border-radius: 999px;\n  background: #f2efea;\n  border: 1px solid #e7dfd4;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-shrink: 0;\n  color: #7a746d;\n  margin-bottom: 16px;\n}\n\n.cpm-timeline-info {\n  display: flex;\n  flex-direction: column;\n  gap: 1px;\n  padding-top: 5px;\n  padding-bottom: 16px;\n}\n\n.cpm-timeline-stage {\n  font-size: 13px;\n  font-weight: 600;\n  color: #111111;\n}\n\n.cpm-timeline-date {\n  font-size: 12px;\n  color: #b0a89e;\n}\n\n.cpm-summary {\n  margin: 0;\n  font-size: 14px;\n  color: #444444;\n  line-height: 1.65;\n}\n\n.cpm-resume-block {\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n  background: #fafaf8;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n  padding: 16px 18px;\n}\n\n.cpm-resume-item {\n  display: flex;\n  align-items: flex-start;\n  gap: 10px;\n  font-size: 13px;\n  color: #444444;\n  line-height: 1.5;\n}\n.cpm-resume-item strong {\n  color: #111111;\n}\n\n.cpm-resume-item__body {\n  flex: 1;\n  min-width: 0;\n}\n\n.cpm-resume-download {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  flex-shrink: 0;\n  padding: 8px 14px;\n  border: 1px solid #111111;\n  border-radius: 999px;\n  background: #111111;\n  color: #ffffff;\n  font-size: 12px;\n  font-weight: 600;\n  cursor: pointer;\n  transition: background 0.15s ease, color 0.15s ease;\n}\n.cpm-resume-download:hover:not(:disabled) {\n  background: #333333;\n  border-color: #333333;\n}\n.cpm-resume-download:disabled {\n  opacity: 0.6;\n  cursor: not-allowed;\n}\n\n.cpm-resume-download-error {\n  margin: 0;\n  font-size: 12px;\n  color: #b42318;\n}\n\n.cpm-resume-dot {\n  width: 7px;\n  height: 7px;\n  background: #fdd535;\n  border-radius: 999px;\n  flex-shrink: 0;\n  margin-top: 5px;\n}\n\n.cpm-footer {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 20px 32px;\n  border-top: 1px solid #e7dfd4;\n  flex-wrap: wrap;\n}\n\n.cpm-action-secondary {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  background: #f2efea;\n  color: #111111;\n  border: none;\n  border-radius: 999px;\n  padding: 11px 20px;\n  font-size: 14px;\n  font-weight: 600;\n  cursor: pointer;\n  transition: 0.2s ease;\n  font-family: inherit;\n}\n.cpm-action-secondary:hover {\n  background: #e7dfd4;\n}\n\n.cpm-action-offer {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  background: #111111;\n  color: #ffffff;\n  border: none;\n  border-radius: 999px;\n  padding: 11px 20px;\n  font-size: 14px;\n  font-weight: 600;\n  cursor: pointer;\n  transition: 0.2s ease;\n  font-family: inherit;\n  margin-left: auto;\n}\n.cpm-action-offer:hover {\n  background: #333333;\n}\n\n.cpm-action-reject {\n  background: none;\n  color: #c0392b;\n  border: 1px solid #f5c6c2;\n  border-radius: 999px;\n  padding: 11px 20px;\n  font-size: 14px;\n  font-weight: 600;\n  cursor: pointer;\n  transition: 0.2s ease;\n  font-family: inherit;\n}\n.cpm-action-reject:hover {\n  background: #fdecea;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -35747,7 +35849,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".hire-team-section {\n  width: 100%;\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 40px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-team-section {\n    padding: 24px 16px 48px;\n  }\n}\n\n.hire-team-wrapper {\n  display: flex;\n  flex-direction: column;\n  gap: 28px;\n}\n\n.hire-team-page-header h1 {\n  margin: 0 0 6px;\n  font-size: 28px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-team-page-header p {\n  margin: 0;\n  font-size: 15px;\n  color: #7a746d;\n}\n\n.hire-team-columns {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 20px;\n  align-items: start;\n}\n@media (max-width: 860px) {\n  .hire-team-columns {\n    grid-template-columns: 1fr;\n  }\n}\n\n.hire-team-block {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 24px;\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n}\n\n.hire-team-block-header {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n}\n.hire-team-block-header h2 {\n  margin: 0 0 4px;\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-team-block-header p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.hire-team-add-btn {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  background: #f2efea;\n  border: none;\n  border-radius: 999px;\n  padding: 7px 14px;\n  font-size: 13px;\n  font-weight: 600;\n  color: #111111;\n  cursor: pointer;\n  white-space: nowrap;\n  flex-shrink: 0;\n  font-family: inherit;\n  transition: 0.2s ease;\n}\n.hire-team-add-btn:hover {\n  background: #e7dfd4;\n}\n\n.hire-team-add-form {\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n  padding: 14px;\n  background: #fafaf8;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n}\n.hire-team-add-form input, .hire-team-add-form textarea {\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 9px 13px;\n  font-size: 13px;\n  color: #111111;\n  background: #ffffff;\n  outline: none;\n  font-family: inherit;\n  resize: none;\n  transition: 0.2s ease;\n}\n.hire-team-add-form input:focus, .hire-team-add-form textarea:focus {\n  border-color: #c8c2bb;\n}\n.hire-team-add-form input::-moz-placeholder, .hire-team-add-form textarea::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-team-add-form input::placeholder, .hire-team-add-form textarea::placeholder {\n  color: #b0a89e;\n}\n\n.hire-member-photo-upload {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  border-radius: 12px;\n  overflow: hidden;\n  height: 110px;\n  border: 2px dashed #d4cfc9;\n  transition: border-color 0.2s ease;\n}\n.hire-member-photo-upload:hover {\n  border-color: #a09891;\n}\n\n.hire-member-photo-preview {\n  width: 100%;\n  height: 100%;\n  -o-object-fit: cover;\n     object-fit: cover;\n  -o-object-position: top center;\n     object-position: top center;\n  display: block;\n}\n\n.hire-member-photo-placeholder {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 6px;\n  color: #7a746d;\n  font-size: 12px;\n  font-weight: 500;\n}\n\n.hire-note-form-row {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 8px;\n}\n\n.hire-team-form-btns {\n  display: flex;\n  gap: 8px;\n}\n\n.hire-team-confirm {\n  background: #111111;\n  color: #ffffff;\n  border: none;\n  border-radius: 999px;\n  padding: 9px 18px;\n  font-size: 13px;\n  font-weight: 600;\n  cursor: pointer;\n  font-family: inherit;\n  transition: 0.2s ease;\n}\n.hire-team-confirm:hover {\n  background: #333333;\n}\n\n.hire-team-cancel {\n  background: none;\n  color: #7a746d;\n  border: none;\n  padding: 9px 12px;\n  font-size: 13px;\n  cursor: pointer;\n  font-family: inherit;\n}\n.hire-team-cancel:hover {\n  color: #111111;\n}\n\n.hire-team-grid {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 16px;\n}\n\n.hire-member-card {\n  position: relative;\n  width: 130px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 16px;\n  padding: 18px 12px 14px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 10px;\n  flex-shrink: 0;\n  transition: transform 0.2s ease, box-shadow 0.2s ease;\n}\n.hire-member-card:hover {\n  transform: translateY(-3px);\n  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.09);\n}\n.hire-member-card:hover .hire-member-remove {\n  opacity: 1;\n}\n.hire-member-card.removing {\n  opacity: 0;\n  transform: scale(0.92);\n  transition: 0.28s ease;\n}\n\n.hire-mc-photo-zone {\n  width: 72px;\n  height: 72px;\n  border-radius: 50%;\n  overflow: hidden;\n  flex-shrink: 0;\n}\n\n.hire-mc-photo {\n  width: 100%;\n  height: 100%;\n  -o-object-fit: cover;\n     object-fit: cover;\n  -o-object-position: center top;\n     object-position: center top;\n  display: block;\n}\n\n.hire-mc-initials {\n  width: 100%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 22px;\n  font-weight: 800;\n  color: #ffffff;\n  border-radius: 50%;\n}\n\n.hire-mc-banner {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 3px;\n  width: 100%;\n}\n\n.hire-mc-name {\n  color: #111111;\n  font-size: 12.5px;\n  font-weight: 700;\n  text-align: center;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  width: 100%;\n}\n\n.hire-mc-role {\n  color: #7a746d;\n  font-size: 11px;\n  text-align: center;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  width: 100%;\n}\n\n.hire-member-remove {\n  position: absolute;\n  top: 6px;\n  right: 6px;\n  background: #f2efea;\n  border: none;\n  border-radius: 999px;\n  width: 20px;\n  height: 20px;\n  font-size: 9px;\n  color: #888;\n  cursor: pointer;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  opacity: 0;\n  transition: 0.15s ease;\n  z-index: 10;\n}\n.hire-member-remove:hover {\n  background: #fdecea;\n  color: #c0392b;\n}\n\n.hire-member-add-card {\n  border: 2px dashed #ccc6be;\n  background: none;\n  cursor: pointer;\n  font-family: inherit;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-shadow: none;\n  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;\n}\n.hire-member-add-card:hover {\n  border-color: #a09891;\n  background: #fafaf8;\n  transform: translateY(-3px);\n}\n.hire-member-add-card:hover .hire-mc-add-content {\n  color: #111111;\n}\n.hire-member-add-card .hire-mc-add-content {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 8px;\n  color: #7a746d;\n  font-size: 12px;\n  font-weight: 500;\n  transition: color 0.2s ease;\n}\n\n.hire-notes-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));\n  gap: 12px;\n}\n\n.hire-note-card {\n  position: relative;\n  background: #fefce8;\n  border: 1px solid #e8e2a0;\n  border-radius: 14px;\n  padding: 20px 14px 12px;\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  transition: 0.25s ease;\n}\n.hire-note-card.done {\n  background: #edf7f1;\n  border-color: #b6dfc8;\n}\n.hire-note-card.done .hire-note-content {\n  text-decoration: line-through;\n  color: #7a746d;\n}\n.hire-note-card.done .hire-note-pin {\n  color: #2d7a5a;\n}\n\n.hire-note-pin {\n  position: absolute;\n  top: -6px;\n  left: 50%;\n  transform: translateX(-50%) rotate(-12deg);\n  color: #c0392b;\n  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));\n}\n\n.hire-note-delete {\n  position: absolute;\n  top: 6px;\n  right: 6px;\n  background: none;\n  border: none;\n  font-size: 10px;\n  color: #b0a89e;\n  cursor: pointer;\n  width: 18px;\n  height: 18px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  border-radius: 999px;\n  transition: 0.15s ease;\n}\n.hire-note-delete:hover {\n  background: rgba(0, 0, 0, 0.06);\n  color: #111111;\n}\n\n.hire-note-meta {\n  display: flex;\n  flex-direction: column;\n  gap: 1px;\n  font-size: 11px;\n  color: #7a746d;\n}\n.hire-note-meta strong {\n  color: #111111;\n  font-weight: 600;\n}\n\n.hire-note-content {\n  margin: 0;\n  font-size: 12.5px;\n  color: #111111;\n  line-height: 1.55;\n  flex: 1;\n}\n\n.hire-note-footer {\n  border-top: 1px solid rgba(0, 0, 0, 0.06);\n  padding-top: 8px;\n}\n\n.hire-note-check {\n  display: flex;\n  align-items: center;\n  gap: 7px;\n  cursor: pointer;\n  font-size: 11px;\n  font-weight: 500;\n  color: #7a746d;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.hire-note-check input[type=checkbox] {\n  width: 13px;\n  height: 13px;\n  accent-color: #111111;\n  cursor: pointer;\n  flex-shrink: 0;\n}\n.hire-note-check:hover {\n  color: #111111;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".hire-team-section {\n  width: 100%;\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 40px 32px 60px;\n}\n@media (max-width: 768px) {\n  .hire-team-section {\n    padding: 24px 16px 48px;\n  }\n}\n\n.hire-team-wrapper {\n  display: flex;\n  flex-direction: column;\n  gap: 28px;\n}\n\n.hire-team-page-header h1 {\n  margin: 0 0 6px;\n  font-size: 28px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-team-page-header p {\n  margin: 0;\n  font-size: 15px;\n  color: #7a746d;\n}\n\n.hire-team-columns {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 20px;\n  align-items: start;\n}\n@media (max-width: 860px) {\n  .hire-team-columns {\n    grid-template-columns: 1fr;\n  }\n}\n\n.hire-team-block {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 20px;\n  padding: 24px;\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n}\n\n.hire-team-block-header {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n}\n.hire-team-block-header h2 {\n  margin: 0 0 4px;\n  font-size: 15px;\n  font-weight: 700;\n  color: #111111;\n}\n.hire-team-block-header p {\n  margin: 0;\n  font-size: 13px;\n  color: #7a746d;\n}\n\n.hire-team-add-btn {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  background: #f2efea;\n  border: none;\n  border-radius: 999px;\n  padding: 7px 14px;\n  font-size: 13px;\n  font-weight: 600;\n  color: #111111;\n  cursor: pointer;\n  white-space: nowrap;\n  flex-shrink: 0;\n  font-family: inherit;\n  transition: 0.2s ease;\n}\n.hire-team-add-btn:hover {\n  background: #e7dfd4;\n}\n\n.hire-team-add-form {\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n  padding: 14px;\n  background: #fafaf8;\n  border: 1px solid #e7dfd4;\n  border-radius: 14px;\n}\n.hire-team-add-form input, .hire-team-add-form textarea {\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 9px 13px;\n  font-size: 13px;\n  color: #111111;\n  background: #ffffff;\n  outline: none;\n  font-family: inherit;\n  resize: none;\n  transition: 0.2s ease;\n}\n.hire-team-add-form input:focus, .hire-team-add-form textarea:focus {\n  border-color: #c8c2bb;\n}\n.hire-team-add-form input::-moz-placeholder, .hire-team-add-form textarea::-moz-placeholder {\n  color: #b0a89e;\n}\n.hire-team-add-form input::placeholder, .hire-team-add-form textarea::placeholder {\n  color: #b0a89e;\n}\n\n.hire-member-photo-upload {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  border-radius: 12px;\n  overflow: hidden;\n  height: 110px;\n  border: 2px dashed #d4cfc9;\n  transition: border-color 0.2s ease;\n}\n.hire-member-photo-upload:hover {\n  border-color: #a09891;\n}\n\n.hire-member-photo-preview {\n  width: 100%;\n  height: 100%;\n  -o-object-fit: cover;\n     object-fit: cover;\n  -o-object-position: top center;\n     object-position: top center;\n  display: block;\n}\n\n.hire-member-photo-placeholder {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 6px;\n  color: #7a746d;\n  font-size: 12px;\n  font-weight: 500;\n}\n\n.hire-note-form-row {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 8px;\n}\n\n.hire-team-form-btns {\n  display: flex;\n  gap: 8px;\n}\n\n.hire-team-confirm {\n  background: #111111;\n  color: #ffffff;\n  border: none;\n  border-radius: 999px;\n  padding: 9px 18px;\n  font-size: 13px;\n  font-weight: 600;\n  cursor: pointer;\n  font-family: inherit;\n  transition: 0.2s ease;\n}\n.hire-team-confirm:hover {\n  background: #333333;\n}\n\n.hire-team-cancel {\n  background: none;\n  color: #7a746d;\n  border: none;\n  padding: 9px 12px;\n  font-size: 13px;\n  cursor: pointer;\n  font-family: inherit;\n}\n.hire-team-cancel:hover {\n  color: #111111;\n}\n\n.hire-team-empty {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 10px;\n  padding: 24px 16px;\n  color: #b0a89e;\n  text-align: center;\n}\n.hire-team-empty svg {\n  opacity: 0.5;\n}\n.hire-team-empty p {\n  margin: 0;\n  font-size: 13px;\n  line-height: 1.6;\n}\n.hire-team-empty p strong {\n  color: #111111;\n  font-weight: 600;\n}\n\n.hire-team-grid {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 16px;\n}\n\n.hire-member-card {\n  position: relative;\n  width: 130px;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 16px;\n  padding: 18px 12px 14px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 10px;\n  flex-shrink: 0;\n  transition: transform 0.2s ease, box-shadow 0.2s ease;\n}\n.hire-member-card:hover {\n  transform: translateY(-3px);\n  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.09);\n}\n.hire-member-card:hover .hire-member-remove {\n  opacity: 1;\n}\n.hire-member-card.removing {\n  opacity: 0;\n  transform: scale(0.92);\n  transition: 0.28s ease;\n}\n\n.hire-mc-photo-zone {\n  width: 72px;\n  height: 72px;\n  border-radius: 50%;\n  overflow: hidden;\n  flex-shrink: 0;\n}\n\n.hire-mc-photo {\n  width: 100%;\n  height: 100%;\n  -o-object-fit: cover;\n     object-fit: cover;\n  -o-object-position: center top;\n     object-position: center top;\n  display: block;\n}\n\n.hire-mc-initials {\n  width: 100%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 22px;\n  font-weight: 800;\n  color: #ffffff;\n  border-radius: 50%;\n}\n\n.hire-mc-banner {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 3px;\n  width: 100%;\n}\n\n.hire-mc-name {\n  color: #111111;\n  font-size: 12.5px;\n  font-weight: 700;\n  text-align: center;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  width: 100%;\n}\n\n.hire-mc-role {\n  color: #7a746d;\n  font-size: 11px;\n  text-align: center;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  width: 100%;\n}\n\n.hire-member-remove {\n  position: absolute;\n  top: 6px;\n  right: 6px;\n  background: #f2efea;\n  border: none;\n  border-radius: 999px;\n  width: 20px;\n  height: 20px;\n  font-size: 9px;\n  color: #888;\n  cursor: pointer;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  opacity: 0;\n  transition: 0.15s ease;\n  z-index: 10;\n}\n.hire-member-remove:hover {\n  background: #fdecea;\n  color: #c0392b;\n}\n\n.hire-member-add-card {\n  border: 2px dashed #ccc6be;\n  background: none;\n  cursor: pointer;\n  font-family: inherit;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-shadow: none;\n  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;\n}\n.hire-member-add-card:hover {\n  border-color: #a09891;\n  background: #fafaf8;\n  transform: translateY(-3px);\n}\n.hire-member-add-card:hover .hire-mc-add-content {\n  color: #111111;\n}\n.hire-member-add-card .hire-mc-add-content {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 8px;\n  color: #7a746d;\n  font-size: 12px;\n  font-weight: 500;\n  transition: color 0.2s ease;\n}\n\n.hire-notes-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));\n  gap: 12px;\n}\n\n.hire-note-card {\n  position: relative;\n  background: #fefce8;\n  border: 1px solid #e8e2a0;\n  border-radius: 14px;\n  padding: 20px 14px 12px;\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  transition: 0.25s ease;\n}\n.hire-note-card.done {\n  background: #edf7f1;\n  border-color: #b6dfc8;\n}\n.hire-note-card.done .hire-note-content {\n  text-decoration: line-through;\n  color: #7a746d;\n}\n.hire-note-card.done .hire-note-pin {\n  color: #2d7a5a;\n}\n\n.hire-note-pin {\n  position: absolute;\n  top: -6px;\n  left: 50%;\n  transform: translateX(-50%) rotate(-12deg);\n  color: #c0392b;\n  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));\n}\n\n.hire-note-delete {\n  position: absolute;\n  top: 6px;\n  right: 6px;\n  background: none;\n  border: none;\n  font-size: 10px;\n  color: #b0a89e;\n  cursor: pointer;\n  width: 18px;\n  height: 18px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  border-radius: 999px;\n  transition: 0.15s ease;\n}\n.hire-note-delete:hover {\n  background: rgba(0, 0, 0, 0.06);\n  color: #111111;\n}\n\n.hire-note-meta {\n  display: flex;\n  flex-direction: column;\n  gap: 1px;\n  font-size: 11px;\n  color: #7a746d;\n}\n.hire-note-meta strong {\n  color: #111111;\n  font-weight: 600;\n}\n\n.hire-note-content {\n  margin: 0;\n  font-size: 12.5px;\n  color: #111111;\n  line-height: 1.55;\n  flex: 1;\n}\n\n.hire-note-footer {\n  border-top: 1px solid rgba(0, 0, 0, 0.06);\n  padding-top: 8px;\n}\n\n.hire-note-check {\n  display: flex;\n  align-items: center;\n  gap: 7px;\n  cursor: pointer;\n  font-size: 11px;\n  font-weight: 500;\n  color: #7a746d;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.hire-note-check input[type=checkbox] {\n  width: 13px;\n  height: 13px;\n  accent-color: #111111;\n  cursor: pointer;\n  flex-shrink: 0;\n}\n.hire-note-check:hover {\n  color: #111111;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -36347,7 +36449,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".interviews {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n  min-height: 100vh;\n  color: #111111;\n}\n\n.interviews__header,\n.interviews__join,\n.interviews__meeting-header,\n.interviews__card {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 24px;\n}\n\n.interviews__header {\n  margin-bottom: 22px;\n}\n.interviews__header h1 {\n  margin: 6px 0;\n  font-size: 24px;\n  line-height: 1.15;\n  color: #111111;\n}\n.interviews__header p {\n  margin: 0;\n  color: #7a746d;\n  font-size: 13px;\n}\n\n.interviews__empty {\n  text-align: center;\n  color: #7782a5;\n  padding: 32px 16px;\n}\n.interviews__empty--error {\n  color: #b42318;\n}\n\n.interviews__status,\n.interviews__type {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  font-size: 12px;\n  margin-top: 4px;\n  color: #7782a5;\n}\n\n.interviews__status--cancelled {\n  color: #9a948c;\n}\n\n.interviews__eyebrow {\n  color: #fdd535;\n  font-size: 12px;\n  font-weight: 800;\n  letter-spacing: 0;\n  text-transform: uppercase;\n}\n\n.interviews__join {\n  padding: 20px;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  background: #ffffff;\n}\n.interviews__join h2 {\n  margin: 0 0 6px;\n  font-size: 21px;\n  color: #111111;\n}\n.interviews__join p {\n  margin: 0;\n  color: #7a746d;\n  font-size: 14px;\n}\n\n.interviews__join-form {\n  display: flex;\n  gap: 12px;\n  width: min(100%, 520px);\n}\n.interviews__join-form input {\n  flex: 1;\n  min-width: 0;\n  height: 44px;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 0 14px;\n  color: #111111;\n  font-size: 14px;\n  outline: none;\n}\n.interviews__join-form input:focus {\n  box-shadow: 0 0 0 3px rgba(253, 213, 53, 0.2);\n}\n\n.interviews__join-form button,\n.interviews__card button,\n.interviews__secondary-button {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 8px;\n  min-height: 44px;\n  border: 0;\n  border-radius: 10px;\n  padding: 0 16px;\n  font-size: 13px;\n  font-weight: 600;\n  cursor: pointer;\n  transition: 0.18s ease;\n}\n\n.interviews__join-form button,\n.interviews__card button {\n  background: #fdd535;\n  color: #111111;\n}\n.interviews__join-form button svg,\n.interviews__card button svg {\n  color: #111111;\n}\n.interviews__join-form button:hover,\n.interviews__card button:hover {\n  box-shadow: 0 6px 16px rgba(253, 213, 53, 0.35);\n}\n\n.interviews__secondary-button {\n  border: 1px solid #fdd535;\n  background: #ffffff;\n  color: #111111;\n}\n.interviews__secondary-button:hover {\n  border-color: #fdd535;\n  background: #fffdf3;\n}\n\n.interviews__list {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 14px;\n  margin-top: 16px;\n}\n\n.interviews__card {\n  display: grid;\n  grid-template-columns: 52px minmax(0, 1fr) auto;\n  align-items: center;\n  justify-content: initial;\n  min-height: 126px;\n  padding: 20px;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  background: #ffffff;\n  gap: 18px;\n  transition: box-shadow 0.2s, border-color 0.2s, transform 0.18s;\n}\n.interviews__card:hover {\n  border-color: #d4cdc5;\n  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);\n  transform: translateY(-2px);\n}\n\n.interviews__card-icon {\n  display: grid;\n  width: 52px;\n  height: 52px;\n  place-items: center;\n  border-radius: 16px;\n  background: #fff4c8;\n  color: #111111;\n  font-size: 20px;\n}\n.interviews__card-icon svg {\n  color: #111111;\n}\n\n.interviews__card-content {\n  min-width: 0;\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n}\n.interviews__card-content h3 {\n  margin: 0;\n  font-size: 17px;\n  color: #111111;\n  line-height: 1.25;\n  overflow-wrap: anywhere;\n}\n.interviews__card-content p {\n  margin: 0 0 4px;\n  color: #7a746d;\n  font-size: 14px;\n}\n.interviews__card-content span {\n  color: #555050;\n  font-size: 13px;\n  font-weight: 600;\n}\n\n.interviews__card button {\n  align-self: center;\n  white-space: nowrap;\n  min-width: 118px;\n}\n\n.interviews__meeting {\n  overflow: hidden;\n  border: 1px solid #fefefe;\n  border-radius: 18px;\n  background: #ffffff;\n  box-shadow: 0 6px 18px rgba(17, 17, 17, 0.06);\n}\n\n.interviews__meeting-header {\n  padding: 18px 20px;\n  border-bottom: 1px solid #efe7dd;\n}\n.interviews__meeting-header h2 {\n  margin: 4px 0 0;\n  font-size: 21px;\n  color: #111111;\n}\n\n.interviews__room-name {\n  max-width: 50%;\n  overflow: hidden;\n  border-radius: 10px;\n  background: #f9f9f9;\n  border: 1px solid #ece7df;\n  padding: 8px 10px;\n  color: #5d6884;\n  font-size: 12px;\n  font-weight: 600;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.interviews__jitsi-frame {\n  height: min(72vh, 760px);\n  min-height: 520px;\n  background: #111827;\n}\n\n@media (max-width: 820px) {\n  .interviews {\n    padding: 24px 16px 48px;\n  }\n  .interviews__header,\n  .interviews__join,\n  .interviews__meeting-header {\n    align-items: stretch;\n    flex-direction: column;\n  }\n  .interviews__header h1 {\n    font-size: 24px;\n  }\n  .interviews__join-form {\n    width: 100%;\n  }\n  .interviews__list {\n    grid-template-columns: 1fr;\n  }\n  .interviews__card {\n    grid-template-columns: 52px minmax(0, 1fr);\n    align-items: start;\n  }\n  .interviews__card button {\n    grid-column: 1/-1;\n    width: 100%;\n  }\n  .interviews__room-name {\n    max-width: 100%;\n  }\n  .interviews__jitsi-frame {\n    height: 68vh;\n    min-height: 420px;\n  }\n}\n@media (max-width: 560px) {\n  .interviews__join {\n    padding: 16px;\n  }\n  .interviews__join-form {\n    flex-direction: column;\n  }\n  .interviews__join-form button {\n    width: 100%;\n  }\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".interviews {\n  width: 100%;\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 48px 32px 60px;\n  min-height: 100vh;\n  color: #111111;\n}\n\n.interviews__header,\n.interviews__join,\n.interviews__meeting-header,\n.interviews__card {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 24px;\n}\n\n.interviews__header {\n  margin-bottom: 22px;\n}\n.interviews__header h1 {\n  margin: 6px 0;\n  font-size: 24px;\n  line-height: 1.15;\n  color: #111111;\n}\n.interviews__header p {\n  margin: 0;\n  color: #7a746d;\n  font-size: 13px;\n}\n\n.interviews__empty {\n  text-align: center;\n  color: #7782a5;\n  padding: 32px 16px;\n}\n.interviews__empty--error {\n  color: #b42318;\n}\n\n.interviews__status,\n.interviews__type {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  font-size: 12px;\n  margin-top: 4px;\n  color: #7782a5;\n}\n\n.interviews__status--cancelled {\n  color: #9a948c;\n}\n\n.interviews__eyebrow {\n  color: #fdd535;\n  font-size: 12px;\n  font-weight: 800;\n  letter-spacing: 0;\n  text-transform: uppercase;\n}\n\n.interviews__join {\n  padding: 20px;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  background: #ffffff;\n}\n.interviews__join h2 {\n  margin: 0 0 6px;\n  font-size: 21px;\n  color: #111111;\n}\n.interviews__join p {\n  margin: 0;\n  color: #7a746d;\n  font-size: 14px;\n}\n\n.interviews__join-form {\n  display: flex;\n  gap: 12px;\n  width: min(100%, 520px);\n}\n.interviews__join-form input {\n  flex: 1;\n  min-width: 0;\n  height: 44px;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 0 14px;\n  color: #111111;\n  font-size: 14px;\n  outline: none;\n}\n.interviews__join-form input:focus {\n  box-shadow: 0 0 0 3px rgba(253, 213, 53, 0.2);\n}\n\n.interviews__join-form button,\n.interviews__card button,\n.interviews__secondary-button {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 8px;\n  min-height: 44px;\n  border: 0;\n  border-radius: 10px;\n  padding: 0 16px;\n  font-size: 13px;\n  font-weight: 600;\n  cursor: pointer;\n  transition: 0.18s ease;\n}\n\n.interviews__join-form button,\n.interviews__card button {\n  background: #fdd535;\n  color: #111111;\n}\n.interviews__join-form button svg,\n.interviews__card button svg {\n  color: #111111;\n}\n.interviews__join-form button:hover,\n.interviews__card button:hover {\n  box-shadow: 0 6px 16px rgba(253, 213, 53, 0.35);\n}\n\n.interviews__secondary-button {\n  border: 1px solid #fdd535;\n  background: #ffffff;\n  color: #111111;\n}\n.interviews__secondary-button:hover {\n  border-color: #fdd535;\n  background: #fffdf3;\n}\n\n.interviews__list {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 14px;\n  margin-top: 16px;\n}\n\n.interviews__card {\n  display: grid;\n  grid-template-columns: 52px minmax(0, 1fr) auto;\n  align-items: center;\n  justify-content: initial;\n  min-height: 126px;\n  padding: 20px;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  background: #ffffff;\n  gap: 18px;\n  transition: box-shadow 0.2s, border-color 0.2s, transform 0.18s;\n}\n.interviews__card:hover {\n  border-color: #d4cdc5;\n  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);\n  transform: translateY(-2px);\n}\n\n.interviews__card-icon {\n  display: grid;\n  width: 52px;\n  height: 52px;\n  place-items: center;\n  border-radius: 16px;\n  background: #fff4c8;\n  color: #111111;\n  font-size: 20px;\n}\n.interviews__card-icon svg {\n  color: #111111;\n}\n\n.interviews__card-content {\n  min-width: 0;\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n}\n.interviews__card-content h3 {\n  margin: 0;\n  font-size: 17px;\n  color: #111111;\n  line-height: 1.25;\n  overflow-wrap: anywhere;\n}\n.interviews__card-content p {\n  margin: 0 0 4px;\n  color: #7a746d;\n  font-size: 14px;\n}\n.interviews__card-content span {\n  color: #555050;\n  font-size: 13px;\n  font-weight: 600;\n}\n\n.interviews__card button {\n  align-self: center;\n  white-space: nowrap;\n  min-width: 118px;\n}\n\n.interviews--meeting {\n  padding-top: 24px;\n}\n\n.interviews__meeting {\n  overflow: visible;\n  border: 1px solid #e7dfd4;\n  border-radius: 18px;\n  background: #ffffff;\n  box-shadow: 0 6px 18px rgba(17, 17, 17, 0.06);\n  padding: 16px;\n}\n\n.interviews__meeting-header {\n  padding: 18px 20px;\n  border-bottom: 1px solid #efe7dd;\n}\n.interviews__meeting-header h2 {\n  margin: 4px 0 0;\n  font-size: 21px;\n  color: #111111;\n}\n\n.interviews__room-name {\n  max-width: 50%;\n  overflow: hidden;\n  border-radius: 10px;\n  background: #f9f9f9;\n  border: 1px solid #ece7df;\n  padding: 8px 10px;\n  color: #5d6884;\n  font-size: 12px;\n  font-weight: 600;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.interviews__jitsi-frame {\n  height: min(72vh, 760px);\n  min-height: 520px;\n  background: #111827;\n}\n\n@media (max-width: 820px) {\n  .interviews {\n    padding: 24px 16px 48px;\n  }\n  .interviews__header,\n  .interviews__join,\n  .interviews__meeting-header {\n    align-items: stretch;\n    flex-direction: column;\n  }\n  .interviews__header h1 {\n    font-size: 24px;\n  }\n  .interviews__join-form {\n    width: 100%;\n  }\n  .interviews__list {\n    grid-template-columns: 1fr;\n  }\n  .interviews__card {\n    grid-template-columns: 52px minmax(0, 1fr);\n    align-items: start;\n  }\n  .interviews__card button {\n    grid-column: 1/-1;\n    width: 100%;\n  }\n  .interviews__room-name {\n    max-width: 100%;\n  }\n  .interviews__jitsi-frame {\n    height: 68vh;\n    min-height: 420px;\n  }\n}\n@media (max-width: 560px) {\n  .interviews__join {\n    padding: 16px;\n  }\n  .interviews__join-form {\n    flex-direction: column;\n  }\n  .interviews__join-form button {\n    width: 100%;\n  }\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -36395,7 +36497,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".user-dashboard-hamburger {\n  display: none;\n  position: fixed;\n  top: 14px;\n  left: 16px;\n  z-index: 200;\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 8px;\n  cursor: pointer;\n  color: #111111;\n}\n@media (max-width: 768px) {\n  .user-dashboard-hamburger {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n  }\n}\n\n.user-dashboard-sidebar-overlay {\n  display: none;\n}\n@media (max-width: 768px) {\n  .user-dashboard-sidebar-overlay {\n    display: block;\n    position: fixed;\n    inset: 0;\n    background: rgba(0, 0, 0, 0.4);\n    z-index: 150;\n  }\n}\n\n.user-dashboard-sidebar {\n  width: 260px;\n  min-height: 100vh;\n  background: #ffffff;\n  border-right: 1px solid #e7dfd4;\n  display: flex;\n  flex-direction: column;\n  justify-content: space-between;\n  padding: 28px 16px;\n  position: fixed;\n  top: 0;\n  left: 0;\n  z-index: 160;\n}\n@media (max-width: 768px) {\n  .user-dashboard-sidebar {\n    transform: translateX(-100%);\n    transition: transform 0.25s ease;\n  }\n  .user-dashboard-sidebar.open {\n    transform: translateX(0);\n    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);\n  }\n}\n\n.user-dashboard-sidebar__close {\n  display: none;\n  background: none;\n  border: none;\n  cursor: pointer;\n  color: #7a746d;\n  padding: 4px;\n  margin-left: auto;\n}\n@media (max-width: 768px) {\n  .user-dashboard-sidebar__close {\n    display: flex;\n    align-items: center;\n  }\n}\n\n.user-dashboard-sidebar__top {\n  display: flex;\n  flex-direction: column;\n  gap: 20px;\n}\n\n.user-dashboard-sidebar__brand {\n  padding: 0 8px;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  cursor: pointer;\n}\n\n.user-dashboard-sidebar__brand-text {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n\n.user-dashboard-sidebar__app {\n  font-size: 13px;\n  font-weight: 700;\n  color: #111111;\n  letter-spacing: 0.05em;\n}\n\n.user-dashboard-sidebar__section {\n  font-size: 12px;\n  color: #7a746d;\n  font-weight: 500;\n}\n\n.user-dashboard-sidebar__nav {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n\n.user-dashboard-sidebar__nav-item {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 11px 14px;\n  border-radius: 12px;\n  border: none;\n  background: none;\n  color: #7a746d;\n  font-size: 14px;\n  font-weight: 500;\n  cursor: pointer;\n  transition: 0.2s ease;\n  text-align: left;\n  width: 100%;\n  font-family: inherit;\n}\n.user-dashboard-sidebar__nav-item:hover {\n  background: #f2efea;\n  color: #111111;\n}\n.user-dashboard-sidebar__nav-item.active {\n  background: #f2efea;\n  color: #111111;\n  font-weight: 600;\n}\n.user-dashboard-sidebar__nav-item.active .user-dashboard-sidebar__nav-icon {\n  color: #111111;\n}\n\n.user-dashboard-sidebar__nav-icon {\n  display: flex;\n  align-items: center;\n  flex-shrink: 0;\n}\n\n.user-dashboard-sidebar__nav-label {\n  flex: 1;\n}\n\n.user-dashboard-sidebar__nav-badge {\n  background: #fdd535;\n  color: #111111;\n  border-radius: 999px;\n  padding: 2px 8px;\n  font-size: 11px;\n  font-weight: 700;\n  line-height: 1.4;\n}\n\n.user-dashboard-sidebar__divider {\n  height: 1px;\n  background: #e7dfd4;\n  margin: 4px 0;\n}\n\n.user-dashboard-sidebar__bottom {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.user-dashboard-sidebar__user {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 14px;\n  border-radius: 12px;\n  background: #fafaf8;\n  border: 1px solid #e7dfd4;\n}\n\n.user-dashboard-sidebar__avatar {\n  width: 36px;\n  height: 36px;\n  background: #fdd535;\n  border-radius: 10px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 700;\n  color: #111111;\n  flex-shrink: 0;\n}\n\n.user-dashboard-sidebar__user-info {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 0;\n}\n\n.user-dashboard-sidebar__user-name {\n  font-size: 13px;\n  font-weight: 600;\n  color: #111111;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.user-dashboard-sidebar__user-role {\n  font-size: 12px;\n  color: #7a746d;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.user-dashboard-sidebar__signout {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 10px 14px;\n  border-radius: 12px;\n  border: none;\n  background: none;\n  color: #7a746d;\n  font-size: 14px;\n  font-weight: 500;\n  cursor: pointer;\n  transition: 0.2s ease;\n  width: 100%;\n  font-family: inherit;\n}\n.user-dashboard-sidebar__signout:hover {\n  background: #f2efea;\n  color: #111111;\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".user-dashboard-mobile-bar {\n  display: none;\n}\n@media (max-width: 768px) {\n  .user-dashboard-mobile-bar {\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n    position: fixed;\n    top: 14px;\n    left: 16px;\n    right: 16px;\n    z-index: 200;\n    pointer-events: none;\n  }\n  .user-dashboard-mobile-bar > * {\n    pointer-events: auto;\n  }\n}\n\n.user-dashboard-hamburger {\n  background: #ffffff;\n  border: 1px solid #e7dfd4;\n  border-radius: 10px;\n  padding: 8px;\n  cursor: pointer;\n  color: #111111;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.user-dashboard-mobile-bar__notif {\n  position: relative;\n}\n.user-dashboard-mobile-bar__notif .notif-bell__dropdown {\n  left: auto;\n  right: 0;\n  top: calc(100% + 10px);\n}\n\n.user-dashboard-sidebar__notif-row .notif-bell {\n  position: static;\n}\n\n@media (max-width: 768px) {\n  .user-dashboard-sidebar__notif-row .notif-bell__dropdown {\n    left: auto;\n    right: 0;\n    top: calc(100% + 8px);\n  }\n}\n\n.user-dashboard-sidebar-overlay {\n  display: none;\n}\n@media (max-width: 768px) {\n  .user-dashboard-sidebar-overlay {\n    display: block;\n    position: fixed;\n    inset: 0;\n    background: rgba(0, 0, 0, 0.4);\n    z-index: 150;\n  }\n}\n\n.user-dashboard-sidebar {\n  width: 260px;\n  min-height: 100vh;\n  background: #ffffff;\n  border-right: 1px solid #e7dfd4;\n  display: flex;\n  flex-direction: column;\n  justify-content: space-between;\n  padding: 28px 16px;\n  position: fixed;\n  top: 0;\n  left: 0;\n  z-index: 160;\n  overflow: visible;\n}\n@media (max-width: 768px) {\n  .user-dashboard-sidebar {\n    transform: translateX(-100%);\n    transition: transform 0.25s ease;\n  }\n  .user-dashboard-sidebar.open {\n    transform: translateX(0);\n    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);\n  }\n}\n\n.user-dashboard-sidebar__close {\n  display: none;\n  background: none;\n  border: none;\n  cursor: pointer;\n  color: #7a746d;\n  padding: 4px;\n  margin-left: auto;\n}\n@media (max-width: 768px) {\n  .user-dashboard-sidebar__close {\n    display: flex;\n    align-items: center;\n  }\n}\n\n.user-dashboard-sidebar__top {\n  display: flex;\n  flex-direction: column;\n  gap: 20px;\n}\n\n.user-dashboard-sidebar__brand {\n  padding: 0 8px;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  cursor: pointer;\n  gap: 8px;\n}\n\n.user-dashboard-sidebar__notif-row {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  padding: 10px 14px;\n  margin: 0 4px;\n  border-radius: 12px;\n  background: #fafaf8;\n  border: 1px solid #e7dfd4;\n  position: relative;\n}\n\n.user-dashboard-sidebar__notif-label {\n  font-size: 14px;\n  font-weight: 600;\n  color: #111111;\n}\n\n@media (max-width: 768px) {\n  .user-dashboard-sidebar__notif-row {\n    display: none;\n  }\n}\n.user-dashboard-sidebar__brand-text {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n\n.user-dashboard-sidebar__app {\n  font-size: 13px;\n  font-weight: 700;\n  color: #111111;\n  letter-spacing: 0.05em;\n}\n\n.user-dashboard-sidebar__section {\n  font-size: 12px;\n  color: #7a746d;\n  font-weight: 500;\n}\n\n.user-dashboard-sidebar__nav {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n\n.user-dashboard-sidebar__nav-item {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 11px 14px;\n  border-radius: 12px;\n  border: none;\n  background: none;\n  color: #7a746d;\n  font-size: 14px;\n  font-weight: 500;\n  cursor: pointer;\n  transition: 0.2s ease;\n  text-align: left;\n  width: 100%;\n  font-family: inherit;\n}\n.user-dashboard-sidebar__nav-item:hover {\n  background: #f2efea;\n  color: #111111;\n}\n.user-dashboard-sidebar__nav-item.active {\n  background: #f2efea;\n  color: #111111;\n  font-weight: 600;\n}\n.user-dashboard-sidebar__nav-item.active .user-dashboard-sidebar__nav-icon {\n  color: #111111;\n}\n\n.user-dashboard-sidebar__nav-icon {\n  display: flex;\n  align-items: center;\n  flex-shrink: 0;\n}\n\n.user-dashboard-sidebar__nav-label {\n  flex: 1;\n}\n\n.user-dashboard-sidebar__nav-badge {\n  background: #fdd535;\n  color: #111111;\n  border-radius: 999px;\n  padding: 2px 8px;\n  font-size: 11px;\n  font-weight: 700;\n  line-height: 1.4;\n}\n\n.user-dashboard-sidebar__divider {\n  height: 1px;\n  background: #e7dfd4;\n  margin: 4px 0;\n}\n\n.user-dashboard-sidebar__bottom {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.user-dashboard-sidebar__user {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 14px;\n  border-radius: 12px;\n  background: #fafaf8;\n  border: 1px solid #e7dfd4;\n}\n\n.user-dashboard-sidebar__avatar {\n  width: 36px;\n  height: 36px;\n  background: #fdd535;\n  border-radius: 10px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 13px;\n  font-weight: 700;\n  color: #111111;\n  flex-shrink: 0;\n}\n\n.user-dashboard-sidebar__user-info {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 0;\n}\n\n.user-dashboard-sidebar__user-name {\n  font-size: 13px;\n  font-weight: 600;\n  color: #111111;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.user-dashboard-sidebar__user-role {\n  font-size: 12px;\n  color: #7a746d;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.user-dashboard-sidebar__signout {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 10px 14px;\n  border-radius: 12px;\n  border: none;\n  background: none;\n  color: #7a746d;\n  font-size: 14px;\n  font-weight: 500;\n  cursor: pointer;\n  transition: 0.2s ease;\n  width: 100%;\n  font-family: inherit;\n}\n.user-dashboard-sidebar__signout:hover {\n  background: #f2efea;\n  color: #111111;\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -37169,7 +37271,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".resume-page {\n  --resume-bg: #ffffff;\n  --resume-surface: #ffffff;\n  --resume-border: #e7dfd4;\n  --resume-border-soft: #f0ebe3;\n  --resume-text: #111;\n  --resume-text-muted: #777;\n  --resume-text-subtle: #aaa;\n  --resume-yellow: #fdd535;\n  --resume-yellow-light: #fff3cd;\n  --resume-yellow-dark: #fdd535;\n  --resume-accent: #1a1a2e;\n  --resume-accent-soft: #fff3cd;\n  --resume-radius-lg: 16px;\n  --resume-radius-md: 12px;\n  --resume-radius-pill: 999px;\n  --resume-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);\n  background: var(--resume-bg);\n  min-height: 100vh;\n  padding: 88px 0 0;\n}\n.resume-page__hero {\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 1.75rem 1.5rem 0;\n}\n.resume-page__title {\n  margin: 0 0 0.35rem;\n  font-size: clamp(1.5rem, 2.5vw, 1.875rem);\n  font-weight: 700;\n  letter-spacing: -0.02em;\n  color: var(--resume-text);\n}\n.resume-page__subtitle {\n  margin: 0;\n  font-size: 0.9375rem;\n  line-height: 1.5;\n  color: var(--resume-text-muted);\n  max-width: 36rem;\n}\n.resume-page__layout {\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 1.5rem 1.5rem 6rem;\n  display: grid;\n  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);\n  gap: 1.5rem;\n  align-items: start;\n}\n.resume-page__sidebar {\n  display: flex;\n  flex-direction: column;\n  gap: 1rem;\n  position: sticky;\n  top: 96px;\n}\n.resume-page__main {\n  display: flex;\n  flex-direction: column;\n  gap: 1rem;\n  min-width: 0;\n}\n.resume-page__tabs {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 0.45rem;\n  padding: 0.35rem;\n  background: var(--resume-surface);\n  border: 1px solid var(--resume-border);\n  border-radius: var(--resume-radius-lg);\n  box-shadow: 0 8px 22px rgba(17, 17, 17, 0.05), 0 1px 2px rgba(17, 17, 17, 0.04);\n}\n.resume-page__tab {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 0.45rem;\n  min-height: 38px;\n  padding: 0.55rem 0.8rem;\n  border: none;\n  border-radius: var(--resume-radius-pill);\n  background: transparent;\n  color: #858585;\n  font-size: 0.875rem;\n  font-weight: 700;\n  font-family: inherit;\n  line-height: 1;\n  cursor: pointer;\n  transition: background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;\n  white-space: nowrap;\n}\n.resume-page__tab svg {\n  flex-shrink: 0;\n  width: 17px;\n  height: 17px;\n  stroke-width: 2.15;\n}\n.resume-page__tab span {\n  display: block;\n}\n.resume-page__tab:hover {\n  color: var(--resume-text);\n  background: var(--resume-accent-soft);\n}\n.resume-page__tab--active {\n  background: var(--resume-yellow);\n  color: var(--resume-text);\n  min-width: 116px;\n  box-shadow: 0 6px 12px rgba(253, 213, 53, 0.24);\n}\n.resume-page__tab--active:hover {\n  color: var(--resume-text);\n  background: var(--resume-yellow);\n  transform: none;\n}\n.resume-page__panel {\n  min-height: 200px;\n}\n.resume-page__panel > * {\n  box-shadow: var(--resume-shadow);\n}\n.resume-page__save-msg {\n  margin-right: auto;\n  font-size: 0.8125rem;\n  color: var(--resume-text-muted);\n  max-width: 50%;\n}\n.resume-page__footer {\n  position: fixed;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 40;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  gap: 0.75rem;\n  padding: 0.875rem 1.5rem;\n  background: rgba(255, 255, 255, 0.92);\n  border-top: 1px solid var(--resume-border);\n  backdrop-filter: blur(10px);\n}\n.resume-page__cancel {\n  padding: 0.7rem 1.35rem;\n  background: var(--resume-surface);\n  color: var(--resume-text);\n  border: 1px solid var(--resume-border);\n  border-radius: var(--resume-radius-md);\n  font-size: 0.9375rem;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  transition: border-color 0.15s, background 0.15s;\n}\n.resume-page__cancel:hover {\n  border-color: var(--resume-text-subtle);\n  background: var(--resume-accent-soft);\n}\n.resume-page__save {\n  display: inline-flex;\n  align-items: center;\n  gap: 0.45rem;\n  padding: 0.7rem 1.35rem;\n  background: var(--resume-accent);\n  color: #fff;\n  border: none;\n  border-radius: var(--resume-radius-md);\n  font-size: 0.9375rem;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  transition: opacity 0.15s, transform 0.1s;\n}\n.resume-page__save:hover {\n  opacity: 0.9;\n}\n.resume-page__save:active {\n  transform: scale(0.98);\n}\n\n@media (max-width: 1024px) {\n  .resume-page__layout {\n    grid-template-columns: 1fr;\n    padding-bottom: 5.5rem;\n  }\n  .resume-page__sidebar {\n    position: static;\n  }\n  .resume-page__tabs {\n    overflow-x: auto;\n    flex-wrap: nowrap;\n    gap: 0.4rem;\n    padding: 0.35rem;\n    -webkit-overflow-scrolling: touch;\n    scrollbar-width: none;\n  }\n  .resume-page__tabs::-webkit-scrollbar {\n    display: none;\n  }\n  .resume-page__tab {\n    min-height: 38px;\n    padding: 0.55rem 0.8rem;\n    font-size: 0.875rem;\n  }\n  .resume-page__tab--active {\n    min-width: auto;\n  }\n}\n@media (max-width: 768px) {\n  .resume-page {\n    padding-top: 0;\n  }\n  .resume-page__hero {\n    padding: 1rem 1rem 0;\n  }\n  .resume-page__footer {\n    left: 0;\n    padding-left: 1rem;\n    padding-right: 1rem;\n  }\n  .resume-page__save-msg {\n    max-width: 100%;\n    text-align: center;\n    margin-right: 0;\n    margin-bottom: 0.25rem;\n    width: 100%;\n  }\n}\n@media (max-width: 640px) {\n  .resume-page__hero {\n    padding: 0.875rem 0.75rem 0;\n  }\n  .resume-page__subtitle {\n    font-size: 0.875rem;\n  }\n  .resume-page__layout {\n    padding: 0.75rem 0.75rem 6rem;\n    gap: 0.875rem;\n  }\n  .resume-page__tab {\n    padding: 0.5rem 0.65rem;\n    font-size: 0.8125rem;\n  }\n  .resume-page__tab span {\n    display: none;\n  }\n  .resume-page__tab--active span {\n    display: block;\n  }\n  .resume-page__footer {\n    flex-direction: column-reverse;\n    align-items: stretch;\n    padding: 0.75rem;\n    gap: 0.5rem;\n  }\n  .resume-page__cancel, .resume-page__save {\n    width: 100%;\n    justify-content: center;\n  }\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".resume-page {\n  --resume-bg: #ffffff;\n  --resume-surface: #ffffff;\n  --resume-border: #e7dfd4;\n  --resume-border-soft: #f0ebe3;\n  --resume-text: #111;\n  --resume-text-muted: #777;\n  --resume-text-subtle: #aaa;\n  --resume-yellow: #fdd535;\n  --resume-yellow-light: #fff3cd;\n  --resume-yellow-dark: #fdd535;\n  --resume-accent: #1a1a2e;\n  --resume-accent-soft: #fff3cd;\n  --resume-radius-lg: 16px;\n  --resume-radius-md: 12px;\n  --resume-radius-pill: 999px;\n  --resume-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);\n  background: var(--resume-bg);\n  min-height: 100vh;\n  padding: 88px 0 0;\n}\n.resume-page__hero {\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 1.75rem 1.5rem 0;\n}\n.resume-page__title {\n  margin: 0 0 0.35rem;\n  font-size: clamp(1.5rem, 2.5vw, 1.875rem);\n  font-weight: 700;\n  letter-spacing: -0.02em;\n  color: var(--resume-text);\n}\n.resume-page__subtitle {\n  margin: 0;\n  font-size: 0.9375rem;\n  line-height: 1.5;\n  color: var(--resume-text-muted);\n  max-width: 36rem;\n}\n.resume-page__layout {\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 1.5rem 1.5rem 6rem;\n  display: grid;\n  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);\n  gap: 1.5rem;\n  align-items: start;\n}\n.resume-page__sidebar {\n  display: flex;\n  flex-direction: column;\n  gap: 1rem;\n  position: sticky;\n  top: 96px;\n}\n.resume-page__main {\n  display: flex;\n  flex-direction: column;\n  gap: 1rem;\n  min-width: 0;\n}\n.resume-page__tabs {\n  display: flex;\n  flex-wrap: nowrap;\n  align-items: center;\n  gap: 0.45rem;\n  padding: 0.35rem;\n  background: var(--resume-surface);\n  border: 1px solid var(--resume-border);\n  border-radius: var(--resume-radius-lg);\n  box-shadow: 0 8px 22px rgba(17, 17, 17, 0.05), 0 1px 2px rgba(17, 17, 17, 0.04);\n  overflow-x: auto;\n  -webkit-overflow-scrolling: touch;\n  scrollbar-width: none;\n}\n.resume-page__tabs::-webkit-scrollbar {\n  display: none;\n}\n.resume-page__tab {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 0.45rem;\n  min-height: 38px;\n  padding: 0.55rem 0.8rem;\n  border: none;\n  border-radius: var(--resume-radius-pill);\n  background: transparent;\n  color: #858585;\n  font-size: 0.875rem;\n  font-weight: 700;\n  font-family: inherit;\n  line-height: 1;\n  cursor: pointer;\n  transition: background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;\n  white-space: nowrap;\n}\n.resume-page__tab svg {\n  flex-shrink: 0;\n  width: 17px;\n  height: 17px;\n  stroke-width: 2.15;\n}\n.resume-page__tab span {\n  display: block;\n}\n.resume-page__tab:hover {\n  color: var(--resume-text);\n  background: var(--resume-accent-soft);\n}\n.resume-page__tab--active {\n  background: var(--resume-yellow);\n  color: var(--resume-text);\n  min-width: 116px;\n  box-shadow: 0 6px 12px rgba(253, 213, 53, 0.24);\n}\n.resume-page__tab--active:hover {\n  color: var(--resume-text);\n  background: var(--resume-yellow);\n  transform: none;\n}\n.resume-page__panel {\n  min-height: 200px;\n}\n.resume-page__panel > * {\n  box-shadow: var(--resume-shadow);\n}\n.resume-page__save-msg {\n  margin-right: auto;\n  font-size: 0.8125rem;\n  color: var(--resume-text-muted);\n  max-width: 50%;\n}\n.resume-page__footer {\n  position: fixed;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 40;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  gap: 0.75rem;\n  padding: 0.875rem 1.5rem;\n  background: rgba(255, 255, 255, 0.92);\n  border-top: 1px solid var(--resume-border);\n  backdrop-filter: blur(10px);\n}\n.resume-page__cancel {\n  padding: 0.7rem 1.35rem;\n  background: var(--resume-surface);\n  color: var(--resume-text);\n  border: 1px solid var(--resume-border);\n  border-radius: var(--resume-radius-md);\n  font-size: 0.9375rem;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  transition: border-color 0.15s, background 0.15s;\n}\n.resume-page__cancel:hover {\n  border-color: var(--resume-text-subtle);\n  background: var(--resume-accent-soft);\n}\n.resume-page__save {\n  display: inline-flex;\n  align-items: center;\n  gap: 0.45rem;\n  padding: 0.7rem 1.35rem;\n  background: var(--resume-accent);\n  color: #fff;\n  border: none;\n  border-radius: var(--resume-radius-md);\n  font-size: 0.9375rem;\n  font-weight: 600;\n  font-family: inherit;\n  cursor: pointer;\n  transition: opacity 0.15s, transform 0.1s;\n}\n.resume-page__save:hover {\n  opacity: 0.9;\n}\n.resume-page__save:active {\n  transform: scale(0.98);\n}\n\n@media (max-width: 1024px) {\n  .resume-page__layout {\n    grid-template-columns: 1fr;\n    padding-bottom: 5.5rem;\n  }\n  .resume-page__sidebar {\n    position: static;\n  }\n  .resume-page__tabs {\n    gap: 0.4rem;\n  }\n  .resume-page__tab {\n    min-height: 38px;\n    padding: 0.55rem 0.8rem;\n    font-size: 0.875rem;\n  }\n  .resume-page__tab--active {\n    min-width: auto;\n  }\n}\n@media (max-width: 768px) {\n  .resume-page {\n    padding-top: 0;\n  }\n  .resume-page__hero {\n    padding: 1rem 1rem 0;\n  }\n  .resume-page__footer {\n    left: 0;\n    padding-left: 1rem;\n    padding-right: 1rem;\n  }\n  .resume-page__save-msg {\n    max-width: 100%;\n    text-align: center;\n    margin-right: 0;\n    margin-bottom: 0.25rem;\n    width: 100%;\n  }\n}\n@media (max-width: 640px) {\n  .resume-page__hero {\n    padding: 0.875rem 0.75rem 0;\n  }\n  .resume-page__subtitle {\n    font-size: 0.875rem;\n  }\n  .resume-page__layout {\n    padding: 0.75rem 0.75rem 6rem;\n    gap: 0.875rem;\n  }\n  .resume-page__tab {\n    padding: 0.5rem 0.65rem;\n    font-size: 0.8125rem;\n  }\n  .resume-page__tab span {\n    display: none;\n  }\n  .resume-page__tab--active span {\n    display: block;\n  }\n  .resume-page__footer {\n    flex-direction: column-reverse;\n    align-items: stretch;\n    padding: 0.75rem;\n    gap: 0.5rem;\n  }\n  .resume-page__cancel, .resume-page__save {\n    width: 100%;\n    justify-content: center;\n  }\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

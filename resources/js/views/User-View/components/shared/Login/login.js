@@ -95,7 +95,7 @@ export default function LoginContent() {
                 email: values.email.trim(),
                 password: values.password,
             });
-            // HR invited accounts that haven't completed first-time onboarding
+
             if (result?.first_login) {
                 navigate('/first-login', {
                     replace: true,

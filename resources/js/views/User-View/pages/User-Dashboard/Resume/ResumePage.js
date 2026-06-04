@@ -76,9 +76,7 @@ const ResumePage = () => {
     if (data?.ats) setAts(data.ats);
     if (data?.job_match) setJobMatch(data.job_match);
 
-    const parsed = data?.parsed || data?.resume?.parsed_data;
-    if (parsed) {
-      const mapped = mapParsedToProfile(parsed);
+    const applyMapped = (mapped) => {
       if (mapped.skills.length) setSkills(mapped.skills);
       if (mapped.experiences.length) setExperiences(mapped.experiences);
       if (mapped.education.length) setEducation(mapped.education);
@@ -88,6 +86,24 @@ const ResumePage = () => {
       if (mapped.github.profileUrl || mapped.github.repositories.length || mapped.github.portfolioLinks.length) {
         setGithub(mapped.github);
       }
+    };
+
+    if (data?.profile) {
+      applyProfileToState(data.profile, {
+        setSkills,
+        setExperiences,
+        setEducation,
+        setLanguages,
+        setProjects,
+        setCertifications,
+        setGithub,
+      });
+      return;
+    }
+
+    const parsed = data?.structured || data?.parsed || data?.resume?.parsed_data;
+    if (parsed) {
+      applyMapped(mapParsedToProfile(parsed));
     }
   }, []);
 
@@ -151,23 +167,21 @@ const ResumePage = () => {
         : await analyzeResume(id);
 
       applyAnalysisResult(analysisResult);
-      if (analysisResult.profile) {
-        applyProfileToState(analysisResult.profile, {
-          setSkills,
-          setExperiences,
-          setEducation,
-          setLanguages,
-          setProjects,
-          setCertifications,
-          setGithub,
-        });
-      } else {
+
+      if (!analysisResult.profile) {
         await loadProfile();
       }
       setProfileSaved(true);
     } catch (err) {
-      const message = err?.response?.data?.error
-        || err?.response?.data?.message
+      const data = err?.response?.data;
+      const validationMessage = data?.errors
+        ? Object.values(data.errors).flat().find(Boolean)
+        : null;
+      const message = !err?.response
+        ? 'Server stopped responding (timed out or crashed). Run: php artisan serve — then try again.'
+        : data?.error
+        || validationMessage
+        || data?.message
         || 'Failed to analyze resume. Please try again.';
       setAnalysisError(message);
     } finally {

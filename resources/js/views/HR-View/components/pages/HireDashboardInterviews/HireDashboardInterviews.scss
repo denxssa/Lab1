@@ -15,7 +15,6 @@
   gap: 18px;
 }
 
-// ── Header ───────────────────────────────────────────────────────────
 .hire-interviews-eyebrow {
   display: block;
   color: #7a746d;
@@ -26,7 +25,6 @@
   margin-bottom: 4px;
 }
 
-// ── Search bar ───────────────────────────────────────────────────
 .hire-list-search {
   position: relative;
   display: flex;
@@ -88,7 +86,6 @@
   &:hover { background: #333333; transform: translateY(-1px); }
 }
 
-// ── Tabs ─────────────────────────────────────────────────────────────
 .hire-interviews-tabs {
   display: flex;
   gap: 6px;
@@ -114,7 +111,6 @@
   }
 }
 
-// ── Empty / loading ───────────────────────────────────────────────────
 .hire-interviews-empty {
   text-align: center;
   color: #7a746d;
@@ -123,7 +119,6 @@
   margin: 0;
 }
 
-// ── List container ────────────────────────────────────────────────────
 .hire-interviews-list {
   background: #ffffff;
   border: 1px solid #e7dfd4;
@@ -133,7 +128,6 @@
   flex-direction: column;
 }
 
-// ── Row ───────────────────────────────────────────────────────────────
 .hire-interview-row {
   display: flex;
   align-items: center;
@@ -192,7 +186,6 @@
   }
 }
 
-// ── Type badge ────────────────────────────────────────────────────────
 .hire-interview-type-badge {
   display: inline-flex;
   align-items: center;
@@ -208,7 +201,6 @@
   &.type-in_person { background: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
 }
 
-// ── Date / interviewer ────────────────────────────────────────────────
 .hire-interview-date,
 .hire-interview-location,
 .hire-interview-interviewer {
@@ -223,7 +215,6 @@
   @media (max-width: 600px) { font-size: 12px; }
 }
 
-// ── Status badge ──────────────────────────────────────────────────────
 .hire-interview-status {
   border-radius: 999px;
   padding: 5px 12px;
@@ -239,7 +230,6 @@
   &.status-cancelled   { background: #f2efea; color: #7a746d; border: 1px solid #e7dfd4; }
 }
 
-// ── Row action buttons ────────────────────────────────────────────────
 .hire-interview-actions {
   display: flex;
   align-items: center;
@@ -276,7 +266,6 @@
   }
 }
 
-// ── Details overlay ───────────────────────────────────────────────────
 .hire-interview-details-overlay {
   position: fixed;
   inset: 0;
@@ -331,7 +320,6 @@
   }
 }
 
-// ── Join meeting section ──────────────────────────────────────────────
 .hire-interviews-join {
   display: flex;
   align-items: center;

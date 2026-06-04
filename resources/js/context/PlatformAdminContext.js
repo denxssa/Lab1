@@ -81,7 +81,7 @@ export const PlatformAdminProvider = ({ children }) => {
           return next;
         });
       } catch {
-        /* keep defaults */
+        
       }
     };
 
@@ -146,7 +146,7 @@ export const PlatformAdminProvider = ({ children }) => {
         },
       });
     } catch {
-      /* keep optimistic */
+      
     }
   };
 
@@ -204,7 +204,7 @@ export const PlatformAdminProvider = ({ children }) => {
         return next;
       });
     } catch {
-      /* keep state */
+      
     }
   };
 

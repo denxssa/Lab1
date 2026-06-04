@@ -23,7 +23,6 @@
   }
 }
 
-// ── Left panel ───────────────────────────────────────────────────
 .hire-messages-left {
   display: flex;
   flex-direction: column;
@@ -93,7 +92,6 @@
   line-height: 1.4;
 }
 
-// ── Search ───────────────────────────────────────────────────────
 .hire-messages-search {
   display: flex;
   align-items: center;
@@ -123,7 +121,6 @@
   }
 }
 
-// ── Conversation list ─────────────────────────────────────────────
 .hire-messages-list {
   flex: 1;
   overflow-y: auto;
@@ -151,7 +148,6 @@
   }
 }
 
-// ── Shared avatar ─────────────────────────────────────────────────
 .hire-msg-avatar {
   width: 44px;
   height: 44px;
@@ -220,7 +216,6 @@
   line-height: 1.5;
 }
 
-// ── Right panel ───────────────────────────────────────────────────
 .hire-messages-right {
   display: flex;
   flex-direction: column;
@@ -249,7 +244,6 @@
   margin-top: 1px;
 }
 
-// ── Thread ────────────────────────────────────────────────────────
 .hire-messages-thread {
   flex: 1;
   overflow-y: auto;
@@ -307,7 +301,6 @@
   padding: 0 4px;
 }
 
-// ── Input bar ─────────────────────────────────────────────────────
 .hire-messages-input-bar {
   display: flex;
   align-items: center;
@@ -352,7 +345,6 @@
   &:disabled { opacity: 0.35; cursor: default; }
 }
 
-// ── Empty state ───────────────────────────────────────────────────
 .hire-messages-empty-state {
   display: flex;
   align-items: center;
