@@ -34,6 +34,7 @@
         "react-intl": "^6.8.9",
         "react-router-dom": "^7.13.2",
         "react-tabs": "^6.1.1",
-        "react-visibility-sensor": "^5.1.1"
+        "react-visibility-sensor": "^5.1.1",
+        "yup": "^1.7.1"
     }
 }
