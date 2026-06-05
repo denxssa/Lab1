@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaFacebookF, FaGoogle, FaXTwitter } from 'react-icons/fa6';
 import { FiLock, FiMail, FiUser } from 'react-icons/fi';
+import * as Yup from 'yup';
 import { useAuth } from '../../../../../context/AuthContext';
 import { getHomePathForRole } from '../../../../../utils/authRedirect';
 import './Signup.scss';
@@ -12,36 +13,26 @@ const socialItems = [
     { label: 'Twitter', icon: <FaXTwitter /> },
 ];
 
-function validate(values) {
-    const errors = {};
+const schema = Yup.object({
+    full_name: Yup.string()
+        .trim()
+        .matches(/^[^\d]*$/, 'Name cannot contain numbers.')
+        .required('Full name is required.'),
+    email: Yup.string().trim().email('Enter a valid email address.').required('Email is required.'),
+    password: Yup.string().min(8, 'Password must be at least 8 characters.').required('Password is required.'),
+    password_confirmation: Yup.string()
+        .oneOf([Yup.ref('password')], 'Passwords do not match.')
+        .required('Please confirm your password.'),
+    terms: Yup.boolean().oneOf([true], 'You must agree before continuing.'),
+});
 
-    if (!values.full_name.trim()) {
-        errors.full_name = 'Full name is required.';
+async function validate(values) {
+    try {
+        await schema.validate(values, { abortEarly: false });
+        return {};
+    } catch (err) {
+        return err.inner.reduce((acc, e) => ({ ...acc, [e.path]: e.message }), {});
     }
-
-    if (!values.email.trim()) {
-        errors.email = 'Email is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-        errors.email = 'Enter a valid email address.';
-    }
-
-    if (!values.password.trim()) {
-        errors.password = 'Password is required.';
-    } else if (values.password.length < 8) {
-        errors.password = 'Password must be at least 8 characters.';
-    }
-
-    if (!values.password_confirmation.trim()) {
-        errors.password_confirmation = 'Please confirm your password.';
-    } else if (values.password_confirmation !== values.password) {
-        errors.password_confirmation = 'Passwords do not match.';
-    }
-
-    if (!values.terms) {
-        errors.terms = 'You must agree before continuing.';
-    }
-
-    return errors;
 }
 
 function mapServerErrors(error) {
@@ -81,7 +72,7 @@ export default function SignupContent() {
         }
     }, [authLoading, user, navigate]);
 
-    const onChange = (event) => {
+    const onChange = async (event) => {
         const { name, type, checked, value } = event.target;
         const nextValues = {
             ...values,
@@ -89,17 +80,13 @@ export default function SignupContent() {
         };
 
         setValues(nextValues);
-        setErrors((prev) => {
-            const next = { ...prev };
-            delete next[name];
-            delete next.form;
-            return { ...next, ...validate(nextValues) };
-        });
+        const nextErrors = await validate(nextValues);
+        setErrors((prev) => ({ ...prev, ...nextErrors, [name]: nextErrors[name] }));
     };
 
     const onSubmit = async (event) => {
         event.preventDefault();
-        const nextErrors = validate(values);
+        const nextErrors = await validate(values);
         setErrors(nextErrors);
 
         if (Object.keys(nextErrors).length > 0) {
