@@ -1,8 +1,22 @@
 import axios from 'axios';
 import React, { useState } from 'react';
 import { FiFileText, FiMail, FiUser } from 'react-icons/fi';
+import * as Yup from 'yup';
 import { usePlatformAdmin } from '../../../../../context/PlatformAdminContext';
 import './ContactForm.scss';
+
+const nameRule = () =>
+  Yup.string()
+    .trim()
+    .matches(/^[^\d]*$/, 'Name cannot contain numbers.')
+    .required('This field is required.');
+
+const schema = Yup.object({
+  firstName: nameRule().label('First name'),
+  lastName:  nameRule().label('Last name'),
+  email: Yup.string().trim().email('Enter a valid email address.').required('Email is required.'),
+  notes: Yup.string().trim().required('Please add a short message.'),
+});
 
 const details = [
   { label: 'Email', value: 'info@beehired.com' },
@@ -27,18 +41,27 @@ function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState('');
 
-  const handleChange = (e) => {
+  const validateAll = async (vals) => {
+    try {
+      await schema.validate(vals, { abortEarly: false });
+      return {};
+    } catch (err) {
+      return err.inner.reduce((acc, e) => ({ ...acc, [e.path]: e.message }), {});
+    }
+  };
+
+  const handleChange = async (e) => {
     const { name, value } = e.target;
     const nextValues = { ...values, [name]: value };
     setValues(nextValues);
-    setErrors(validate(nextValues));
+    setErrors(await validateAll(nextValues));
     setServerError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const nextErrors = validate(values);
+    const nextErrors = await validateAll(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
 
@@ -137,21 +160,5 @@ function Field({id, name, label, type = 'text',placeholder, value,error, icon, o
   );
 }
 
-function validate(values) {
-  const errors = {};
-
-  if (!values.firstName.trim()) errors.firstName = 'First name is required.';
-  if (!values.lastName.trim()) errors.lastName = 'Last name is required.';
-
-  if (!values.email.trim()) {
-    errors.email = 'Email is required.';
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-    errors.email = 'Enter a valid email address.';
-  }
-
-  if (!values.notes.trim()) errors.notes = 'Please add a short message.';
-
-  return errors;
-}
 
 export default ContactForm;
