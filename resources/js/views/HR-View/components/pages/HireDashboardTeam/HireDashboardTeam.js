@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import * as Yup from 'yup';
 import {
   fetchHrTeam, addHrTeamMember, removeHrTeamMember,
   fetchHrTeamNotes, createHrTeamNote, updateHrTeamNote, deleteHrTeamNote,
 } from '../../../../../api/hrApi';
 import './HireDashboardTeam.scss';
+
+const memberSchema = Yup.object({
+  name: Yup.string().trim().matches(/^[^\d]*$/, 'Name cannot contain numbers.').required('Name is required.'),
+});
 
 const AVATAR_COLORS = ['#111111', '#3b5bdb', '#2d7a5a', '#9a7000', '#c0392b', '#6741d9'];
 
@@ -24,6 +29,7 @@ const HireDashboardTeam = () => {
   const [newMember,     setNewMember]     = useState({ name: '', title: '', photo: null, file: null });
   const [saving,        setSaving]        = useState(false);
   const [removingId,    setRemovingId]    = useState(null);
+  const [memberErrors,  setMemberErrors]  = useState({});
 
   useEffect(() => {
     fetchHrTeam()
@@ -51,7 +57,13 @@ const HireDashboardTeam = () => {
   };
 
   const addMember = async () => {
-    if (!newMember.name.trim()) return;
+    try {
+      await memberSchema.validate(newMember, { abortEarly: false });
+      setMemberErrors({});
+    } catch (err) {
+      setMemberErrors(err.inner.reduce((acc, e) => ({ ...acc, [e.path]: e.message }), {}));
+      return;
+    }
     setSaving(true);
     try {
       const formData = new FormData();
@@ -204,6 +216,7 @@ const [notes,       setNotes]       = useState([]);
                   onKeyDown={(e) => e.key === 'Enter' && addMember()}
                   autoFocus
                 />
+                {memberErrors.name && <span style={{ color: 'red', fontSize: '12px' }}>{memberErrors.name}</span>}
                 <input
                   placeholder="Title (e.g. Recruiter)"
                   value={newMember.title}

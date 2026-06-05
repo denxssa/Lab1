@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { FiEdit2, FiPlus, FiTrash2, FiCheck, FiX } from 'react-icons/fi';
+import * as Yup from 'yup';
+
+const memberSchema = Yup.object({
+  name: Yup.string().trim().matches(/^[^\d]*$/, 'Name cannot contain numbers.').required('Name is required.'),
+});
 import SectionShell from './homeSections/SectionShell';
 import { patchSectionItems } from './homeSections/patchSectionItems';
 import { AboutStatsFields, AboutOverviewFields } from './homeSections/HomeSectionEditorBlocks';
@@ -85,6 +90,7 @@ const [members, setMembers]         = useState([]);
   const [addForm, setAddForm]         = useState({ name: '', occupation: '', bio: '' });
   const [addImage, setAddImage]       = useState(null);
   const [addLoading, setAddLoading]   = useState(false);
+  const [addErrors, setAddErrors]     = useState({});
   const [editId, setEditId]           = useState(null);
   const [editForm, setEditForm]       = useState({ name: '', occupation: '', bio: '' });
   const [editImage, setEditImage]     = useState(null);
@@ -99,6 +105,13 @@ const [members, setMembers]         = useState([]);
 
   const handleAdd = async (e) => {
     e.preventDefault();
+    try {
+      await memberSchema.validate(addForm, { abortEarly: false });
+      setAddErrors({});
+    } catch (err) {
+      setAddErrors(err.inner.reduce((acc, e) => ({ ...acc, [e.path]: e.message }), {}));
+      return;
+    }
     setAddLoading(true);
     const fd = new FormData();
     fd.append('name', addForm.name);
@@ -242,6 +255,7 @@ return (
               <div className="admin-field">
                 <label>Full Name</label>
                 <input placeholder="e.g. John Doe" value={addForm.name} onChange={e => setAddForm({ ...addForm, name: e.target.value })} required />
+                {addErrors.name && <span style={{ color: 'red', fontSize: '12px' }}>{addErrors.name}</span>}
               </div>
               <div className="admin-field">
                 <label>Occupation</label>

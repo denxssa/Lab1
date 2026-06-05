@@ -1,6 +1,23 @@
 import React, { useState } from 'react';
 import { FiBriefcase, FiFileText, FiStar, FiUser } from 'react-icons/fi';
+import * as Yup from 'yup';
 import './CompaniesForm.scss';
+
+const schema = Yup.object({
+  author: Yup.string().trim().matches(/^[^\d]*$/, 'Name cannot contain numbers.').required('Name is required.'),
+  role: Yup.string().trim().required('Role is required.'),
+  rating: Yup.number().integer().min(1, 'Rating must be between 1 and 5.').max(5, 'Rating must be between 1 and 5.').required('Rating is required.'),
+  comment: Yup.string().trim().min(12, 'Review must be at least 12 characters.').required('Please add a short review.'),
+});
+
+async function validate(values) {
+  try {
+    await schema.validate(values, { abortEarly: false });
+    return {};
+  } catch (err) {
+    return err.inner.reduce((acc, e) => ({ ...acc, [e.path]: e.message }), {});
+  }
+}
 
 const initialValues = {
   author: '',
@@ -14,19 +31,19 @@ function CompaniesForm({ companyName = 'this company', onAddReview }) {
   const [errors, setErrors] = useState({});
   const [showFeedback, setShowFeedback] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value } = e.target;
     const nextValues = { ...values, [name]: value };
 
     setValues(nextValues);
-    setErrors(validate(nextValues));
+    setErrors(await validate(nextValues));
     setShowFeedback(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const nextErrors = validate(values);
+    const nextErrors = await validate(values);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length) {
@@ -177,26 +194,5 @@ function Field({
   );
 }
 
-function validate(values) {
-  const errors = {};
-  const rating = Number(values.rating);
-
-  if (!values.author.trim()) errors.author = 'Name is required.';
-  if (!values.role.trim()) errors.role = 'Role is required.';
-
-  if (!values.rating) {
-    errors.rating = 'Rating is required.';
-  } else if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-    errors.rating = 'Rating must be between 1 and 5.';
-  }
-
-  if (!values.comment.trim()) {
-    errors.comment = 'Please add a short review.';
-  } else if (values.comment.trim().length < 12) {
-    errors.comment = 'Review must be at least 12 characters.';
-  }
-
-  return errors;
-}
 
 export default CompaniesForm;
