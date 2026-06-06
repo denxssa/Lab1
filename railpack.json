@@ -1,6 +1,25 @@
 {
-  "$schema": "https://schema.railpack.com",
   "packages": {
-    "php": "8.4"
+    "system": [
+      "curl",
+      "libcurl4-openssl-dev",
+      "libssl-dev",
+      "libxml2-dev",
+      "libzip-dev",
+      "zip",
+      "unzip",
+      "git",
+      "pkg-config",
+      "autoconf",
+      "bison",
+      "re2c",
+      "build-essential",
+      "libonig-dev",
+      "libpng-dev",
+      "libjpeg-dev",
+      "libfreetype6-dev",
+      "zlib1g-dev",
+      "libicu-dev"
+    ]
   }
 }
