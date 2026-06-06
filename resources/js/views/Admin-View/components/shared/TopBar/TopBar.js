@@ -8,7 +8,6 @@ const names = {
   '/admin-dashboard': 'Admin Overview',
   '/admin-dashboard/content': 'Content',
   '/admin-dashboard/users': 'HR Profiles',
-  '/admin-dashboard/reports': 'Reports',
   '/admin-dashboard/logs': 'Activity Logs',
   '/admin-dashboard/settings': 'Platform Settings',
   '/admin-dashboard/team': 'Team Members',

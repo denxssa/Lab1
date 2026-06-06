@@ -39,7 +39,6 @@ Route::view('/hire-dashboard/team', 'welcome');
 Route::view('/admin-dashboard', 'welcome');
 Route::view('/admin-dashboard/content', 'welcome');
 Route::view('/admin-dashboard/users', 'welcome');
-Route::view('/admin-dashboard/reports', 'welcome');
 Route::view('/admin-dashboard/logs', 'welcome');
 Route::view('/admin-dashboard/settings', 'welcome');
 Route::view('/admin-dashboard/messages', 'welcome');
@@ -139,7 +138,6 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/api/interviews/{interview}', [InterviewController::class, 'update']);
     Route::delete('/api/interviews/{interview}', [InterviewController::class, 'destroy']);
 
-    // ── HR dashboard ──────────────────────────────────────────────────────
     Route::get('/api/hr/overview-stats',                         [HrController::class,       'overviewStats']);
     Route::get('/api/hr/analytics',                              [HrController::class,       'analytics']);
     Route::get('/api/hr/applications',                           [HrController::class,       'applications']);
@@ -160,7 +158,6 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/api/hr/account',                                [HrSettingsController::class, 'updateAccount']);
     Route::put('/api/hr/notifications',                          [HrSettingsController::class, 'updateNotifications']);
 
-    // ── Candidate dashboard ───────────────────────────────────────────────
     Route::get('/api/candidate/applications', [HrController::class, 'myApplications']);
 
     Route::get('/api/notifications', [NotificationController::class, 'index']);
@@ -180,13 +177,11 @@ Route::middleware('auth:api')->group(function () {
 
 Route::get('/api/job-listings/{jobListing}', [JobListingController::class, 'show']);
 
-// ── First-login onboarding (no auth — secured via onboarding_token) ───────────
 Route::post('/auth/first-login/send-code',    [FirstLoginController::class, 'sendCode']);
 Route::post('/auth/first-login/verify-code',  [FirstLoginController::class, 'verifyCode']);
 Route::post('/auth/first-login/set-password', [FirstLoginController::class, 'setPassword']);
 Route::post('/auth/first-login/resend-code',  [FirstLoginController::class, 'resendCode']);
 
-// ── Admin routes ──────────────────────────────────────────────────────────────
 Route::middleware(['auth:api', 'admin'])->prefix('api/admin')->group(function () {
     Route::get('/stats',                          [AdminController::class, 'stats']);
     Route::get('/hr-users',                       [AdminController::class, 'index']);

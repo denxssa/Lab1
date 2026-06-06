@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-    FiCheck, FiEye, FiEyeOff, FiLock, FiMail, FiRefreshCw, FiShield,
+    FiCheck, FiEye, FiEyeOff, FiLock, FiMail, FiRefreshCw,
 } from 'react-icons/fi';
 import {
     sendFirstLoginCode,
@@ -15,9 +15,9 @@ import './FirstLoginPage.scss';
 const STEPS = { CREDENTIALS: 1, VERIFY_CODE: 2, SET_PASSWORD: 3 };
 
 const STEP_META = [
-    { label: 'Credentials',  icon: FiLock   },
-    { label: 'Verify Email', icon: FiShield  },
-    { label: 'Set Password', icon: FiCheck   },
+    { label: 'Credentials' },
+    { label: 'Verify Email' },
+    { label: 'Set Password' },
 ];
 
 const PW_RULES = [
@@ -129,30 +129,34 @@ const pwStrength = PW_RULES.filter((r) => r.test(password)).length;
             <div className="fl-card">
 
                 {/* ── Logo ── */}
-                <div className="fl-logo">
-                    <span>BEE HIRED</span>
-                </div>
+                <a href="/" className="fl-logo" aria-label="Bee Hired home">
+                    <img src="/images/logo-email.png" alt="Bee Hired" />
+                </a>
 
                 {/* ── Step indicator ── */}
-                <div className="fl-stepper">
-                    {STEP_META.map(({ label }, i) => {
-                        const idx   = i + 1;
-                        const done  = step > idx;
-                        const active = step === idx;
-                        return (
-                            <React.Fragment key={label}>
-                                <div className={`fl-step-item ${active ? 'active' : ''} ${done ? 'done' : ''}`}>
-                                    <div className="fl-step-bubble">
-                                        {done ? <FiCheck size={14} strokeWidth={3} /> : idx}
-                                    </div>
-                                    <span className="fl-step-label">{label}</span>
-                                </div>
-                                {i < STEP_META.length - 1 && (
-                                    <div className={`fl-step-line ${done ? 'done' : ''}`} />
-                                )}
-                            </React.Fragment>
-                        );
-                    })}
+                <div className="fl-progress" aria-label={`Step ${step} of ${STEP_META.length}`}>
+                    <div className="fl-progress-track">
+                        <div
+                            className="fl-progress-fill"
+                            style={{ width: `${(step / STEP_META.length) * 100}%` }}
+                        />
+                    </div>
+                    <div className="fl-step-labels">
+                        {STEP_META.map(({ label }, i) => {
+                            const idx = i + 1;
+                            const done = step > idx;
+                            const active = step === idx;
+                            return (
+                                <span
+                                    key={label}
+                                    className={`fl-step-label ${active ? 'active' : ''} ${done ? 'done' : ''}`}
+                                >
+                                    {done ? <FiCheck size={11} strokeWidth={3} /> : null}
+                                    {label}
+                                </span>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* ── Alerts ── */}
@@ -163,9 +167,7 @@ const pwStrength = PW_RULES.filter((r) => r.test(password)).length;
                 {step === STEPS.CREDENTIALS && (
                     <form className="fl-form" onSubmit={handleSendCode} noValidate>
                         <div className="fl-form-intro">
-                            <div className="fl-step-icon-wrap">
-                                <FiMail size={22} />
-                            </div>
+                            <span className="fl-step-eyebrow">Step 1 of 3</span>
                             <h1>Account Setup</h1>
                             <p>Enter the credentials from your invitation email. A verification code will be sent to your inbox.</p>
                         </div>
@@ -219,9 +221,7 @@ const pwStrength = PW_RULES.filter((r) => r.test(password)).length;
                 {step === STEPS.VERIFY_CODE && (
                     <form className="fl-form" onSubmit={handleVerifyCode} noValidate>
                         <div className="fl-form-intro">
-                            <div className="fl-step-icon-wrap">
-                                <FiShield size={22} />
-                            </div>
+                            <span className="fl-step-eyebrow">Step 2 of 3</span>
                             <h1>Verify your identity</h1>
                             <p>We sent a 4-digit code to <strong>{email}</strong>. Enter it below — it expires in 10 minutes.</p>
                         </div>
@@ -261,9 +261,7 @@ const pwStrength = PW_RULES.filter((r) => r.test(password)).length;
                 {step === STEPS.SET_PASSWORD && (
                     <form className="fl-form" onSubmit={handleSetPassword} noValidate>
                         <div className="fl-form-intro">
-                            <div className="fl-step-icon-wrap">
-                                <FiLock size={22} />
-                            </div>
+                            <span className="fl-step-eyebrow">Step 3 of 3</span>
                             <h1>Create your password</h1>
                             <p>Choose a strong password to secure your BeeHired account.</p>
                         </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../../context/AuthContext';
-import { FiActivity, FiBarChart2, FiFileText, FiGrid, FiLogOut, FiMail, FiMenu, FiSettings, FiUsers, FiX } from 'react-icons/fi';
+import { FiActivity, FiFileText, FiGrid, FiLogOut, FiMail, FiSettings, FiUsers, FiX } from 'react-icons/fi';
 import '../../shared/AdminShared.scss';
 import './AdminSidebar.scss';
 
@@ -9,7 +9,6 @@ const mainNav = [
   { label: 'Overview', path: '/admin-dashboard', icon: FiGrid },
   { label: 'Content', path: '/admin-dashboard/content', icon: FiFileText },
   { label: 'HR Profiles', path: '/admin-dashboard/users', icon: FiUsers },
-  { label: 'Reports', path: '/admin-dashboard/reports', icon: FiBarChart2 },
   { label: 'Logs', path: '/admin-dashboard/logs', icon: FiActivity },
   { label: 'Messages', path: '/admin-dashboard/messages', icon: FiMail },
 ];
