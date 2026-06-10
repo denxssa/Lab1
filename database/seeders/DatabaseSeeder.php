@@ -17,18 +17,44 @@ class DatabaseSeeder extends Seeder
         User::query()->updateOrCreate(
             ['email' => 'test@example.com'],
             [
-                'name' => 'Test User',
-                'role' => User::ROLE_CANDIDATE,
-                'password' => Hash::make(InterviewSeeder::DEMO_PASSWORD),
+                'name'                  => 'Test User',
+                'role'                  => User::ROLE_CANDIDATE,
+                'password'              => Hash::make(InterviewSeeder::DEMO_PASSWORD),
+                'account_status'        => User::STATUS_ACTIVE,
+                'first_login_completed' => true,
             ]
         );
 
         User::query()->updateOrCreate(
             ['email' => 'admin1@gmail.com'],
             [
-                'name'     => 'Admin',
-                'role'     => User::ROLE_ADMIN,
-                'password' => Hash::make('admin123'),
+                'name'                  => 'Admin',
+                'role'                  => User::ROLE_ADMIN,
+                'password'              => Hash::make('admin123'),
+                'account_status'        => User::STATUS_ACTIVE,
+                'first_login_completed' => true,
+            ]
+        );
+
+        User::query()->updateOrCreate(
+            ['email' => 'hr@beehired.com'],
+            [
+                'name'                  => 'HR Manager',
+                'role'                  => User::ROLE_HR,
+                'password'              => Hash::make('hr123456'),
+                'account_status'        => User::STATUS_ACTIVE,
+                'first_login_completed' => true,
+            ]
+        );
+
+        User::query()->updateOrCreate(
+            ['email' => 'user@beehired.com'],
+            [
+                'name'                  => 'Demo User',
+                'role'                  => User::ROLE_CANDIDATE,
+                'password'              => Hash::make('user123456'),
+                'account_status'        => User::STATUS_ACTIVE,
+                'first_login_completed' => true,
             ]
         );
 
