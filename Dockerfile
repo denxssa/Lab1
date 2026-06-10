@@ -32,7 +32,7 @@ COPY . .
 RUN composer dump-autoload --optimize --no-dev
 
 
-FROM php:8.3-fpm-bookworm AS production
+FROM php:8.4-fpm-bookworm AS production
 
 ARG DEBIAN_FRONTEND=noninteractive
 
