@@ -44,9 +44,11 @@ class InterviewSeeder extends Seeder
             $usersByEmail[$account['email']] = User::query()->updateOrCreate(
                 ['email' => $account['email']],
                 [
-                    'name' => $account['name'],
-                    'role' => $account['role'],
-                    'password' => $demoPassword,
+                    'name'                  => $account['name'],
+                    'role'                  => $account['role'],
+                    'password'              => $demoPassword,
+                    'account_status'        => User::STATUS_ACTIVE,
+                    'first_login_completed' => true,
                 ]
             );
         }

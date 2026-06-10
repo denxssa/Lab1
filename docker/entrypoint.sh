@@ -20,14 +20,14 @@ if [ -z "$APP_KEY" ]; then
     exit 1
 fi
 
-php artisan storage:link --force 2>/dev/null || true
+php artisan storage:link 2>/dev/null || php artisan storage:link --force 2>/dev/null || true
 
 if [ "$RUN_MIGRATIONS" = "true" ]; then
     php artisan migrate --force --no-interaction
 fi
 
 if [ "$RUN_SEEDER" = "true" ]; then
-    php artisan db:seed --force --no-interaction
+    php artisan db:seed --force --no-interaction && echo "Seeding completed." || echo "Seeding failed (non-fatal), continuing deploy."
 fi
 
 php artisan package:discover --ansi
