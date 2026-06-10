@@ -26,6 +26,10 @@ if [ "$RUN_MIGRATIONS" = "true" ]; then
     php artisan migrate --force --no-interaction
 fi
 
+if [ "$RUN_SEEDER" = "true" ]; then
+    php artisan db:seed --force --no-interaction
+fi
+
 php artisan package:discover --ansi
 
 php artisan config:cache
