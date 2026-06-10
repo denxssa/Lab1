@@ -7,11 +7,9 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-COPY webpack.mix.js ./
+COPY webpack.mix.js artisan ./
 COPY resources ./resources
 COPY public ./public
-
-ENV NODE_OPTIONS=--max-old-space-size=2048
 
 RUN npm run production
 
