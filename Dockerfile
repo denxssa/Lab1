@@ -11,6 +11,8 @@ COPY webpack.mix.js ./
 COPY resources ./resources
 COPY public ./public
 
+ENV NODE_OPTIONS=--max-old-space-size=2048
+
 RUN npm run production
 
 
